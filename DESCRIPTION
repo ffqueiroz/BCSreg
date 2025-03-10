@@ -1,12 +1,22 @@
 Package: BCSreg
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Box-Cox Symmetric Regression for Positive Data
 Version: 0.1.0
 Authors@R: c(
-  person("Felipe", "Queiroz", email = "ffelipeq@outlook.com", role = c("aut", "cre")),
-  person("Rodrigo", "Medeiros", email = "rodrigo.matheus@ufrn.br", role = "aut", "cre"))
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+  person("Felipe", "Queiroz",
+          email = "ffelipeq@outlook.com", 
+          role = c("aut", "cre")),
+  person("Rodrigo", "Medeiros",
+          email = "rodrigo.matheus@ufrn.br",
+          role = "aut",
+          comment = c(ORCID = "0000-0001-8101-3038"))
+          )
+Description: A collection of tools for regression analysis of positive data,
+    including zero-inflated data, based on the class of the Box-Cox symmetric (BCS)
+    distributions. The BCS distributions are a class of flexible probability models
+    capable of describing different levels of skewness and tail-heaviness. The package
+    offers a compreensive regression modeling framework, including estimation and tools for
+    evaluating goodness-of-fit.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
