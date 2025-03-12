@@ -6,6 +6,8 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/ffqueiroz/BCSreg/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ffqueiroz/BCSreg/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/ffqueiroz/BCSreg/graph/badge.svg)](https://app.codecov.io/gh/ffqueiroz/BCSreg)
 <!-- badges: end -->
 
 The goal of BCSreg is to …

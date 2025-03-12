@@ -184,7 +184,9 @@ dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family, log = FALSE){
             }
             r <- (zeta/sqrt(2*pi))*(1/(s_aux^beta_aux))*zipfR::Igamma(beta_aux, s_aux)
             R <- pslash(1/(sigma*abs(lambda)), nu = zeta)
-          }
+          },
+
+          stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
   )
 
 
@@ -274,7 +276,9 @@ pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
             Rz <- pslash(z, nu = zeta)
             Rpos <- pslash(1 / (sigma * lambda), nu = zeta)
             Rneg <- pslash(-1 / (sigma * lambda), nu = zeta)
-          }
+          },
+
+          stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
   )
 
 
@@ -367,7 +371,9 @@ qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
           SL = {
             z_p[l0] <- qslash(p[l0] * pslash(1 / (sigma[l0] * abs(lambda[l0])), nu = zeta), nu = zeta)
             z_p[l1] <- qslash(1 - (1 - p[l1]) * pslash(1 / (sigma[l1] * abs(lambda[l1])), nu = zeta), nu = zeta)
-          }
+          },
+
+          stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
   )
 
 
