@@ -155,6 +155,11 @@ dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family, log = FALSE){
             R <- pt(1 / (sigma * abs(lambda)), zeta)
           },
 
+          LOI = {
+            r <- dlogisI(z)
+            R <- plogisI(1 / (sigma * abs(lambda)))
+          },
+
           LOII = {
             r <- dlogis(z)
             R <- plogis(1 / (sigma * abs(lambda)))
@@ -177,13 +182,8 @@ dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family, log = FALSE){
           },
 
           SL = {
-            s_aux <- z^2/2
-            beta_aux <- zeta + (1/2)
-            if(any(s_aux == 0)){
-              s_aux[s_aux == 0] <- 0.0001
-            }
-            r <- (zeta/sqrt(2*pi))*(1/(s_aux^beta_aux))*zipfR::Igamma(beta_aux, s_aux)
-            R <- pslash(1/(sigma*abs(lambda)), nu = zeta)
+            r <- dslash(z, zeta = zeta)
+            R <- pslash(1 / (sigma * abs(lambda)), zeta = zeta)
           },
 
           stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
@@ -248,6 +248,12 @@ pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
             Rneg <- pt(-1 / (sigma * lambda), zeta)
           },
 
+          LOI = {
+            Rz <- plogisI(z)
+            Rpos <- plogisI(1 / (sigma * lambda))
+            Rneg <- plogisI(-1 / (sigma * lambda))
+          },
+
           LOII = {
             Rz <- plogis(z)
             Rpos <- plogis(1 / (sigma * lambda))
@@ -273,9 +279,9 @@ pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
           },
 
           SL = {
-            Rz <- pslash(z, nu = zeta)
-            Rpos <- pslash(1 / (sigma * lambda), nu = zeta)
-            Rneg <- pslash(-1 / (sigma * lambda), nu = zeta)
+            Rz <- pslash(z, zeta = zeta)
+            Rpos <- pslash(1 / (sigma * lambda), zeta = zeta)
+            Rneg <- pslash(-1 / (sigma * lambda), zeta = zeta)
           },
 
           stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
@@ -308,12 +314,12 @@ qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
 
   if (is.matrix(p)) d <- ncol(p) else d <- 1L
 
-  maxl <- max(c(length(p), length(mu), length(sigma), length(lambda)))
+  maxl <- max(length(p), length(mu), length(sigma), length(lambda))
 
-  p <- rep(p, length.out = maxl)
-  mu <- rep(mu, length.out = maxl)
-  sigma <- rep(sigma, length.out = maxl)
-  lambda <- rep(lambda, length.out = maxl)
+  p <- rep_len(p, maxl)
+  mu <- rep_len(mu, maxl)
+  sigma <- rep_len(sigma, maxl)
+  lambda <- rep_len(lambda, maxl)
 
   if (any(mu <= 0))
     warning(paste("mu must be positive ", "\n", ""))
@@ -340,6 +346,11 @@ qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
           ST = {
             z_p[l0] <- qt(p[l0] * pt(1 / (sigma[l0] * abs(lambda[l0])), zeta), zeta)
             z_p[l1] <- qt(1 - (1 - p[l1]) * pt(1 / (sigma * abs(lambda[l1])), zeta), zeta)
+          },
+
+          LOI = {
+            z_p[l0] <- qlogisI(p[l0] * plogisI(1 / (sigma[l0] * abs(lambda[l0]))))
+            z_p[l1] <- qlogisI(1 - (1 - p[l1]) * plogisI(1 / (sigma[l1] * abs(lambda[l1]))))
           },
 
           LOII = {
@@ -369,8 +380,8 @@ qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
           },
 
           SL = {
-            z_p[l0] <- qslash(p[l0] * pslash(1 / (sigma[l0] * abs(lambda[l0])), nu = zeta), nu = zeta)
-            z_p[l1] <- qslash(1 - (1 - p[l1]) * pslash(1 / (sigma[l1] * abs(lambda[l1])), nu = zeta), nu = zeta)
+            z_p[l0] <- qslash(p[l0] * pslash(1 / (sigma[l0] * abs(lambda[l0])), zeta = zeta), zeta = zeta)
+            z_p[l1] <- qslash(1 - (1 - p[l1]) * pslash(1 / (sigma[l1] * abs(lambda[l1])), zeta = zeta), zeta = zeta)
           },
 
           stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
@@ -413,55 +424,308 @@ rbcs <- function(n, mu, sigma, lambda, zeta = NULL, family){
 
 
 
-#' @keywords internal
-pslash <- function(q, nu){
-  aux <-  function(x){
-    s_aux <- x^2/2
-    beta_aux <- nu + (1/2)
-    gama_aux <- zipfR::Igamma(beta_aux, s_aux)
-    r <- (nu/sqrt(2*pi))*(1/(s_aux^beta_aux))*zipfR::Igamma(beta_aux, s_aux)
-    return(r)
-  }
+# #' @keywords internal
+# pslash <- function(q, nu){
+#   aux <-  function(x){
+#     s_aux <- x^2/2
+#     beta_aux <- nu + (1/2)
+#     gama_aux <- zipfR::Igamma(beta_aux, s_aux)
+#     r <- (nu/sqrt(2*pi))*(1/(s_aux^beta_aux))*zipfR::Igamma(beta_aux, s_aux)
+#     return(r)
+#   }
+#
+#   acumu_aux <- function(q) stats::integrate(aux, lower=-Inf, upper=q)$value
+#   v.acumu_aux <- Vectorize(acumu_aux)
+#   cdf <- v.acumu_aux(q)
+#   cdf
+# }
+#
+# #' @keywords internal
+# qslash <- function(p, nu){
+#
+#   qtf <- function(input){
+#     p <- input
+#
+#     if (!is.na(p)){
+#       obj <- function(q){
+#         pslash(q, nu) - p
+#       }
+#
+#       nleqslv::nleqslv(stats::qnorm(p) / (0.5^(1/nu)), obj)$x
+#     }else{
+#       numeric(0)
+#     }
+#   }
+#
+#   q0 <- rep(0, length(p[p == 0.5]) )
+#   q <- vector()
+#   if (length(p[p != 0.5]) < 1){
+#     q <- numeric(0)
+#   } else{
+#     q[p != 0.5 & p != 0 & p != 1] <-
+#       as.numeric(apply(matrix(p[p != 0.5 & p != 0 & p != 1], ncol = 1),
+#                        1, qtf))
+#   }
+#
+#   q[p == 0] <- -Inf
+#   q[p == 1] <- Inf
+#   qtf <- c(q0, q)
+#   index <- c(which(p == 0.5), which(p != 0.5))
+#
+#   qtf[sort(index, index.return = T)$ix]
+# }
 
-  acumu_aux <- function(q) stats::integrate(aux, lower=-Inf, upper=q)$value
-  v.acumu_aux <- Vectorize(acumu_aux)
-  cdf <- v.acumu_aux(q)
-  cdf
+
+# The Slash distribution ----------------------------------------------------------------------
+
+## Inverse gamma function
+ig <- function(a, x) pmin(exp(lgamma(a) + stats::pgamma(x, a, scale = 1, log.p = TRUE)), .Machine$double.xmax)
+
+## Probability density function
+dslash <- function(x, mu = 0, sigma = 1, zeta, log = FALSE) {
+
+  if (is.matrix(x)) d <- ncol(x) else d <- 1L
+
+  maxl <- max(length(x), length(mu), length(sigma), length(zeta))
+
+  x <- rep_len(x, maxl)
+  mu <- rep_len(mu, maxl)
+  sigma <- rep_len(sigma, maxl)
+  zeta <- rep_len(zeta, maxl)
+
+  pmf <- rep_len(-Inf, maxl)
+
+  # NaN index
+  pmf[which(sigma <= 0 | zeta <= 0)] <- NaN
+
+  u <- ((x - mu) / sigma)^2
+
+  id1 <- which(u > 0 & !is.nan(pmf), arr.ind = TRUE)
+  id2 <- which(u == 0 & !is.nan(pmf), arr.ind = TRUE)
+
+  pmf[id1] <- log(ig(zeta[id1] + 0.5,  u[id1]/2)) + log(zeta[id1]) + zeta[id1] * log(2) -
+    0.5 * log(pi) - (zeta[id1] + 0.5) * log(u[id1])
+  pmf[id2] <- log(2 * zeta[id2]) - log(2 * zeta[id2] + 1) - 0.5 * log(2 * pi)
+
+  if (!log) pmf <- exp(pmf)
+  if (d > 1L) matrix(pmf, ncol = d) else pmf
 }
 
-#' @keywords internal
-qslash <- function(p, nu){
+## Cumulative distribution function
+pslash <- function(q, zeta, log.p = FALSE) {
 
-  qtf <- function(input){
-    p <- input
+  mu <- 0
+  sigma <- 1
 
-    if (!is.na(p)){
-      obj <- function(q){
-        pslash(q, nu) - p
-      }
+  if (is.matrix(q)) d <- ncol(q) else d <- 1L
 
-      nleqslv::nleqslv(stats::qnorm(p) / (0.5^(1/nu)), obj)$x
-    }else{
-      numeric(0)
-    }
-  }
+  maxl <- max(length(q), length(mu), length(sigma), length(zeta))
 
-  q0 <- rep(0, length(p[p == 0.5]) )
-  q <- vector()
-  if (length(p[p != 0.5]) < 1){
-    q <- numeric(0)
-  } else{
-    q[p != 0.5 & p != 0 & p != 1] <-
-      as.numeric(apply(matrix(p[p != 0.5 & p != 0 & p != 1], ncol = 1),
-                       1, qtf))
-  }
+  q <- rep_len(q, maxl)
+  mu <- rep_len(mu, maxl)
+  sigma <- rep_len(sigma, maxl)
 
-  q[p == 0] <- -Inf
-  q[p == 1] <- Inf
-  qtf <- c(q0, q)
-  index <- c(which(p == 0.5), which(p != 0.5))
+  cdf <- rep_len(0, maxl)
 
-  qtf[sort(index, index.return = T)$ix]
+  # NaN index
+  cdf[which(sigma <= 0 | zeta <= 0)] <- NaN
+
+  # Positive density index
+  id1 <- which(is.finite(q) & q != mu & !is.nan(cdf))
+  id2 <- which(q == mu & !is.nan(cdf))
+  id3 <- which(q == -Inf)
+  id4 <- which(q == Inf)
+
+  # Constructing the Slash distribution
+  W <- distr::AbscontDistribution(
+    d = function(x) dslash(x, zeta = zeta),
+    Symmetry = distr::SphericalSymmetry(0)
+  )
+
+  cdf[id1] <- distr::p(W)((q[id1] - mu[id1]) / sigma[id1])
+  cdf[id2] <- 0.5
+  cdf[id3] <- 0
+  cdf[id4] <- 1
+
+
+  if (log.p) cdf <- log(cdf)
+
+  if (d > 1L) matrix(cdf, ncol = d) else cdf
 }
 
+# Quantile function
+qslash <- function(p, zeta) {
+
+  mu <- 0
+  sigma <- 1
+
+  if (is.matrix(p)) d <- ncol(p) else d <- 1L
+
+  maxl <- max(length(p), length(mu), length(sigma), length(zeta))
+
+  p <- rep_len(p, maxl)
+  mu <- rep_len(mu, maxl)
+  sigma <- rep_len(sigma, maxl)
+
+  qtf <- rep_len(NA, maxl)
+
+  # NaN index
+  qtf[which(p < 0 | p > 1 | sigma <= 0 | zeta <= 0)] <- NaN
+
+  # Positive density index
+  id1 <- which(p != 0.5 & p > 0 & p < 1 & !is.nan(qtf), arr.ind = TRUE)
+  id2 <- which(p == 0 & !is.nan(qtf), arr.ind = TRUE)
+  id3 <- which(p == 0.5 & !is.nan(qtf), arr.ind = TRUE)
+  id4 <- which(p == 1 & !is.nan(qtf), arr.ind = TRUE)
+
+  # Constructing the Slash distribution
+  W <- distr::AbscontDistribution(
+    d = function(x) dslash(x, zeta = zeta),
+    Symmetry = distr::SphericalSymmetry(0)
+  )
+
+  qtf[id1] <- distr::q(W)(p[id1])
+  qtf[id2] <- -Inf
+  qtf[id3] <- 0
+  qtf[id4] <- Inf
+
+  qtf <- mu + sigma * qtf
+
+  if (d > 1L) matrix(qtf, ncol = d) else qtf
+}
+
+## VERIFICAÇÃO VISUAL DE QUE A SLASH ESTÁ OK
+
+## SLASH = mu + sigma * Z / sqrt(W), W ~ Beta(zeta, 1), Z ~ N(0, 1)
+
+# # Random generation
+# rslash <- function(n, mu = 0, sigma = 1, zeta) {
+#   mu + sigma * stats::rnorm(n) / sqrt(stats::rbeta(n, zeta, 1))
+# }
+#
+# x <- rslash(10000, zeta = 2)
+#
+# plot(density(x))
+# curve(dslash(x, zeta = 2), add = TRUE, col = "blue")
+#
+# plot(ecdf(x))
+# curve(pslash(x, zeta = 2), add = TRUE, col = "blue")
+#
+# plot(seq(0.001, 0.999, 0.001), qslash(seq(0.001, 0.999, 0.001), zeta = 2),
+#      type = "l", xlab = "p", ylab = "Quantile")
+# curve(qslash(x, zeta = 2), add = TRUE, col = "blue")
+
+
+# The logistic type I distribution ------------------------------------------------------------
+
+## Density function
+dlogisI <- function(x, mu = 0, sigma = 1, log = FALSE) {
+
+  if (is.matrix(x)) d <- ncol(x) else d <- 1L
+
+  maxl <- max(length(x), length(mu), length(sigma))
+
+  x <- rep_len(x, maxl)
+  mu <- rep_len(mu, maxl)
+  sigma <- rep_len(sigma, maxl)
+
+  pmf <- rep_len(-Inf, maxl)
+
+  # NaN index
+  pmf[which(sigma <= 0)] <- NaN
+
+  u <- ((x - mu) / sigma)^2
+
+  id <- which(u >= 0 & !is.nan(pmf), arr.ind = TRUE)
+
+  const <- 1.484300029
+  pmf[id] <- log(const) - u[id] - log((1 + exp(-u[id]))^2)
+
+  if (!log) pmf <- exp(pmf)
+  if (d > 1L) matrix(pmf, ncol = d) else pmf
+
+}
+
+Wloi <- distr::AbscontDistribution(d = function(x) dlogisI(x),
+                                   Symmetry = distr::SphericalSymmetry(0))
+
+## Cumulative distribution function
+plogisI <- function(q, log.p = FALSE) {
+
+  mu <- 0
+  sigma <- 1
+
+  if (is.matrix(q)) d <- ncol(q) else d <- 1L
+
+  maxl <- max(length(q), length(mu), length(sigma))
+
+  q <- rep_len(q, maxl)
+  mu <- rep_len(mu, maxl)
+  sigma <- rep_len(sigma, maxl)
+
+  cdf <- rep_len(0, maxl)
+
+  # NaN index
+  cdf[which(sigma <= 0)] <- NaN
+
+  # Positive density index
+  id1 <- which(is.finite(q) & !is.nan(cdf))
+  id2 <- which(q == -Inf)
+  id3 <- which(q == Inf)
+
+  cdf[id1] <- distr::p(Wloi)((q[id1] - mu[id1]) / sigma[id1])
+  cdf[id2] <- 0
+  cdf[id3] <- 1
+
+  if (log.p) cdf <- log(cdf)
+
+  if (d > 1L) matrix(cdf, ncol = d) else cdf
+}
+
+## Quantile function
+qlogisI <- function(p) {
+
+  mu <- 0
+  sigma <- 1
+
+  if (is.matrix(p)) d <- ncol(p) else d <- 1L
+
+  maxl <- max(length(p), length(mu), length(sigma))
+
+  p <- rep_len(p, maxl)
+  mu <- rep_len(mu, maxl)
+  sigma <- rep_len(sigma, maxl)
+
+  qtf <- rep_len(NA, maxl)
+
+  # NaN index
+  qtf[which(p < 0 | p > 1 | sigma <= 0)] <- NaN
+
+  # Positive density index
+  id1 <- which(p != 0.5 & p > 0 & p < 1 & !is.nan(qtf), arr.ind = TRUE)
+  id2 <- which(p == 0 & !is.nan(qtf), arr.ind = TRUE)
+  id3 <- which(p == 1 & !is.nan(qtf), arr.ind = TRUE)
+
+  qtf[id1] <- distr::q(Wloi)(p[id1])
+  qtf[id2] <- -Inf
+  qtf[id3] <- Inf
+
+  qtf <- mu + sigma * qtf
+
+  if (d > 1L) matrix(qtf, ncol = d) else qtf
+}
+
+# ## VERIFICAÇÃO VISUAL DA LOGISTICA TIPO i
+# u <- runif(10000)
+# x <- qlogisI(u)
+#
+# plot(density(x))
+# curve(dlogisI(x), add = TRUE, col = "blue")
+#
+# plot(ecdf(x))
+# curve(plogisI(x), add = TRUE, col = "blue")
+#
+# plot(seq(0.001, 0.999, 0.001), qlogisI(seq(0.001, 0.999, 0.001)),
+#      type = "l", xlab = "p", ylab = "Quantile")
+# curve(qlogisI(x), add = TRUE, col = "blue")
 
