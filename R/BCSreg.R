@@ -1,3 +1,28 @@
+#' Auxiliary for Controlling BCS Fitting
+#'
+#' Parameters that control fitting of Box-Cox symmetric regression models using \code{\link{BCSreg}}.
+#' @name BCSregcontrol
+#' @param lambda numeric indicating the value of lambda (if \code{NULL}, lambda
+#'      will be estimated).
+#' @param method character specifying the \code{method} argument passed to \code{\link{optim}}.
+#' @param maxit,trace,... arguments passed to \code{\link{optim}}
+#' @param start an optional vector with starting values for median and dispersion
+#'      submodels (starting value for lambda must not be included).
+#' @details The \code{BCSreg.control} controls the fitting process of Box-Cox symmetric models.
+#'     Almost all the arguments are passed directly to \code{\link{optim}}, which
+#'     is used to estimate the parameters. Starting values for median and dispersion
+#'     submodels can be provided via \code{start}. The starting value for lambda is
+#'     zero; that is, the fitting process starts from the log-symmetric regression
+#'     model. If the estimation process is to be performed with a fixed lambda,
+#'     a value must be specified in \code{lambda}. If \code{lambda = 0}, a log-symmetric
+#'     regression model will be estimated.
+#'
+#' @return A list with components named as the arguments.
+#' @seealso \code{\link{BCSreg}}
+#' @export
+#'
+#' @examples
+#' 2+2=4
 BCSreg.control <- function(lambda = NULL, method = "BFGS", maxit = 2000, trace = FALSE, start = NULL, ...){
   val <- list(lambda = lambda, method = method, maxit = maxit,
               trace = trace, start = start)
@@ -20,6 +45,26 @@ make.dmu.deta <- function(linkstr){
   )
 }
 
+#' Title
+#'
+#' @param formula
+#' @param data
+#' @param subset
+#' @param na.action
+#' @param family
+#' @param zeta
+#' @param link
+#' @param link.sigma
+#' @param control
+#' @param model
+#' @param y
+#' @param x
+#' @param ...
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 BCSreg <- function(formula, data, subset, na.action,
                    family = c("NO", "LO", "TF", "PE", "SN", "SLASH", "Hyp"),
                    zeta = NULL, link = c("log", "sqrt", "inverse", "1/mu^2"),
@@ -651,11 +696,7 @@ print.summary.BCSreg <- function(x, ...)
       cat(paste("\nLambda coefficient:\n", sep = ""))
       printCoefmat(x$coefficients$shape, digits = digits, signif.legend = FALSE)
     } else {
-      if(x$lambda == 0) {
-        cat(paste("\nFixed shape parameter (limiting case lambda -> 0).\n"))
-      } else {
-        cat(paste("\nFixed shape parameter (lambda = ", x$lambda, ").\n", sep = ""))
-      }
+      cat(paste("\nFixed shape parameter (lambda = ", x$lambda, ").\n", sep = ""))
     }
 
     aux <- x$coefficients[c("median", "dispersion")]
