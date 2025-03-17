@@ -123,10 +123,10 @@ legend("topright", legend = c("NO", "ST", "PE"), lty = 1, col = c(1, 2, 4))
 # Random generation
 
 ## Parameter setting
-mu <- 5       # scale parameter
-sigma <- 0.2  # relative dispersion parameter
-lambda <- -2  # skewness parameter
-zeta <- 6     # extra parameter (if necessary)
+mu <- 5 # scale parameter
+sigma <- 0.2 # relative dispersion parameter
+lambda <- -2 # skewness parameter
+zeta <- 6 # extra parameter (if necessary)
 
 ## Generating family
 family <- "NO"
@@ -138,7 +138,7 @@ hist(x, prob = TRUE, col = "white", main = "")
 curve(dbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)
 
 plot(ecdf(x), main = "")
-curve(pbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)#'
+curve(pbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE) #'
 
 }
 \references{

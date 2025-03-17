@@ -98,10 +98,10 @@
 #' # Random generation
 #'
 #' ## Parameter setting
-#' mu <- 5       # scale parameter
-#' sigma <- 0.2  # relative dispersion parameter
-#' lambda <- -2  # skewness parameter
-#' zeta <- 6     # extra parameter (if necessary)
+#' mu <- 5 # scale parameter
+#' sigma <- 0.2 # relative dispersion parameter
+#' lambda <- -2 # skewness parameter
+#' zeta <- 6 # extra parameter (if necessary)
 #'
 #' ## Generating family
 #' family <- "NO"
@@ -113,13 +113,12 @@
 #' curve(dbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)
 #'
 #' plot(ecdf(x), main = "")
-#' curve(pbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)#'
+#' curve(pbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE) #'
 #'
 #' @importFrom stats dnorm qnorm rnorm pnorm dlogis plogis qlogis runif dt pt qt
 #'
 #' @export
-dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family, log = FALSE){
-
+dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family, log = FALSE) {
   if (is.matrix(x)) d <- ncol(x) else d <- 1L
 
   maxl <- max(c(length(x), length(mu), length(sigma), length(lambda)))
@@ -129,12 +128,15 @@ dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family, log = FALSE){
   sigma <- rep(sigma, length.out = maxl)
   lambda <- rep(lambda, length.out = maxl)
 
-  if (any(mu <= 0))
+  if (any(mu <= 0)) {
     warning(paste("mu must be positive ", "\n", ""))
-  if (any(sigma <= 0))
+  }
+  if (any(sigma <= 0)) {
     warning(paste("sigma must be positive", "\n", ""))
-  if (any(zeta <= 0))
+  }
+  if (any(zeta <= 0)) {
     warning(paste("zeta must be positive", "\n", ""))
+  }
 
   l0 <- which(lambda == 0)
   l1 <- which(lambda != 0)
@@ -143,50 +145,43 @@ dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family, log = FALSE){
   z[l0] <- log(x[l0] / mu[l0]) / sigma[l0]
   z[l1] <- ((x[l1] / mu[l1])^lambda[l1] - 1) / (sigma[l1] * lambda[l1])
 
-  switch (family,
-
-          NO = {
-            r <- dnorm(z)
-            R <- pnorm(1 / (sigma * abs(lambda)))
-          },
-
-          ST = {
-            r <- dt(z, zeta)
-            R <- pt(1 / (sigma * abs(lambda)), zeta)
-          },
-
-          LOI = {
-            r <- dlogisI(z)
-            R <- plogisI(1 / (sigma * abs(lambda)))
-          },
-
-          LOII = {
-            r <- dlogis(z)
-            R <- plogis(1 / (sigma * abs(lambda)))
-          },
-
-          SN = {
-            r <- (2 * cosh(sqrt(z^2)) * exp(-2 * sinh(sqrt(z^2)) * sinh(sqrt(z^2)) / zeta^2)/(sqrt(2 * pi) * zeta))
-            R <- pnorm((2 / zeta) * sinh(1 / (sigma * abs(lambda))))
-          },
-
-          PE = {
-            r <- gamlss.dist::dPE(z, mu = 0, sigma = 1, nu = zeta)
-            R <- gamlss.dist::pPE(1 / (sigma * abs(lambda)), mu = 0, sigma = 1, nu = zeta)
-          },
-
-          HP = {
-            r <- GeneralizedHyperbolic::dhyperb(z, mu = 0, delta = 1, alpha = zeta, beta = 0)
-            R <- GeneralizedHyperbolic::phyperb(1 / (sigma * abs(lambda)), mu = 0, delta = 1,
-                                                alpha = zeta, beta = 0)
-          },
-
-          SL = {
-            r <- dslash(z, zeta = zeta)
-            R <- pslash(1 / (sigma * abs(lambda)), zeta = zeta)
-          },
-
-          stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
+  switch(family,
+    NO = {
+      r <- dnorm(z)
+      R <- pnorm(1 / (sigma * abs(lambda)))
+    },
+    ST = {
+      r <- dt(z, zeta)
+      R <- pt(1 / (sigma * abs(lambda)), zeta)
+    },
+    LOI = {
+      r <- dlogisI(z)
+      R <- plogisI(1 / (sigma * abs(lambda)))
+    },
+    LOII = {
+      r <- dlogis(z)
+      R <- plogis(1 / (sigma * abs(lambda)))
+    },
+    SN = {
+      r <- (2 * cosh(sqrt(z^2)) * exp(-2 * sinh(sqrt(z^2)) * sinh(sqrt(z^2)) / zeta^2) / (sqrt(2 * pi) * zeta))
+      R <- pnorm((2 / zeta) * sinh(1 / (sigma * abs(lambda))))
+    },
+    PE = {
+      r <- gamlss.dist::dPE(z, mu = 0, sigma = 1, nu = zeta)
+      R <- gamlss.dist::pPE(1 / (sigma * abs(lambda)), mu = 0, sigma = 1, nu = zeta)
+    },
+    HP = {
+      r <- GeneralizedHyperbolic::dhyperb(z, mu = 0, delta = 1, alpha = zeta, beta = 0)
+      R <- GeneralizedHyperbolic::phyperb(1 / (sigma * abs(lambda)),
+        mu = 0, delta = 1,
+        alpha = zeta, beta = 0
+      )
+    },
+    SL = {
+      r <- dslash(z, zeta = zeta)
+      R <- pslash(1 / (sigma * abs(lambda)), zeta = zeta)
+    },
+    stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
   )
 
 
@@ -199,18 +194,16 @@ dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family, log = FALSE){
   id0 <- which(x > 0 & lambda == 0 & !is.nan(log.lik))
   id1 <- which(x > 0 & lambda != 0 & !is.nan(log.lik))
 
-  log.lik[id0] <- - log(x[id0] * sigma[id0]) + log(r[id0])
+  log.lik[id0] <- -log(x[id0] * sigma[id0]) + log(r[id0])
   log.lik[id1] <- (lambda[id1] - 1) * log(x[id1]) - log(sigma[id1] * mu[id1]^lambda[id1]) + log(r[id1]) - log(R[id1])
 
   if (!log) log.lik <- exp(log.lik)
   if (d > 1L) matrix(log.lik, ncol = d) else log.lik
-
 }
 
 #' @rdname bcs
 #' @export
-pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, log.p = FALSE){
-
+pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, log.p = FALSE) {
   if (is.matrix(q)) d <- ncol(q) else d <- 1L
 
   maxl <- max(c(length(q), length(mu), length(sigma), length(lambda)))
@@ -220,12 +213,15 @@ pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
   sigma <- rep(sigma, length.out = maxl)
   lambda <- rep(lambda, length.out = maxl)
 
-  if (any(mu <= 0))
+  if (any(mu <= 0)) {
     warning(paste("mu must be positive ", "\n", ""))
-  if (any(sigma <= 0))
+  }
+  if (any(sigma <= 0)) {
     warning(paste("sigma must be positive", "\n", ""))
-  if (any(zeta <= 0))
+  }
+  if (any(zeta <= 0)) {
     warning(paste("zeta must be positive", "\n", ""))
+  }
 
   l0 <- which(lambda == 0)
   l1 <- which(lambda != 0)
@@ -234,57 +230,48 @@ pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
   z[l0] <- log(q[l0] / mu[l0]) / sigma[l0]
   z[l1] <- ((q[l1] / mu[l1])^lambda[l1] - 1) / (sigma[l1] * lambda[l1])
 
-  switch (family,
-
-          NO = {
-            Rz <- pnorm(z)
-            Rpos <- pnorm(1 / (sigma * lambda))
-            Rneg <- pnorm(-1 / (sigma * lambda))
-          },
-
-          ST = {
-            Rz <- pt(z, zeta)
-            Rpos <- pt(1 / (sigma * lambda), zeta)
-            Rneg <- pt(-1 / (sigma * lambda), zeta)
-          },
-
-          LOI = {
-            Rz <- plogisI(z)
-            Rpos <- plogisI(1 / (sigma * lambda))
-            Rneg <- plogisI(-1 / (sigma * lambda))
-          },
-
-          LOII = {
-            Rz <- plogis(z)
-            Rpos <- plogis(1 / (sigma * lambda))
-            Rneg <- plogis(-1 / (sigma * lambda))
-          },
-
-          SN = {
-            Rz <-  pnorm((2 / zeta) * sinh(z))
-            Rpos <- pnorm((2 / zeta) * sinh(1 / (sigma * lambda)))
-            Rneg <- pnorm((2 / zeta) * sinh(-1 / (sigma * lambda)))
-          },
-
-          PE = {
-            Rz <- gamlss.dist::pPE(z, mu = 0, sigma = 1, nu = zeta)
-            Rpos <- gamlss.dist::pPE(1 / (sigma * lambda), mu = 0, sigma = 1, nu = zeta)
-            Rneg <- gamlss.dist::pPE(-1 / (sigma * lambda), mu = 0, sigma = 1, nu = zeta)
-          },
-
-          HP = {
-            Rz <- GeneralizedHyperbolic::phyperb(z, mu = 0, delta = 1, alpha = zeta, beta = 0)
-            Rpos <- GeneralizedHyperbolic::phyperb(1 / (sigma * lambda), mu = 0, delta = 1, alpha = zeta, beta = 0)
-            Rneg <- GeneralizedHyperbolic::phyperb(-1 / (sigma * lambda), mu = 0, delta = 1, alpha = zeta, beta = 0)
-          },
-
-          SL = {
-            Rz <- pslash(z, zeta = zeta)
-            Rpos <- pslash(1 / (sigma * lambda), zeta = zeta)
-            Rneg <- pslash(-1 / (sigma * lambda), zeta = zeta)
-          },
-
-          stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
+  switch(family,
+    NO = {
+      Rz <- pnorm(z)
+      Rpos <- pnorm(1 / (sigma * lambda))
+      Rneg <- pnorm(-1 / (sigma * lambda))
+    },
+    ST = {
+      Rz <- pt(z, zeta)
+      Rpos <- pt(1 / (sigma * lambda), zeta)
+      Rneg <- pt(-1 / (sigma * lambda), zeta)
+    },
+    LOI = {
+      Rz <- plogisI(z)
+      Rpos <- plogisI(1 / (sigma * lambda))
+      Rneg <- plogisI(-1 / (sigma * lambda))
+    },
+    LOII = {
+      Rz <- plogis(z)
+      Rpos <- plogis(1 / (sigma * lambda))
+      Rneg <- plogis(-1 / (sigma * lambda))
+    },
+    SN = {
+      Rz <- pnorm((2 / zeta) * sinh(z))
+      Rpos <- pnorm((2 / zeta) * sinh(1 / (sigma * lambda)))
+      Rneg <- pnorm((2 / zeta) * sinh(-1 / (sigma * lambda)))
+    },
+    PE = {
+      Rz <- gamlss.dist::pPE(z, mu = 0, sigma = 1, nu = zeta)
+      Rpos <- gamlss.dist::pPE(1 / (sigma * lambda), mu = 0, sigma = 1, nu = zeta)
+      Rneg <- gamlss.dist::pPE(-1 / (sigma * lambda), mu = 0, sigma = 1, nu = zeta)
+    },
+    HP = {
+      Rz <- GeneralizedHyperbolic::phyperb(z, mu = 0, delta = 1, alpha = zeta, beta = 0)
+      Rpos <- GeneralizedHyperbolic::phyperb(1 / (sigma * lambda), mu = 0, delta = 1, alpha = zeta, beta = 0)
+      Rneg <- GeneralizedHyperbolic::phyperb(-1 / (sigma * lambda), mu = 0, delta = 1, alpha = zeta, beta = 0)
+    },
+    SL = {
+      Rz <- pslash(z, zeta = zeta)
+      Rpos <- pslash(1 / (sigma * lambda), zeta = zeta)
+      Rneg <- pslash(-1 / (sigma * lambda), zeta = zeta)
+    },
+    stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
   )
 
 
@@ -303,15 +290,13 @@ pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
   if (log.p) cdf <- log(cdf)
 
   if (d > 1L) matrix(cdf, ncol = d) else cdf
-
 }
 
 ## Não mexi a partir daqui
 
 #' @rdname bcs
 #' @export
-qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, log.p = FALSE){
-
+qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, log.p = FALSE) {
   if (is.matrix(p)) d <- ncol(p) else d <- 1L
 
   maxl <- max(length(p), length(mu), length(sigma), length(lambda))
@@ -321,12 +306,15 @@ qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
   sigma <- rep_len(sigma, maxl)
   lambda <- rep_len(lambda, maxl)
 
-  if (any(mu <= 0))
+  if (any(mu <= 0)) {
     warning(paste("mu must be positive ", "\n", ""))
-  if (any(sigma <= 0))
+  }
+  if (any(sigma <= 0)) {
     warning(paste("sigma must be positive", "\n", ""))
-  if (any(zeta <= 0))
+  }
+  if (any(zeta <= 0)) {
     warning(paste("zeta must be positive", "\n", ""))
+  }
 
   if (log.p) p <- exp(p)
   if (!lower.tail) p <- 1 - p
@@ -336,55 +324,54 @@ qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
 
   qtf <- z_p <- rep(NaN, maxl)
 
-  switch (family,
-
-          NO = {
-            z_p[l0] <- qnorm(p[l0] * pnorm(1 / (sigma[l0] * abs(lambda[l0]))))
-            z_p[l1] <- qnorm(1 - (1 - p[l1]) * pnorm(1 / (sigma[l1] * abs(lambda[l1]))))
-          },
-
-          ST = {
-            z_p[l0] <- qt(p[l0] * pt(1 / (sigma[l0] * abs(lambda[l0])), zeta), zeta)
-            z_p[l1] <- qt(1 - (1 - p[l1]) * pt(1 / (sigma * abs(lambda[l1])), zeta), zeta)
-          },
-
-          LOI = {
-            z_p[l0] <- qlogisI(p[l0] * plogisI(1 / (sigma[l0] * abs(lambda[l0]))))
-            z_p[l1] <- qlogisI(1 - (1 - p[l1]) * plogisI(1 / (sigma[l1] * abs(lambda[l1]))))
-          },
-
-          LOII = {
-            z_p[l0] <- qlogis(p[l0] * plogis(1 / (sigma[l0] * abs(lambda[l0]))))
-            z_p[l1] <- qlogis(1 - (1 - p[l1]) * plogis(1 / (sigma[l1] * abs(lambda[l1]))))
-          },
-
-          SN = {
-            z_p[l0] <- asinh((zeta / 2) * qnorm(p[l0] * pnorm((2 / zeta) * sinh(1 / (sigma[l0] * abs(lambda[l0]))))))
-            z_p[l1] <- asinh((zeta / 2) * qnorm(1 - (1 - p[l1]) * pnorm((2 / zeta) * sinh(1 / (sigma[l1] * abs(lambda[l1]))))))
-          },
-
-          PE = {
-            z_p[l0] <- gamlss.dist::qPE(p[l0] * gamlss.dist::pPE(1 / (sigma[l0] * abs(lambda[l0])),
-                                                                 mu = 0, sigma = 1, nu = zeta), mu = 0, sigma = 1, nu = zeta)
-            z_p[l1] <- gamlss.dist::qPE(1 - (1 - p[l1]) * gamlss.dist::pPE(1 / (sigma[l1] * abs(lambda[l1])),
-                                                                           mu = 0, sigma = 1, nu = zeta), mu = 0, sigma = 1, nu = zeta)
-          },
-
-          HP = {
-            z_p[l0] <- GeneralizedHyperbolic::qhyperb(p[l0] * GeneralizedHyperbolic::phyperb(1 / (sigma[l0] * abs(lambda[l0])),
-                                                                                             mu = 0, delta = 1, alpha = zeta, beta = 0),
-                                                      mu = 0, delta = 1, alpha = zeta, beta = 0)
-            z_p[l1] <- GeneralizedHyperbolic::qhyperb(1 - (1 - p[l1]) * GeneralizedHyperbolic::phyperb(1 / (sigma[l1] * abs(lambda[l1])),
-                                                                                                       mu = 0, delta = 1, alpha = zeta, beta = 0),
-                                                      mu = 0, delta = 1, alpha = zeta, beta = 0)
-          },
-
-          SL = {
-            z_p[l0] <- qslash(p[l0] * pslash(1 / (sigma[l0] * abs(lambda[l0])), zeta = zeta), zeta = zeta)
-            z_p[l1] <- qslash(1 - (1 - p[l1]) * pslash(1 / (sigma[l1] * abs(lambda[l1])), zeta = zeta), zeta = zeta)
-          },
-
-          stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
+  switch(family,
+    NO = {
+      z_p[l0] <- qnorm(p[l0] * pnorm(1 / (sigma[l0] * abs(lambda[l0]))))
+      z_p[l1] <- qnorm(1 - (1 - p[l1]) * pnorm(1 / (sigma[l1] * abs(lambda[l1]))))
+    },
+    ST = {
+      z_p[l0] <- qt(p[l0] * pt(1 / (sigma[l0] * abs(lambda[l0])), zeta), zeta)
+      z_p[l1] <- qt(1 - (1 - p[l1]) * pt(1 / (sigma * abs(lambda[l1])), zeta), zeta)
+    },
+    LOI = {
+      z_p[l0] <- qlogisI(p[l0] * plogisI(1 / (sigma[l0] * abs(lambda[l0]))))
+      z_p[l1] <- qlogisI(1 - (1 - p[l1]) * plogisI(1 / (sigma[l1] * abs(lambda[l1]))))
+    },
+    LOII = {
+      z_p[l0] <- qlogis(p[l0] * plogis(1 / (sigma[l0] * abs(lambda[l0]))))
+      z_p[l1] <- qlogis(1 - (1 - p[l1]) * plogis(1 / (sigma[l1] * abs(lambda[l1]))))
+    },
+    SN = {
+      z_p[l0] <- asinh((zeta / 2) * qnorm(p[l0] * pnorm((2 / zeta) * sinh(1 / (sigma[l0] * abs(lambda[l0]))))))
+      z_p[l1] <- asinh((zeta / 2) * qnorm(1 - (1 - p[l1]) * pnorm((2 / zeta) * sinh(1 / (sigma[l1] * abs(lambda[l1]))))))
+    },
+    PE = {
+      z_p[l0] <- gamlss.dist::qPE(p[l0] * gamlss.dist::pPE(1 / (sigma[l0] * abs(lambda[l0])),
+        mu = 0, sigma = 1, nu = zeta
+      ), mu = 0, sigma = 1, nu = zeta)
+      z_p[l1] <- gamlss.dist::qPE(1 - (1 - p[l1]) * gamlss.dist::pPE(1 / (sigma[l1] * abs(lambda[l1])),
+        mu = 0, sigma = 1, nu = zeta
+      ), mu = 0, sigma = 1, nu = zeta)
+    },
+    HP = {
+      z_p[l0] <- GeneralizedHyperbolic::qhyperb(
+        p[l0] * GeneralizedHyperbolic::phyperb(1 / (sigma[l0] * abs(lambda[l0])),
+          mu = 0, delta = 1, alpha = zeta, beta = 0
+        ),
+        mu = 0, delta = 1, alpha = zeta, beta = 0
+      )
+      z_p[l1] <- GeneralizedHyperbolic::qhyperb(
+        1 - (1 - p[l1]) * GeneralizedHyperbolic::phyperb(1 / (sigma[l1] * abs(lambda[l1])),
+          mu = 0, delta = 1, alpha = zeta, beta = 0
+        ),
+        mu = 0, delta = 1, alpha = zeta, beta = 0
+      )
+    },
+    SL = {
+      z_p[l0] <- qslash(p[l0] * pslash(1 / (sigma[l0] * abs(lambda[l0])), zeta = zeta), zeta = zeta)
+      z_p[l1] <- qslash(1 - (1 - p[l1]) * pslash(1 / (sigma[l1] * abs(lambda[l1])), zeta = zeta), zeta = zeta)
+    },
+    stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
   )
 
 
@@ -400,26 +387,27 @@ qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
   qtf[id4] <- Inf
 
   if (d > 1L) matrix(qtf, ncol = d) else qtf
-
 }
 
 #' @rdname bcs
 #' @export
-rbcs <- function(n, mu, sigma, lambda, zeta = NULL, family){
-
-  if (any(mu <= 0))
+rbcs <- function(n, mu, sigma, lambda, zeta = NULL, family) {
+  if (any(mu <= 0)) {
     stop(paste("mu must be positive ", "\n", ""))
-  if (any(sigma <= 0))
+  }
+  if (any(sigma <= 0)) {
     stop(paste("sigma must be positive", "\n", ""))
-  if (any(zeta <= 0))
+  }
+  if (any(zeta <= 0)) {
     stop(paste("zeta must be positive ", "\n", ""))
-  if (any(n <= 0))
+  }
+  if (any(n <= 0)) {
     stop(paste("n must be a positive integer", "\n", ""))
+  }
 
   n <- ceiling(n)
   p <- runif(n)
   qbcs(p, mu = mu, sigma = sigma, lambda = lambda, zeta = zeta, family = family)
-
 }
 
 
@@ -483,7 +471,6 @@ ig <- function(a, x) pmin(exp(lgamma(a) + stats::pgamma(x, a, scale = 1, log.p =
 
 ## Probability density function
 dslash <- function(x, mu = 0, sigma = 1, zeta, log = FALSE) {
-
   if (is.matrix(x)) d <- ncol(x) else d <- 1L
 
   maxl <- max(length(x), length(mu), length(sigma), length(zeta))
@@ -503,7 +490,7 @@ dslash <- function(x, mu = 0, sigma = 1, zeta, log = FALSE) {
   id1 <- which(u > 0 & !is.nan(pmf), arr.ind = TRUE)
   id2 <- which(u == 0 & !is.nan(pmf), arr.ind = TRUE)
 
-  pmf[id1] <- log(ig(zeta[id1] + 0.5,  u[id1]/2)) + log(zeta[id1]) + zeta[id1] * log(2) -
+  pmf[id1] <- log(ig(zeta[id1] + 0.5, u[id1] / 2)) + log(zeta[id1]) + zeta[id1] * log(2) -
     0.5 * log(pi) - (zeta[id1] + 0.5) * log(u[id1])
   pmf[id2] <- log(2 * zeta[id2]) - log(2 * zeta[id2] + 1) - 0.5 * log(2 * pi)
 
@@ -513,7 +500,6 @@ dslash <- function(x, mu = 0, sigma = 1, zeta, log = FALSE) {
 
 ## Cumulative distribution function
 pslash <- function(q, zeta, log.p = FALSE) {
-
   mu <- 0
   sigma <- 1
 
@@ -555,7 +541,6 @@ pslash <- function(q, zeta, log.p = FALSE) {
 
 # Quantile function
 qslash <- function(p, zeta) {
-
   mu <- 0
   sigma <- 1
 
@@ -620,7 +605,6 @@ qslash <- function(p, zeta) {
 
 ## Density function
 dlogisI <- function(x, mu = 0, sigma = 1, log = FALSE) {
-
   if (is.matrix(x)) d <- ncol(x) else d <- 1L
 
   maxl <- max(length(x), length(mu), length(sigma))
@@ -643,15 +627,15 @@ dlogisI <- function(x, mu = 0, sigma = 1, log = FALSE) {
 
   if (!log) pmf <- exp(pmf)
   if (d > 1L) matrix(pmf, ncol = d) else pmf
-
 }
 
-Wloi <- distr::AbscontDistribution(d = function(x) dlogisI(x),
-                                   Symmetry = distr::SphericalSymmetry(0))
+Wloi <- distr::AbscontDistribution(
+  d = function(x) dlogisI(x),
+  Symmetry = distr::SphericalSymmetry(0)
+)
 
 ## Cumulative distribution function
 plogisI <- function(q, log.p = FALSE) {
-
   mu <- 0
   sigma <- 1
 
@@ -684,7 +668,6 @@ plogisI <- function(q, log.p = FALSE) {
 
 ## Quantile function
 qlogisI <- function(p) {
-
   mu <- 0
   sigma <- 1
 
@@ -728,4 +711,3 @@ qlogisI <- function(p) {
 # plot(seq(0.001, 0.999, 0.001), qlogisI(seq(0.001, 0.999, 0.001)),
 #      type = "l", xlab = "p", ylab = "Quantile")
 # curve(qlogisI(x), add = TRUE, col = "blue")
-
