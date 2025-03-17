@@ -28,8 +28,6 @@
 #' @seealso \code{\link{BCSreg}}
 #' @export
 #'
-#' @examples
-#' 2 + 2 <- 4
 BCSreg.control <- function(lambda = NULL, method = "BFGS", maxit = 2000, hessian = FALSE,
                            trace = FALSE, start = NULL, ...) {
   val <- list(
@@ -58,7 +56,8 @@ make.dmu.deta <- function(linkstr) {
     "log" = function(eta) pmax(exp(eta), .Machine$double.eps),
     "sqrt" = function(eta) rep.int(2, length(eta)),
     "1/mu^2" = function(eta) 3 / (4 * eta^2.5),
-    "inverse" = function(eta) 2 / (eta^3)
+    "inverse" = function(eta) 2 / (eta^3),
+    "identity" = function(eta) rep.int(0, length(eta))
   )
 }
 
@@ -94,7 +93,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
   ## Link functions
   if (is.character(link)) {
     linkstr <- link
-    linkobj <- make.link(linkstr)
+    linkobj <- stats::make.link(linkstr)
     linkobj$dmu.deta <- make.dmu.deta(linkstr)
   } else {
     linkobj <- link
@@ -111,7 +110,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
 
   if (is.character(sigma.link)) {
     sigma_linkstr <- sigma.link
-    sigma_linkobj <- make.link(sigma_linkstr)
+    sigma_linkobj <- stats::make.link(sigma_linkstr)
     sigma_linkobj$dmu.deta <- make.dmu.deta(sigma_linkstr)
   } else {
     sigma_linkobj <- sigma.link
@@ -129,7 +128,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
   ## Optimization control parameters
   ocontrol <- control
   lambda_id <- is.null(control$lambda) # TRUE means that lambda is not fixed
-  lambda_fix <- control$lambda         # NULL means that lambda is not fixed
+  lambda_fix <- control$lambda # NULL means that lambda is not fixed
   method <- control$method
   hessian <- control$hessian
   start <- control$start
@@ -138,16 +137,17 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
   ## Starting values
   if (is.null(start)) {
     beta <- solve(t(X) %*% X) %*% t(X) %*% log(y)
-    sigma <- rep.int(0, q)
+    tau <- rep.int(0, q)
+
     # sigma[1L] <- sd(logy)
     CVy <- 0.75 * diff(stats::quantile(y, c(0.25, 0.75))) / stats::median(y)
-    sigma[1L] <- asinh(CVy / 1.5) / stats::qnorm(0.75)
-    if (!isTRUE(sigma_linkinv(sigma[1]) > 0)) {
+    tau[1L] <- asinh(CVy / 1.5) / stats::qnorm(0.75)
+    if (!isTRUE(sigma_linkinv(tau[1]) > 0)) {
       warning("No valid starting value for dispersion parameter found, using 1 instead", call. = FALSE)
-      sigma[1L] <- 1
+      tau[1L] <- 1
     }
 
-    start <- list(mu = beta, sigma = sigma)
+    start <- list(mu = beta, sigma = tau)
   }
 
   if (is.list(start)) start <- do.call("c", start)
@@ -201,12 +201,10 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
     }
 
     list(z = z, v = vz, dv = dvz)
-
   }
 
   ## Log-likelihood function
   logL <- function(theta, lambda_id) {
-
     beta <- theta[seq.int(length.out = p)]
     tau <- theta[seq.int(length.out = q) + p]
 
@@ -217,7 +215,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
     sigma <- sigma_linkinv(eta.2)
 
     if (lambda_id) {
-      lambda <- theta[seq.int(length.out = 1) + p + q]
+      lambda <- theta[1L + p + q]
     } else {
       lambda <- lambda_fix
     }
@@ -305,7 +303,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
         R <- pt(1 / (sigma * abs(lambda)), zeta)
       }
       if (family == "LOI") {
-        vz <- -2 * (exp(-z^2) - 1) / (exp(-z^2) + 1)
+        # vz <-
         r <- dlogisI(1 / ((sigma * lambda)))
         R <- plogisI(1 / (sigma * abs(lambda)))
       }
@@ -350,12 +348,10 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
     }
 
     list(xi = xi, dxidsigma = dxidsigma, dxidlambda = dxidlambda)
-
   }
 
   ## Score function
   U <- function(theta, lambda_id) {
-
     beta <- theta[seq.int(length.out = p)]
     tau <- theta[seq.int(length.out = q) + p]
 
@@ -366,7 +362,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
     sigma <- sigma_linkinv(eta.2)
 
     if (lambda_id) {
-      lambda <- theta[seq.int(length.out = 1) + p + q]
+      lambda <- theta[1L + p + q]
     } else {
       lambda <- lambda_fix
     }
@@ -520,14 +516,14 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
   }
 
   ## Maximum likelihood estimation
-  theta.opt <- optim(
+  theta.opt <- stats::optim(
     par = start, fn = logL, gr = U, lambda_id = lambda_id,
     method = method, control = control, hessian = hessian
   )
 
   beta <- theta.opt$par[seq.int(length.out = p)]
   tau <- theta.opt$par[seq.int(length.out = q) + p]
-  lambda <- if (lambda_id) theta.opt$par[seq.int(length.out = 1) + p + q] else lambda_fix
+  lambda <- if (lambda_id) theta.opt$par[1L + p + q] else lambda_fix
 
   if (theta.opt$convergence == 0) {
     converged <- TRUE
@@ -586,11 +582,14 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
     Upsilon_zeta
   }
 
+  ## Quantile residuals
+  residuals <- stats::qnorm(pbcs(y, mu, sigma, lambda, zeta, family))
+
   optim.fit <- theta.opt
   ll <- logL(c(beta, tau, lambda), lambda_id = TRUE)
   Ups.zeta <- Upsilon(zeta)
 
-  pseudor2 <- ifelse(stats::var(eta.1) * stats::var(linkfun(y)) <= 0, NA, cor(eta.1, linkfun(y))^2)
+  pseudor2 <- ifelse(stats::var(eta.1) * stats::var(linkfun(y)) <= 0, NA, stats::cor(eta.1, linkfun(y))^2)
   v <- v.function(mu, sigma, lambda)$v
 
   names(beta) <- colnames(X)
@@ -620,6 +619,8 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
   ## Out
   val <- list(
     coefficients = list(mu = beta, sigma = tau),
+    mu = mu,
+    sigma = sigma,
     lambda = lambda,
     zeta = zeta,
     fitted.values = structure(mu, .Names = names(y)),
@@ -627,7 +628,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
     link = list(mu = linkobj, sigma = sigma_linkobj),
     loglik = ll,
     vcov = vcov,
-    residuals = y - mu,
+    residuals = residuals, ## Quantile residuals
     pseudo.r.squared = pseudor2,
     Upsilon.zeta = Ups.zeta,
     v = v,
@@ -645,30 +646,134 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
 
 
 
-#' Title
+#' Box-Cox Symmetric Regression for Positive Data
 #'
-#' @param formula
-#' @param data
-#' @param subset
-#' @param na.action
-#' @param family
-#' @param zeta
-#' @param link
-#' @param sigma.link
-#' @param control
-#' @param model
-#' @param y
-#' @param x
-#' @param ...
+#' Maximum likelihood estimation in the class of the Box-Cox symmetric (BCS) regression models
+#'     for the analysis of positive data.
 #'
-#' @returns
+#'
+#' @param formula a symbolic description of the model, of type \code{y ~ x} to specify
+#'     explanatory variables in the scale (\code{mu}) regression structure only or \code{y ~ x | z}
+#'     to also specify explanatory variables in the relative dispersion (\code{sigma}) regression
+#'     structure. See details below.
+#' @param data,subset,na.action arguments controlling formula processing via
+#'     \code{\link[stats]{model.frame}}.
+#' @inheritParams bcs
+#' @inheritParams bcs
+#' @param link,sigma.link character specification of the link function for the
+#'     scale (\code{mu}) and relative dispersion (\code{sigma}) regression structures, respectively.
+#'     Currently, \code{"log"} (default), \code{"sqrt"}, \code{"1/mu^2"},
+#'     \code{"inverse"}, and \code{"identity"} are supported.
+#' @param control a list of control parameters passed as arguments for
+#'     the \code{\link[stats]{optim}} function specified via \code{\link{BCSreg.control}}.
+#' @param model,y,x logicals. If \code{TRUE}, the corresponding components of the fit
+#'     (model frame, response, and model matrices) are returned.
+#' @param ... arguments passed to \code{\link{BCSreg.control}}.
+#'
+#' @details The \code{BCSreg} function implements maximum likelihood estimation in the
+#'     class of the BCS regression models for the analysis of positive
+#'     data. The BCS distributions (Ferrari and Fumes, 2017) are a broad class of
+#'     flexible distributions that achieve different levels of skewness and
+#'     tail-heaviness.
+#'
+#'     The distributions currently implemented in the \code{BCSreg} package, along
+#'     with their abbreviations used in the \code{family} argument, are listed below:
+#'     \tabular{llc}{
+#'      \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{Number of parameters}\cr
+#'      Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  4  \cr
+#'      Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  3  \cr
+#'      Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  3  \cr
+#'      Box-Cox Normal  \tab \code{"NO"}      \tab  3  \cr
+#'      Box-Cox Power Exponential  \tab \code{"PE"}      \tab  4  \cr
+#'      Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  4  \cr
+#'      Box-Cox Slash  \tab \code{"SL"}      \tab  4  \cr
+#'      Box-Cox \emph{t}  \tab \code{"ST"}      \tab  4  \cr
+#'      }
+#'
+#'     The BCS distributions have at least three parameters: scale (\code{mu}),
+#'     relative dispersion (\code{sigma}), and skewness (\code{lambda}) parameters.
+#'     Some distributions may also depend on an additional parameter (\code{zeta}),
+#'     such as the Box-Cox \emph{t} and Box-Cox power exponential distributions. The
+#'     BCS distributions reduce to the log-symmetric distributions when \code{lambda}
+#'     is fixed at zero. The Log-symmetric distributions are an important class of
+#'     probability models for positive data, which includes well-known distributions such
+#'     as the log-normal and log-\emph{t} distributions. The \code{BCSreg} function
+#'     allows fitting a log-symmetric regression using \code{lambda = 0} as an
+#'     argument (see \code{\link{BCSreg.control}}).
+#'
+#'
+#'     The \code{BCSreg} function allows defining a regression structure in the
+#'     \code{mu} and \code{sigma} parameters via the \code{formula} argument. The
+#'     basic formula is of type \code{y ~ x1 + x2 + ... + xp} which specifies the
+#'     regression structure for \code{mu} only. Following the syntax of the
+#'     \code{betareg} package (Cribari-Neto and Zeileis, 2010), the regression structure
+#'     for \code{sigma}, say in terms of \code{s1, s2, ..., sq}, is specified as
+#'     \code{y ~ x1 + x2 + ... + xp | z1 + z2 + ... + zq} using functionalities inherited
+#'     from the \code{\link[Formula]{Formula}} package (Zeileis and Croissant, 2010).
+#'
+#' @return The \code{BCSreg} function returns an object of class \code{"BCSreg"},
+#'      which consists of a list with the following components:
+#'  \describe{
+#'     \item{coefficients}{ a list containing the elements \code{"mu"} and
+#'         \code{"sigma"} that consist of the estimates of the coefficients
+#'          associated with the scale and relative dispersion regression structures, respectively.}
+#'     \item{fitted.values}{ a vector with the fitted median responses. Not to be confused with the fitted values for \code{mu}.}
+#'     \item{mu}{ a vector with the fitted scale parameters.}
+#'     \item{sigma}{ a vector with the fitted relative dispersion parameters.}
+#'     \item{lambda}{ the maximum likelihood estimate of the skewness parameter (\code{lambda}), or its fixed value
+#'         specified in the \code{BCSreg} function.}
+#'     \item{zeta}{ the specified value for the extra parameter of the corresponding BCS distribution, if applicable.}
+#'     \item{family}{ the generating family of the fitted BCS distribution.}
+#'     \item{link}{ a list with elements \code{"mu"} and \code{"sigma"} with the
+#'         specified link functions for the \code{mu} and \code{sigma} regression structures, respectively.}
+#'     \item{logLik}{ log-likelihood of the fitted model.}
+#'     \item{vcov}{ asymptotic covariance matrix of the estimators. By default, the asymptotic
+#'         covariance matrix is based on a analytical expression of the observed information matrix.
+#'         It can be obtained numerically based on the Hessian matrix via \code{\link[stats]{optim}})
+#'         if the argument \code{hessian = TRUE} is used in the \code{BCSreg} function.}
+#'     \item{residuals}{ a vector of quantile residuals.}
+#'     \item{pseudo.r.squared}{pseudo R-squared value.}
+#'     \item{Upsilon.zeta}{an overall goodness-of-fit measure.}
+#'     \item{v}{a vector with the v(z) values for all the observations.}
+#'     \item{nobs}{ number of observations.}
+#'     \item{df.null}{ residual degrees of freedom in the null model (constant scale and relative dispersion).}
+#'     \item{df.residual}{ residual degrees of freedom in the fitted model.}
+#'     \item{control}{the control arguments passed to the optim call.}
+#'     \item{start}{a vector with the starting values used in the iterative process.}
+#'     \item{optim}{a list with the output from \code{\link[stats]{optim}}}.
+#'     \item{converged}{logical indicating successful convergence of the iterative process.}
+#'     \item{call}{the original function call.}
+#'     \item{formula}{the formula used.}
+#'     \item{terms}{a list with elements "\code{mu}", "\code{sigma}", and "\code{full}" containing
+#'         the term objects for the respective models.}
+#'     \item{levels}{a list with elements "\code{mu}", "\code{sigma}", and "\code{full}" containing
+#'         the levels of the categorical regressors.}
+#'     \item{contrasts}{a list with elements "\code{mu}" and "\code{sigma}"
+#'         containing the contrasts corresponding to levels from the respective models.}
+#'     \item{model}{the full model frame (if \code{y = TRUE}).}
+#'     \item{y}{the response variable (if \code{y = TRUE}).}
+#'     \item{x}{a list with elements "\code{mu}" and "\code{sigma}" with the model matrices from
+#'         the \code{mu} and \code{sigma} submodels (if \code{x = TRUE}).}
+#'    }
+#'
+#' @references Cribari-Neto F, Zeileis A (2010). Beta Regression in R. \emph{Journal of Statistical
+#'     Software}, \bold{34}, 1-24
+#'
+#'     Zeileis A, Croissant Y (2010). Extended Model Formulas in R: Multiple Parts and Multiple
+#'     Responses. \emph{Journal of Statistical Software}, \bold{34}, 1-13.
+#'
+#'  Ferrari, S. L., and Fumes, G. (2017). Box-Cox symmetric distributions and
+#'      applications to nutritional data. \emph{AStA Advances in Statistical Analysis}, \bold{101}, 321-344.
+#'
 #' @export
 #'
 #' @examples
+#' Examples
+#'
 BCSreg <- function(formula, data, subset, na.action,
-                   family = c("NO", "LO", "TF", "PE", "SN", "SLASH", "Hyp"),
-                   zeta = NULL, link = c("log", "sqrt", "inverse", "1/mu^2"),
-                   sigma.link = NULL, control = BCSreg.control(...), model = TRUE,
+                   family = "NO", zeta,
+                   link = "log", sigma.link = "log",
+                   control = BCSreg.control(...), model = TRUE,
                    y = TRUE, x = FALSE, ...) {
   cl <- match.call()
   if (missing(data)) {
@@ -678,7 +783,7 @@ BCSreg <- function(formula, data, subset, na.action,
   m <- match(c("formula", "data", "subset", "na.action"), names(mf), 0)
   mf <- mf[c(1, m)]
   mf$drop.unused.levels <- TRUE
-  oformula <- as.formula(formula)
+  oformula <- stats::as.formula(formula)
   formula <- Formula::as.Formula(formula)
   if (length(formula)[2] < 2) {
     formula <- Formula::as.Formula(formula(formula), ~1)
@@ -693,12 +798,12 @@ BCSreg <- function(formula, data, subset, na.action,
   mf$formula <- formula
   mf[[1]] <- as.name("model.frame")
   mf <- eval(mf, parent.frame())
-  mt <- terms(formula, data = data)
-  mtX <- terms(formula, data = data, rhs = 1)
-  mtS <- delete.response(terms(formula, data = data, rhs = 2))
-  Y <- model.response(mf, "numeric")
-  X <- model.matrix(mtX, mf)
-  S <- model.matrix(mtS, mf)
+  mt <- stats::terms(formula, data = data)
+  mtX <- stats::terms(formula, data = data, rhs = 1)
+  mtS <- stats::delete.response(stats::terms(formula, data = data, rhs = 2))
+  Y <- stats::model.response(mf, "numeric")
+  X <- stats::model.matrix(mtX, mf)
+  S <- stats::model.matrix(mtS, mf)
   if (length(Y) < 1) {
     stop("Empty model", call. = FALSE)
   }
@@ -707,27 +812,24 @@ BCSreg <- function(formula, data, subset, na.action,
   }
   n <- length(Y)
   family <- match.arg(family)
-  if (family == "SLASH" | family == "TF" | family ==
-    "SN" | family == "Hyp" | family == "PE") {
-    if (is.null(zeta)) {
+  if (family == "SL" | family == "ST" | family == "SN" | family == "HP" | family == "PE") {
+    if (missing(zeta)) {
       stop("For the family of distributions specified by the user an extra parameter is required.", call. = FALSE)
     } else {
       if (zeta <= 0) stop("Invalid extra parameter; zeta must be positive.", call. = FALSE)
     }
   } else {
-    zeta <- 2
+    zeta <- NULL
   }
   if (is.character(link)) {
-    link <- match.arg(link)
-  }
-  if (is.null(link)) {
-    link <- "log"
-  }
-  if (is.null(sigma.link)) {
-    sigma.link <- "log"
+    link <- match.arg(link, c("log", "sqrt", "inverse", "1/mu^2", "identity"))
+  } else {
+    stop("The link argument must be a character", call. = FALSE)
   }
   if (is.character(sigma.link)) {
-    sigma.link <- match.arg(sigma.link, c("log", "sqrt"))
+    sigma.link <- match.arg(sigma.link, c("log", "sqrt", "inverse", "1/mu^2", "identity"))
+  } else {
+    stop("The sigma.link argument must be a character", call. = FALSE)
   }
   val <- BCSreg.fit(
     X = X, y = Y, S = S, zeta = zeta, family = family,
@@ -737,9 +839,9 @@ BCSreg <- function(formula, data, subset, na.action,
   val$formula <- oformula
   val$terms <- list(mu = mtX, sigma = mtS, full = mt)
   val$levels <- list(
-    mu = .getXlevels(mtX, mf),
-    sigma = .getXlevels(mtS, mf),
-    full = .getXlevels(mt, mf)
+    mu = stats::.getXlevels(mtX, mf),
+    sigma = stats::.getXlevels(mtS, mf),
+    full = stats::.getXlevels(mt, mf)
   )
   val$contrasts <- list(mu = attr(X, "contrasts"), sigma = attr(S, "contrasts"))
   if (model) {
@@ -752,5 +854,5 @@ BCSreg <- function(formula, data, subset, na.action,
     val$x <- list(mu = X, sigma = S)
   }
   class(val) <- "BCSreg"
-  return(val)
+  val
 }
