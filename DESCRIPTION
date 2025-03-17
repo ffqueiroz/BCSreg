@@ -26,6 +26,7 @@ BugReports: https://github.com/ffqueiroz/BCSreg/issues
 Imports: 
     distr,
     EnvStats,
+    Formula,
     gamlss.dist,
     GeneralizedHyperbolic
 Suggests: 
