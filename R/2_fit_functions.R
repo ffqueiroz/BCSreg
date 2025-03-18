@@ -596,7 +596,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
   names(tau) <- if (sigma_const) "(sigma)" else colnames(S)
   names(lambda) <- "(lambda)"
 
-  if (is.null(lambda_fix)) {
+  if (lambda_id) {
     rownames(vcov) <- colnames(vcov) <- c(colnames(X), if (sigma_const) {
       "(sigma)"
     } else {
@@ -625,7 +625,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
     zeta = zeta,
     fitted.values = structure(mu, .Names = names(y)),
     family = family,
-    link = list(mu = linkobj, sigma = sigma_linkobj),
+    link = list(mu = link, sigma = sigma.link),
     loglik = ll,
     vcov = vcov,
     residuals = residuals, ## Quantile residuals
@@ -767,8 +767,6 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
 #'
 #' @export
 #'
-#' @examples
-#' Examples
 #'
 BCSreg <- function(formula, data, subset, na.action,
                    family = "NO", zeta,
@@ -811,7 +809,7 @@ BCSreg <- function(formula, data, subset, na.action,
     stop("Invalid dependent variable, all observations must be positive.", call. = FALSE)
   }
   n <- length(Y)
-  family <- match.arg(family)
+  family <- match.arg(family, c("NO", "HP", "LOI", "LOII", "PE", "SN", "SL", "ST"))
   if (family == "SL" | family == "ST" | family == "SN" | family == "HP" | family == "PE") {
     if (missing(zeta)) {
       stop("For the family of distributions specified by the user an extra parameter is required.", call. = FALSE)

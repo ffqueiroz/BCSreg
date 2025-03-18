@@ -142,10 +142,6 @@ The \code{BCSreg} function implements maximum likelihood estimation in the
     \code{y ~ x1 + x2 + ... + xp | z1 + z2 + ... + zq} using functionalities inherited
     from the \code{\link[Formula]{Formula}} package (Zeileis and Croissant, 2010).
 }
-\examples{
-Examples
-
-}
 \references{
 Cribari-Neto F, Zeileis A (2010). Beta Regression in R. \emph{Journal of Statistical
     Software}, \bold{34}, 1-24
