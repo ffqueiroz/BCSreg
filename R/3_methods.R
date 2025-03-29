@@ -237,16 +237,15 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
 
     cat(paste("Relative dispersion submodel with ", x$link$sigma, " link:\n", sep = ""))
     stats::printCoefmat(x$sigma, digits = digits, signif.legend = FALSE)
-    cat("\n")
 
     if (is.matrix(x$lambda)) {
-      cat("Skewness parameter:\n", sep = "")
+      cat("\nSkewness parameter:\n", sep = "")
       stats::printCoefmat(x$lambda, digits = digits, signif.legend = FALSE)
 
-      aux <- rbind(x$mu, x$sigma, x$lambda)[, 4]
-      if (getOption("show.signif.stars") & any(aux < 0.1)) {
+      #aux <- rbind(x$mu, x$sigma, x$lambda)[, 4]
+      #if (getOption("show.signif.stars") & any(aux < 0.1)) {
         cat("---\nSignif. codes: ", "0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1", "\n")
-      }
+      #}
 
       if (x$family == "NO" | x$family == "LOI" | x$family == "LOII") {
         cat("\nGenerating family: ", x$family, switch(x$family,
@@ -266,10 +265,10 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
 
     } else {
 
-      aux <- rbind(x$mu, x$sigma)[, 4]
-      if (getOption("show.signif.stars") & any(aux < 0.1)) {
+      #aux <- rbind(x$mu, x$sigma)[, 4]
+      #if (getOption("show.signif.stars") & any(aux < 0.1)) {
         cat("---\nSignif. codes: ", "0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1", "\n")
-      }
+      #}
 
       if (x$family == "NO" | x$family == "LOI" | x$family == "LOII") {
         cat("\nGenerating family: ", x$family, switch(x$family,
