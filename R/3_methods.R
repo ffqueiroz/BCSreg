@@ -249,13 +249,13 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
       }
 
       if (x$family == "NO" | x$family == "LOI" | x$family == "LOII") {
-        cat("\nFamily: ", x$family, switch(x$family,
+        cat("\nGenerating family: ", x$family, switch(x$family,
                                           "NO"   = " (Box-Cox normal)",
                                           "LOI"  = " (Box-Cox type I logistic)",
                                           "LOII" = " (Box-Cox type II logistic)"
         ), sep = "")
       } else {
-        cat("\nFamily: ", x$family, "(", x$zeta, ")", switch(x$family,
+        cat("\nGenerating family: ", x$family, "(", x$zeta, ")", switch(x$family,
                                            "ST" = paste0(" (Box-Cox t with zeta = ", x$zeta, ")"),
                                            "PE" = paste0(" (Box-Cox power exponential with zeta = ", x$zeta, ")"),
                                            "HP" = paste0(" (Box-Cox hyperbolic with zeta = ", x$zeta, ")"),
@@ -272,13 +272,13 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
       }
 
       if (x$family == "NO" | x$family == "LOI" | x$family == "LOII") {
-        cat("\nFamily: ", x$family, switch(x$family,
+        cat("\nGenerating family: ", x$family, switch(x$family,
                                            "NO"   = " (log-normal)",
                                            "LOI"  = " (log-type I logistic)",
                                            "LOII" = " (log-type II logistic)"
         ), sep = "")
       } else {
-        cat("\nFamily: ", x$family, "(", x$zeta, ")", switch(x$family,
+        cat("\nGenerating family: ", x$family, "(", x$zeta, ")", switch(x$family,
                                                              "ST" = paste0(" (log-t with zeta = ", x$zeta, ")"),
                                                              "PE" = paste0(" (log-power exponential with zeta = ", x$zeta, ")"),
                                                              "HP" = paste0(" (log-hyperbolic with zeta = ", x$zeta, ")"),
