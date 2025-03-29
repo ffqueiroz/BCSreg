@@ -1,7 +1,7 @@
 #' Auxiliary for Controlling BCS Fitting
 #'
-#' Optimization parameters that control fitting of Box-Cox symmetric regression models using the
-#'     \code{\link{BCSreg}} function.
+#' Optimization parameters that control the fitting of Box-Cox symmetric regression
+#'     models using the \code{\link{BCSreg}} function.
 #'
 #' @name BCSregcontrol
 #' @param lambda numeric indicating the value of lambda (if \code{NULL}, lambda
@@ -27,6 +27,9 @@
 #' @return A list with components named as the arguments.
 #' @seealso \code{\link{BCSreg}}
 #' @export
+#' @examples
+#' # Set an example
+#'
 #'
 BCSreg.control <- function(lambda = NULL, method = "BFGS", maxit = 2000, hessian = FALSE,
                            trace = FALSE, start = NULL, ...) {
@@ -672,9 +675,9 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
 #'
 #' @details The \code{BCSreg} function implements maximum likelihood estimation in the
 #'     class of the BCS regression models for the analysis of positive
-#'     data. The BCS distributions (Ferrari and Fumes, 2017) are a broad class of
-#'     flexible distributions that achieve different levels of skewness and
-#'     tail-heaviness.
+#'     data (Medeiros and Queiroz, 2025). The BCS distributions (Ferrari and Fumes, 2017)
+#'     are a broad class of flexible distributions that achieve different levels of
+#'     skewness and tail-heaviness. See details in \link{bcs}.
 #'
 #'     The distributions currently implemented in the \code{BCSreg} package, along
 #'     with their abbreviations used in the \code{family} argument, are listed below:
@@ -708,7 +711,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
 #'     regression structure for \code{mu} only. Following the syntax of the
 #'     \code{betareg} package (Cribari-Neto and Zeileis, 2010), the regression structure
 #'     for \code{sigma}, say in terms of \code{s1, s2, ..., sq}, is specified as
-#'     \code{y ~ x1 + x2 + ... + xp | z1 + z2 + ... + zq} using functionalities inherited
+#'     \code{y ~ x1 + x2 + ... + xp | s1 + s2 + ... + sq} using functionalities inherited
 #'     from the \code{\link[Formula]{Formula}} package (Zeileis and Croissant, 2010).
 #'
 #' @return The \code{BCSreg} function returns an object of class \code{"BCSreg"},
@@ -734,13 +737,16 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
 #'     \item{residuals}{ a vector of quantile residuals.}
 #'     \item{pseudo.r.squared}{pseudo R-squared value.}
 #'     \item{Upsilon.zeta}{an overall goodness-of-fit measure.}
-#'     \item{v}{a vector with the v(z) values for all the observations.}
+#'     \item{v}{a vector with the \eqn{v(z)} values for all the observations.
+#'         The \eqn{v} function is a weighting function that is involved in the
+#'         parameter estimation process. It depends on the generating density function
+#'         of the corresponding BCS distribution.}
 #'     \item{nobs}{ number of observations.}
 #'     \item{df.null}{ residual degrees of freedom in the null model (constant scale and relative dispersion).}
 #'     \item{df.residual}{ residual degrees of freedom in the fitted model.}
 #'     \item{control}{the control arguments passed to the optim call.}
 #'     \item{start}{a vector with the starting values used in the iterative process.}
-#'     \item{optim}{a list with the output from \code{\link[stats]{optim}}}.
+#'     \item{optim}{a list with the output from \code{\link[stats]{optim}}.}
 #'     \item{converged}{logical indicating successful convergence of the iterative process.}
 #'     \item{call}{the original function call.}
 #'     \item{formula}{the formula used.}
@@ -759,11 +765,15 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
 #' @references Cribari-Neto F, Zeileis A (2010). Beta Regression in R. \emph{Journal of Statistical
 #'     Software}, \bold{34}, 1-24
 #'
+#'     Ferrari, S. L. P., and Fumes, G. (2017). Box-Cox symmetric distributions and
+#'     applications to nutritional data. \emph{AStA Advances in Statistical Analysis}, \bold{101}, 321-344.
+#'
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
+#'     Box-Cox symmetric regression models and their extensions
+#'
 #'     Zeileis A, Croissant Y (2010). Extended Model Formulas in R: Multiple Parts and Multiple
 #'     Responses. \emph{Journal of Statistical Software}, \bold{34}, 1-13.
 #'
-#'  Ferrari, S. L., and Fumes, G. (2017). Box-Cox symmetric distributions and
-#'      applications to nutritional data. \emph{AStA Advances in Statistical Analysis}, \bold{101}, 321-344.
 #'
 #' @export
 #'

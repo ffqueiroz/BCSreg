@@ -34,8 +34,8 @@ associated with the \code{mu} and \code{sigma} submodels (starting value for the
 A list with components named as the arguments.
 }
 \description{
-Optimization parameters that control fitting of Box-Cox symmetric regression models using the
-    \code{\link{BCSreg}} function.
+Optimization parameters that control the fitting of Box-Cox symmetric regression
+    models using the \code{\link{BCSreg}} function.
 }
 \details{
 The \code{BCSreg.control} controls the fitting process of Box-Cox symmetric models.
@@ -47,6 +47,11 @@ The \code{BCSreg.control} controls the fitting process of Box-Cox symmetric mode
     estimation process is to be performed with a fixed \code{lambda}, a value must be specified
     for the \code{lambda} argument. A natural value is \code{lambda = 0}, where a log-symmetric
     regression model will be estimated.
+}
+\examples{
+# Set an example
+
+
 }
 \seealso{
 \code{\link{BCSreg}}
