@@ -86,12 +86,12 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
     S <- matrix(1, ncol = q, nrow = n)
     colnames(S) <- "(Intercept)"
     rownames(S) <- rownames(X)
-    sigma_const <- TRUE
   } else {
     q <- dim(S)[2]
     if (q < 1L) stop("relative dispersion regression needs to have at least one parameter", call. = FALSE)
-    sigma_const <- (q == 1) && isTRUE(all.equal(as.vector(S[, 1]), rep.int(1, n)))
   }
+
+  sigma_const <- (q == 1) && (sigma.link == "identity")
 
   ## Link functions
   if (is.character(link)) {
@@ -173,7 +173,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
       dvz <- -2 * (zeta + 1) * z / ((zeta + z^2)^2)
     }
     if (family == "LOI") {
-      vz <- -2 * (exp(-z^2) - 1) / (exp(-z^2) + 1)
+      vz <- -2 * (1 - exp(-z^2)) / (1 + exp(-z^2))
       dvz <- 8 * z * exp(-z^2) / ((1 + exp(-z^2))^2)
     }
     if (family == "LOII") {
@@ -306,7 +306,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
         R <- pt(1 / (sigma * abs(lambda)), zeta)
       }
       if (family == "LOI") {
-        # vz <-
+        vz <- -2 * (1 - exp(-(1 / ((sigma * lambda)))^2)) / (1 + exp(-(1 / ((sigma * lambda)))^2))
         r <- dlogisI(1 / ((sigma * lambda)))
         R <- plogisI(1 / (sigma * abs(lambda)))
       }
@@ -436,7 +436,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
   #   Ufixed
   # }
 
-  ## Onserved information matrix
+  ## Observed information matrix
   Jfunction <- function(beta, tau, lambda) {
     eta.1 <- as.vector(X %*% beta)
     eta.2 <- as.vector(S %*% tau)
@@ -538,7 +538,13 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
   if (hessian) {
     vcov <- solve(theta.opt$hessian)
   } else {
-    vcov <- solve(Jfunction(beta, tau, lambda))
+    if (lambda_id) {
+      vcov <- solve(Jfunction(beta, tau, lambda))
+    } else {
+      vcov <- solve(Jfunction(beta, tau, lambda)[seq.int(length.out = p + q),
+                                                 seq.int(length.out = p + q)])
+    }
+
   }
 
   # if (lambda_id) {
