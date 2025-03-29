@@ -15,7 +15,7 @@
 #'     \code{mu}, \code{sigma}, and \code{zeta}.
 #' @param zeta strictly positive extra parameter. It must be specified with only one value.
 #' @param family a character that specifies the generating family of the BCS distribution.
-#'     Available options are: \code{"NO"}, \code{"ST"}, \code{"LOI"}, \code{"LOII"},
+#'     Available options are: \code{"NO"} (default), \code{"ST"}, \code{"LOI"}, \code{"LOII"},
 #'     \code{"PE"}, \code{"SN"}, \code{"HP"}, and \code{"SL"}, corresponding to the normal,
 #'     Student-\emph{t}, type I logistic, type II logistic, power exponential, sinh-normal,
 #'     hyperbolic, and slash distributions, respectively.
@@ -29,26 +29,41 @@
 #'     positive continuous data, which includes flexible distributions with
 #'     different levels of skewness and tail-heaviness.
 #'
-#'
-#'
 #'     The BCS class includes, as special cases, the Box-Cox \emph{t} (Rigby and Stasinopoulos, 2006),
 #'     Box-Cox normal (or Box-Cox Cole-Green; Cole and Green, 1992), Box-Cox power exponential
 #'     (Rigby and Stasinopoulos, 2004) distributions, as well as the log-symmetric
 #'     distributions (Vanegas and Paula, 2016).
 #'
-#'     The currently available BCS distributions in the \code{BCSreg} package are listed below:
+#'     Let \eqn{Y} be a positive continuous random variable with a BCS distribution
+#'     with parameters \eqn{\mu > 0}, \eqn{\sigma > 0}, and \eqn{\lambda \in \mathbb{R}}
+#'     and density generating function \eqn{r}. The probability density function of
+#'     \eqn{Y} is given by
 #'
-#' \tabular{llc}{
-#'  \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{Number of parameters}\cr
-#'  Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  4  \cr
-#'  Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  3  \cr
-#'  Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  3  \cr
-#'  Box-Cox Normal  \tab \code{"NO"}      \tab  3  \cr
-#'  Box-Cox Power Exponential  \tab \code{"PE"}      \tab  4  \cr
-#'  Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  4  \cr
-#'  Box-Cox Slash  \tab \code{"SL"}      \tab  4  \cr
-#'  Box-Cox \emph{t}  \tab \code{"ST"}      \tab  4  \cr
-#'  }
+#'     \eqn{
+#'     f(y; \mu, \sigma, \lambda) = \left\{\begin{array}{ll}
+#'       \dfrac{y^{\lambda-1}}{\mu^\lambda \sigma} \dfrac{r(z^2)}{R\left(\frac{1}{\sigma |\lambda|}\right)}, & \mbox{ if } \lambda \neq 0,\\
+#'       \dfrac{1}{y\sigma} r(z^2), & \mbox{ if } \lambda = 0,
+#'       \end{array}\right., \quad y > 0,
+#'     }
+#'
+#'     where \eqn{z = T(y; \mu, \sigma, \lambda)}, \eqn{r:[0,\infty) \longrightarrow [0, \infty)}
+#'     satisfies \eqn{\int_0^\infty u^{-1/2}r(u)\textrm{d} u = 1}, and
+#'     \eqn{R(x) = \int_{-\infty}^x r(u^2)\textrm{d} u, x \in \mathbb{R}}.
+#'
+#'     The function \eqn{r} specifies the generating symmetric family of \eqn{Y}
+#'     within the class of the BCS probability models. The currently available BCS
+#'     distributions in the \code{BCSreg} package are listed below:
+#'     \tabular{llc}{
+#'     \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{Number of parameters}\cr
+#'     Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  4  \cr
+#'     Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  3  \cr
+#'     Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  3  \cr
+#'     Box-Cox Normal  \tab \code{"NO"}      \tab  3  \cr
+#'     Box-Cox Power Exponential  \tab \code{"PE"}      \tab  4  \cr
+#'     Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  4  \cr
+#'     Box-Cox Slash  \tab \code{"SL"}      \tab  4  \cr
+#'     Box-Cox \emph{t}  \tab \code{"ST"}      \tab  4  \cr
+#'     }
 #'
 #' @return
 #' \code{dbcs} returns the density function, \code{pbcs} gives the cumulative distribution function,
@@ -75,25 +90,25 @@
 #'      statistical properties and parameter estimation. \emph{Brazilian Journal of Probability and Statistics}, 30, 196-220.
 #'
 #' @examples
-#' # Density
+#' # Probability density function
 #'
 #' ## Right-skewed distributions
 #' curve(dbcs(x, 3, 0.3, -1.5, family = "NO"), xlim = c(0, 7), ylim = c(0, 0.7), ylab = "Density")
 #' curve(dbcs(x, 3, 0.3, -1.5, 4, family = "ST"), add = TRUE, col = 2)
 #' curve(dbcs(x, 3, 0.3, -1.5, 5, family = "PE"), add = TRUE, col = 4)
-#' legend("topright", legend = c("NO", "ST", "PE"), lty = 1, col = c(1, 2, 4))
+#' legend("topright", legend = c("BCNO", "BCT", "BCPE"), lty = 1, col = c(1, 2, 4))
 #'
 #' ## Truncated symmetric distributions (with support on (0, Inf))
 #' curve(dbcs(x, 3, 0.3, 1, family = "NO"), xlim = c(0, 7), ylim = c(0, 0.7), ylab = "Density")
 #' curve(dbcs(x, 3, 0.3, 1, 4, family = "ST"), add = TRUE, col = 2)
 #' curve(dbcs(x, 3, 0.3, 1, 5, family = "PE"), add = TRUE, col = 4)
-#' legend("topright", legend = c("NO", "ST", "PE"), lty = 1, col = c(1, 2, 4))
+#' legend("topright", legend = c("BCNO", "BCT", "BCPE"), lty = 1, col = c(1, 2, 4))
 #'
 #' ## Left-skewed distributions
 #' curve(dbcs(x, 3, 0.3, 3, family = "NO"), xlim = c(0, 7), ylim = c(0, 0.7), ylab = "Density")
 #' curve(dbcs(x, 3, 0.3, 3, 4, family = "ST"), add = TRUE, col = 2)
 #' curve(dbcs(x, 3, 0.3, 3, 5, family = "PE"), add = TRUE, col = 4)
-#' legend("topright", legend = c("NO", "ST", "PE"), lty = 1, col = c(1, 2, 4))
+#' legend("topright", legend = c("BCNO", "BCT", "BCPE"), lty = 1, col = c(1, 2, 4))
 #'
 #' # Random generation
 #'
@@ -113,12 +128,11 @@
 #' curve(dbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)
 #'
 #' plot(ecdf(x), main = "")
-#' curve(pbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE) #'
-#'
+#' curve(pbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)
 #' @importFrom stats dnorm qnorm rnorm pnorm dlogis plogis qlogis runif dt pt qt
 #'
 #' @export
-dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family, log = FALSE) {
+dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family = "NO", log = FALSE) {
   if (is.matrix(x)) d <- ncol(x) else d <- 1L
 
   maxl <- max(c(length(x), length(mu), length(sigma), length(lambda)))
@@ -203,7 +217,7 @@ dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family, log = FALSE) {
 
 #' @rdname bcs
 #' @export
-pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, log.p = FALSE) {
+pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family = "NO", lower.tail = TRUE, log.p = FALSE) {
   if (is.matrix(q)) d <- ncol(q) else d <- 1L
 
   maxl <- max(c(length(q), length(mu), length(sigma), length(lambda)))
@@ -296,7 +310,7 @@ pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
 
 #' @rdname bcs
 #' @export
-qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, log.p = FALSE) {
+qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family = "NO", lower.tail = TRUE, log.p = FALSE) {
   if (is.matrix(p)) d <- ncol(p) else d <- 1L
 
   maxl <- max(length(p), length(mu), length(sigma), length(lambda))
@@ -391,7 +405,7 @@ qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family, lower.tail = TRUE, l
 
 #' @rdname bcs
 #' @export
-rbcs <- function(n, mu, sigma, lambda, zeta = NULL, family) {
+rbcs <- function(n, mu, sigma, lambda, zeta = NULL, family = "NO") {
   if (any(mu <= 0)) {
     stop(paste("mu must be positive ", "\n", ""))
   }

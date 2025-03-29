@@ -30,7 +30,7 @@ structure. See details below.}
 \code{\link[stats]{model.frame}}.}
 
 \item{family}{a character that specifies the generating family of the BCS distribution.
-Available options are: \code{"NO"}, \code{"ST"}, \code{"LOI"}, \code{"LOII"},
+Available options are: \code{"NO"} (default), \code{"ST"}, \code{"LOI"}, \code{"LOII"},
 \code{"PE"}, \code{"SN"}, \code{"HP"}, and \code{"SL"}, corresponding to the normal,
 Student-\emph{t}, type I logistic, type II logistic, power exponential, sinh-normal,
 hyperbolic, and slash distributions, respectively.}
