@@ -8,11 +8,10 @@
 \alias{vcov.BCSreg}
 \alias{logLik.BCSreg}
 \alias{AIC.ugrpl}
-\alias{residuals.BCSreg}
 \alias{print.BCSreg}
 \alias{summary.BCSreg}
 \alias{print.summary.BCSreg}
-\title{Methods for "\code{BCSreg}" Objects}
+\title{Extract Information From a Box-Cox Symmetric Regression Fit}
 \usage{
 \method{model.frame}{BCSreg}(formula, ...)
 
@@ -25,8 +24,6 @@
 \method{logLik}{BCSreg}(object, ...)
 
 \method{AIC}{ugrpl}(object, ..., k = 2)
-
-\method{residuals}{BCSreg}(object, ...)
 
 \method{print}{BCSreg}(x, digits = getOption("digits"), ...)
 
@@ -45,15 +42,15 @@ the relative dispersion regression structure, or \code{"full"} (when applicable)
 for both regression structures.}
 
 \item{k}{numeric, the penalty per parameter to be used; the default
-\code{k = 2} is the classical AIC.}
+\code{k = 2} is the classical Akaike information criteria (AIC).}
 
-\item{x, object}{an object of class "\code{BCSreg}".}
+\item{x, object}{an object of class \code{"BCSreg"}.}
 
 \item{digits}{a non-null value for digits specifies the minimum number of significant digits to
 be printed in values. The default, \code{getOption("digits")}.}
 }
 \description{
-Methods for "\code{BCSreg}" Objects
+Methods for \code{"BCSreg"} and \code{"summary.BCSreg"} objects.
 }
 \author{
 Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>

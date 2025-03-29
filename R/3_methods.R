@@ -1,9 +1,12 @@
 #' @name BCSreg-methods
-#' @title Methods for "\code{BCSreg}" Objects
 #'
-#' @param x,object an object of class "\code{BCSreg}".
+#' @title Extract Information From a Box-Cox Symmetric Regression Fit
+#'
+#' @description Methods for \code{"BCSreg"} and \code{"summary.BCSreg"} objects.
+#'
+#' @param x,object an object of class \code{"BCSreg"}.
 #' @param k numeric, the penalty per parameter to be used; the default
-#'     \code{k = 2} is the classical AIC.
+#'     \code{k = 2} is the classical Akaike information criteria (AIC).
 #' @param formula a model formula or terms object or an R object.
 #' @param model a character indicating which regression structure should be used.
 #'     It can be \code{"mu"} for the scale regression structure, \code{"sigma"} for
@@ -90,30 +93,30 @@ AIC.ugrpl <- function(object, ..., k = 2) {
   return(AIC)
 }
 
-# Residuals
-#' @export
-#' @rdname BCSreg-methods
-residuals.BCSreg <- function(object, ...) {
-#residuals.BCSreg <- function(object, type = c("quantile"), ...) {
-  # type <- match.arg(type)
-  # y <- if (is.null(object$y)) stats::model.response(model.frame(object)) else object$y
-  # X <- if (is.null(object$x$median)) stats::model.matrix(object, model = "mu") else object$x$mu
-  # S <- if (is.null(object$x$dispersion)) stats::model.matrix(object, model = "sigma") else object$x$sigma
-  # mu <- object$mu
-  # lambda <- object$lambda
-  # sigma <- object$sigma
-  # family <- object$family
-  # zeta <- object$zeta
-  #
-  # res <- switch(type,
-  #               "quantile" = {
-  #                 qnorm(pbcs(y, mu, sigma, lambda, zeta = zeta, family = family))
-  #               }
-  # )
-  #
-  # return(res)
-  object$residuals
-}
+# # Residuals
+# #' @export
+# #' @rdname BCSreg-methods
+# residuals.BCSreg <- function(object, ...) {
+# #residuals.BCSreg <- function(object, type = c("quantile"), ...) {
+#  # type <- match.arg(type)
+#  # y <- if (is.null(object$y)) stats::model.response(model.frame(object)) else object$y
+#  # X <- if (is.null(object$x$median)) stats::model.matrix(object, model = "mu") else object$x$mu
+#  # S <- if (is.null(object$x$dispersion)) stats::model.matrix(object, model = "sigma") else object$x$sigma
+#  # mu <- object$mu
+#  # lambda <- object$lambda
+#  # sigma <- object$sigma
+#  # family <- object$family
+#  # zeta <- object$zeta
+#  #
+#  # res <- switch(type,
+#  #               "quantile" = {
+#  #                 qnorm(pbcs(y, mu, sigma, lambda, zeta = zeta, family = family))
+#  #               }
+#  # )
+#  #
+#  # return(res)
+#  object$residuals
+#}
 
 # Print
 #' @rdname BCSreg-methods
