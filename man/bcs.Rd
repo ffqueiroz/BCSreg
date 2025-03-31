@@ -8,14 +8,14 @@
 \alias{rbcs}
 \title{The Box-Cox Symmetric (BCS) Distributions}
 \usage{
-dbcs(x, mu, sigma, lambda, zeta = NULL, family = "NO", log = FALSE)
+dbcs(x, mu, sigma, lambda, zeta, family = "NO", log = FALSE)
 
 pbcs(
   q,
   mu,
   sigma,
   lambda,
-  zeta = NULL,
+  zeta,
   family = "NO",
   lower.tail = TRUE,
   log.p = FALSE
@@ -26,13 +26,13 @@ qbcs(
   mu,
   sigma,
   lambda,
-  zeta = NULL,
+  zeta,
   family = "NO",
   lower.tail = TRUE,
   log.p = FALSE
 )
 
-rbcs(n, mu, sigma, lambda, zeta = NULL, family = "NO")
+rbcs(n, mu, sigma, lambda, zeta, family = "NO")
 }
 \arguments{
 \item{x, q}{vector of positive quantiles.}
@@ -45,9 +45,10 @@ rbcs(n, mu, sigma, lambda, zeta = NULL, family = "NO")
 distribution reduces to the corresponding log-symmetric distribution with parameters
 \code{mu}, \code{sigma}, and \code{zeta}.}
 
-\item{zeta}{strictly positive extra parameter. It must be specified with only one value.}
+\item{zeta}{strictly positive extra parameter. It must be specified with only one value
+in cases where the BCS distribution has an extra parameter. See “Details” below.}
 
-\item{family}{a character that specifies the generating family of the BCS distribution.
+\item{family}{a character that specifies the symmetric generating family of the BCS distribution.
 Available options are: \code{"NO"} (default), \code{"ST"}, \code{"LOI"}, \code{"LOII"},
 \code{"PE"}, \code{"SN"}, \code{"HP"}, and \code{"SL"}, corresponding to the normal,
 Student-\emph{t}, type I logistic, type II logistic, power exponential, sinh-normal,
@@ -95,23 +96,36 @@ The class of the BCS distributions was introduced by Ferrari and
       \end{array}\right., \quad y > 0,
     }
 
-    where \eqn{z = T(y; \mu, \sigma, \lambda)}, \eqn{r:[0,\infty) \longrightarrow [0, \infty)}
+    where
+    \eqn{
+    z = \left\{
+    \begin{array}{ll}
+    \dfrac{1}{\sigma \lambda} \left\{\left(\frac{y}{\mu}\right)^\lambda - 1 \right\}, & \mbox{ if } \lambda \neq 0, \\
+    \dfrac{1}{\sigma} \log\left(\frac{y}{\mu}\right), & \mbox{ if } \lambda = 0,
+    \end{array}
+    \right.
+    }
+
+    \eqn{r:[0,\infty) \longrightarrow [0, \infty)}
     satisfies \eqn{\int_0^\infty u^{-1/2}r(u)\textrm{d} u = 1}, and
     \eqn{R(x) = \int_{-\infty}^x r(u^2)\textrm{d} u, x \in \mathbb{R}}.
 
-    The function \eqn{r} specifies the generating symmetric family of \eqn{Y}
-    within the class of the BCS probability models. The currently available BCS
-    distributions in the \code{BCSreg} package are listed below:
+    The function \eqn{r} is called density generating function, and it specifies the
+    generating symmetric family of \eqn{Y} within the class of the BCS probability
+    models. This function can also depend on extra parameters, such as the Box-Cox \emph{t} and
+    Box-Cox power exponential distributions. We call these extra parameters
+    \code{zeta}. The currently available BCS distributions in the \code{BCSreg} package
+    are listed below:
     \tabular{llc}{
-    \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{Number of parameters}\cr
-    Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  4  \cr
-    Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  3  \cr
-    Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  3  \cr
-    Box-Cox Normal  \tab \code{"NO"}      \tab  3  \cr
-    Box-Cox Power Exponential  \tab \code{"PE"}      \tab  4  \cr
-    Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  4  \cr
-    Box-Cox Slash  \tab \code{"SL"}      \tab  4  \cr
-    Box-Cox \emph{t}  \tab \code{"ST"}      \tab  4  \cr
+    \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{N. of extra parameters}\cr
+    Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  1  \cr
+    Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  0  \cr
+    Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  0  \cr
+    Box-Cox Normal  \tab \code{"NO"}      \tab  0  \cr
+    Box-Cox Power Exponential  \tab \code{"PE"}      \tab  1  \cr
+    Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  1  \cr
+    Box-Cox Slash  \tab \code{"SL"}      \tab  1  \cr
+    Box-Cox \emph{t}  \tab \code{"ST"}      \tab  1  \cr
     }
 }
 \examples{

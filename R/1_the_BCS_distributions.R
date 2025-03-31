@@ -13,8 +13,9 @@
 #' @param lambda vector of real-valued skewness parameters. If \code{lambda = 0}, the BCS
 #'     distribution reduces to the corresponding log-symmetric distribution with parameters
 #'     \code{mu}, \code{sigma}, and \code{zeta}.
-#' @param zeta strictly positive extra parameter. It must be specified with only one value.
-#' @param family a character that specifies the generating family of the BCS distribution.
+#' @param zeta strictly positive extra parameter. It must be specified with only one value
+#'     in cases where the BCS distribution has an extra parameter. See “Details” below.
+#' @param family a character that specifies the symmetric generating family of the BCS distribution.
 #'     Available options are: \code{"NO"} (default), \code{"ST"}, \code{"LOI"}, \code{"LOII"},
 #'     \code{"PE"}, \code{"SN"}, \code{"HP"}, and \code{"SL"}, corresponding to the normal,
 #'     Student-\emph{t}, type I logistic, type II logistic, power exponential, sinh-normal,
@@ -46,23 +47,36 @@
 #'       \end{array}\right., \quad y > 0,
 #'     }
 #'
-#'     where \eqn{z = T(y; \mu, \sigma, \lambda)}, \eqn{r:[0,\infty) \longrightarrow [0, \infty)}
+#'     where
+#'     \eqn{
+#'     z = \left\{
+#'     \begin{array}{ll}
+#'     \dfrac{1}{\sigma \lambda} \left\{\left(\frac{y}{\mu}\right)^\lambda - 1 \right\}, & \mbox{ if } \lambda \neq 0, \\
+#'     \dfrac{1}{\sigma} \log\left(\frac{y}{\mu}\right), & \mbox{ if } \lambda = 0,
+#'     \end{array}
+#'     \right.
+#'     }
+#'
+#'     \eqn{r:[0,\infty) \longrightarrow [0, \infty)}
 #'     satisfies \eqn{\int_0^\infty u^{-1/2}r(u)\textrm{d} u = 1}, and
 #'     \eqn{R(x) = \int_{-\infty}^x r(u^2)\textrm{d} u, x \in \mathbb{R}}.
 #'
-#'     The function \eqn{r} specifies the generating symmetric family of \eqn{Y}
-#'     within the class of the BCS probability models. The currently available BCS
-#'     distributions in the \code{BCSreg} package are listed below:
+#'     The function \eqn{r} is called density generating function, and it specifies the
+#'     generating symmetric family of \eqn{Y} within the class of the BCS probability
+#'     models. This function can also depend on extra parameters, such as the Box-Cox \emph{t} and
+#'     Box-Cox power exponential distributions. We call these extra parameters
+#'     \code{zeta}. The currently available BCS distributions in the \code{BCSreg} package
+#'     are listed below:
 #'     \tabular{llc}{
-#'     \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{Number of parameters}\cr
-#'     Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  4  \cr
-#'     Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  3  \cr
-#'     Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  3  \cr
-#'     Box-Cox Normal  \tab \code{"NO"}      \tab  3  \cr
-#'     Box-Cox Power Exponential  \tab \code{"PE"}      \tab  4  \cr
-#'     Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  4  \cr
-#'     Box-Cox Slash  \tab \code{"SL"}      \tab  4  \cr
-#'     Box-Cox \emph{t}  \tab \code{"ST"}      \tab  4  \cr
+#'     \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{N. of extra parameters}\cr
+#'     Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  1  \cr
+#'     Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  0  \cr
+#'     Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  0  \cr
+#'     Box-Cox Normal  \tab \code{"NO"}      \tab  0  \cr
+#'     Box-Cox Power Exponential  \tab \code{"PE"}      \tab  1  \cr
+#'     Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  1  \cr
+#'     Box-Cox Slash  \tab \code{"SL"}      \tab  1  \cr
+#'     Box-Cox \emph{t}  \tab \code{"ST"}      \tab  1  \cr
 #'     }
 #'
 #' @return
@@ -132,7 +146,7 @@
 #' @importFrom stats dnorm qnorm rnorm pnorm dlogis plogis qlogis runif dt pt qt
 #'
 #' @export
-dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family = "NO", log = FALSE) {
+dbcs <- function(x, mu, sigma, lambda, zeta, family = "NO", log = FALSE) {
   if (is.matrix(x)) d <- ncol(x) else d <- 1L
 
   maxl <- max(c(length(x), length(mu), length(sigma), length(lambda)))
@@ -148,8 +162,15 @@ dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family = "NO", log = FALSE) 
   if (any(sigma <= 0)) {
     warning(paste("sigma must be positive", "\n", ""))
   }
-  if (any(zeta <= 0)) {
-    warning(paste("zeta must be positive", "\n", ""))
+  if (family %in% c("HP", "PE", "SN", "SL", "ST")) {
+    if (missing(zeta))
+      stop(gettextf("%s family has an extra parameter that must be specified via the 'zeta' argument",
+                    sQuote(family)), domain = NA)
+
+    if (zeta < 0)
+      warning(paste("zeta must be positive", "\n", ""))
+  } else {
+    zeta <- NULL
   }
 
   l0 <- which(lambda == 0)
@@ -217,7 +238,7 @@ dbcs <- function(x, mu, sigma, lambda, zeta = NULL, family = "NO", log = FALSE) 
 
 #' @rdname bcs
 #' @export
-pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family = "NO", lower.tail = TRUE, log.p = FALSE) {
+pbcs <- function(q, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, log.p = FALSE) {
   if (is.matrix(q)) d <- ncol(q) else d <- 1L
 
   maxl <- max(c(length(q), length(mu), length(sigma), length(lambda)))
@@ -233,8 +254,15 @@ pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family = "NO", lower.tail = 
   if (any(sigma <= 0)) {
     warning(paste("sigma must be positive", "\n", ""))
   }
-  if (any(zeta <= 0)) {
-    warning(paste("zeta must be positive", "\n", ""))
+  if (family %in% c("HP", "PE", "SN", "SL", "ST")) {
+    if (missing(zeta))
+      stop(gettextf("%s family has an extra parameter that must be specified via the 'zeta' argument",
+                    sQuote(family)), domain = NA)
+
+    if (zeta < 0)
+      warning(paste("zeta must be positive", "\n", ""))
+  } else {
+    zeta <- NULL
   }
 
   l0 <- which(lambda == 0)
@@ -310,7 +338,7 @@ pbcs <- function(q, mu, sigma, lambda, zeta = NULL, family = "NO", lower.tail = 
 
 #' @rdname bcs
 #' @export
-qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family = "NO", lower.tail = TRUE, log.p = FALSE) {
+qbcs <- function(p, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, log.p = FALSE) {
   if (is.matrix(p)) d <- ncol(p) else d <- 1L
 
   maxl <- max(length(p), length(mu), length(sigma), length(lambda))
@@ -326,8 +354,15 @@ qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family = "NO", lower.tail = 
   if (any(sigma <= 0)) {
     warning(paste("sigma must be positive", "\n", ""))
   }
-  if (any(zeta <= 0)) {
-    warning(paste("zeta must be positive", "\n", ""))
+  if (family %in% c("HP", "PE", "SN", "SL", "ST")) {
+    if (missing(zeta))
+      stop(gettextf("%s family has an extra parameter that must be specified via the 'zeta' argument",
+                    sQuote(family)), domain = NA)
+
+    if (zeta < 0)
+      warning(paste("zeta must be positive", "\n", ""))
+  } else {
+    zeta <- NULL
   }
 
   if (log.p) p <- exp(p)
@@ -405,18 +440,25 @@ qbcs <- function(p, mu, sigma, lambda, zeta = NULL, family = "NO", lower.tail = 
 
 #' @rdname bcs
 #' @export
-rbcs <- function(n, mu, sigma, lambda, zeta = NULL, family = "NO") {
+rbcs <- function(n, mu, sigma, lambda, zeta, family = "NO") {
   if (any(mu <= 0)) {
     stop(paste("mu must be positive ", "\n", ""))
   }
   if (any(sigma <= 0)) {
     stop(paste("sigma must be positive", "\n", ""))
   }
-  if (any(zeta <= 0)) {
-    stop(paste("zeta must be positive ", "\n", ""))
+  if (family %in% c("HP", "PE", "SN", "SL", "ST")) {
+    if (missing(zeta))
+      stop(gettextf("%s family has an extra parameter that must be specified via the 'zeta' argument",
+                    sQuote(family)), domain = NA)
+
+    if (zeta < 0)
+      warning(paste("zeta must be positive", "\n", ""))
   }
   if (any(n <= 0)) {
     stop(paste("n must be a positive integer", "\n", ""))
+  } else {
+    zeta <- NULL
   }
 
   n <- ceiling(n)

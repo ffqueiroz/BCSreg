@@ -29,13 +29,14 @@ structure. See details below.}
 \item{data, subset, na.action}{arguments controlling formula processing via
 \code{\link[stats]{model.frame}}.}
 
-\item{family}{a character that specifies the generating family of the BCS distribution.
+\item{family}{a character that specifies the symmetric generating family of the BCS distribution.
 Available options are: \code{"NO"} (default), \code{"ST"}, \code{"LOI"}, \code{"LOII"},
 \code{"PE"}, \code{"SN"}, \code{"HP"}, and \code{"SL"}, corresponding to the normal,
 Student-\emph{t}, type I logistic, type II logistic, power exponential, sinh-normal,
 hyperbolic, and slash distributions, respectively.}
 
-\item{zeta}{strictly positive extra parameter. It must be specified with only one value.}
+\item{zeta}{strictly positive extra parameter. It must be specified with only one value
+in cases where the BCS distribution has an extra parameter. See “Details” below.}
 
 \item{link, sigma.link}{character specification of the link function for the
 scale (\code{mu}) and relative dispersion (\code{sigma}) regression structures, respectively.
