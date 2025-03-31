@@ -454,11 +454,11 @@ rbcs <- function(n, mu, sigma, lambda, zeta, family = "NO") {
 
     if (zeta < 0)
       warning(paste("zeta must be positive", "\n", ""))
+  } else {
+    zeta <- NULL
   }
   if (any(n <= 0)) {
     stop(paste("n must be a positive integer", "\n", ""))
-  } else {
-    zeta <- NULL
   }
 
   n <- ceiling(n)
