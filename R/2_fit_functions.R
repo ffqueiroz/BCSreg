@@ -74,10 +74,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
     if (p == 1) {
       colnames(X) <- "(Intercept)"
     } else {
-      colnames(X)[1] <- "(Intercept)"
-      for (i in 2:p) {
-        colnames(X)[1] <- paste("V", i, sep = "")
-      }
+      colnames(X) <- c("(Intercept)", paste0("X", 1:(p-1)))
     }
   }
 
@@ -88,7 +85,13 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = zeta, link = "log",
     rownames(S) <- rownames(X)
   } else {
     q <- dim(S)[2]
-    if (q < 1L) stop("relative dispersion regression needs to have at least one parameter", call. = FALSE)
+    if (is.null(colnames(S))) {
+      if (q == 1) {
+        colnames(S) <- "(Intercept)"
+      } else {
+        colnames(S) <- c("(Intercept)", paste0("S", 1:(p-1)))
+      }
+    }
   }
 
   sigma_const <- (q == 1) && (sigma.link == "identity")
