@@ -1,10 +1,10 @@
-#' @name BCSreg-methods
+#' @name BCSreg_methods
 #'
 #' @title Extract Information From a Box-Cox Symmetric Regression Fit
 #'
-#' @description Methods for \code{"BCSreg"} and \code{"summary.BCSreg"} objects.
+#' @description Methods for \code{"BCSreg"} objects.
 #'
-#' @param x,object an object of class \code{"BCSreg"}.
+#' @param object an object of class \code{"BCSreg"}, a result of a call to \link{BCSreg}.
 #' @param k numeric, the penalty per parameter to be used; the default
 #'     \code{k = 2} is the classical Akaike information criteria (AIC).
 #' @param formula a model formula or terms object or an R object.
@@ -18,9 +18,9 @@
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 NULL
 
-## Model frame
+# Model frame
 #' @export
-#' @rdname BCSreg-methods
+#' @rdname BCSreg_methods
 model.frame.BCSreg <- function(formula, ...) {
   formula$terms <- formula$terms$full
   formula$call$formula <- formula$formula <- formula(formula$terms)
@@ -29,9 +29,12 @@ model.frame.BCSreg <- function(formula, ...) {
 
 ## Model matrix
 #' @export
-#' @rdname BCSreg-methods
-model.matrix.BCSreg <- function(object, model = c("mu", "sigma"), ...) {
-  model <- match.arg(model, c("mu", "sigma"))
+#' @rdname BCSreg_methods
+model.matrix.BCSreg <- function(object, model = c("mu", "sigma", "alpha"), ...) {
+  model <- match.arg(model, c("mu", "sigma", "alpha"))
+  if (model == "alpha" & is.null(object$alpha)) {
+    stop("The model is not zero-adjusted")
+  }
   val <- if (!is.null(object$x[[model]])) {
     object$x[[model]]
   } else {
@@ -42,25 +45,34 @@ model.matrix.BCSreg <- function(object, model = c("mu", "sigma"), ...) {
 }
 
 # Regression coefficients
-#' @rdname BCSreg-methods
+#' @rdname BCSreg_methods
 #' @export
-coef.BCSreg <- function(object, model = c("mu", "sigma", "full"), ...) {
-  model <- match.arg(model, c("mu", "sigma", "full"))
+coef.BCSreg <- function(object, model = c("mu", "sigma", "alpha", "full"), ...) {
+  model <- match.arg(model, c("mu", "sigma", "alpha", "full"))
   cf <- object$coefficients
+  if (model == "alpha" & is.null(object$alpha)) {
+    stop("The model is not zero-adjusted")
+  }
   switch(model,
          "full"  = list(mu = cf$mu, sigma = cf$sigma),
          "mu"    = cf$mu,
-         "sigma" = cf$sigma)
+         "sigma" = cf$sigma,
+         "alpha" = cf$alpha)
 }
 
 #  Variance-covariance matrix
-#' @rdname BCSreg-methods
+#' @rdname BCSreg_methods
 #' @export
-vcov.BCSreg <- function(object, model = c("mu", "sigma", "full"), ...) {
-  model <- match.arg(model, c("mu", "sigma", "full"))
+vcov.BCSreg <- function(object, model = c("mu", "sigma", "alpha", "full"), ...) {
+  model <- match.arg(model, c("mu", "sigma", "alpha", "full"))
+  if (model == "alpha" & is.null(object$alpha)) {
+    stop("The model is not zero-adjusted")
+  }
   covm <- object$vcov
   p <- length(object$coeff$mu)
   q <- length(object$coeff$sigma)
+  m <- length(object$coefficients$alpha)
+  lambda_id <- is.null(object$control$lambda)
   switch(model,
          "mu" = {
            covm[seq.int(length.out = p), seq.int(length.out = p), drop = FALSE]
@@ -68,100 +80,142 @@ vcov.BCSreg <- function(object, model = c("mu", "sigma", "full"), ...) {
          "sigma" = {
            covm[seq.int(length.out = q) + p, seq.int(length.out = q) + p, drop = FALSE]
          },
+         "alpha" = {
+           covm[seq.int(length.out = m) + p + q + as.numeric(lambda_id),
+                seq.int(length.out = m) + p + q + as.numeric(lambda_id), drop = FALSE]
+         },
          "full" = {
            covm
          },
-         )
+  )
 
 }
 
 # Log-likelihood
-#' @rdname BCSreg-methods
+#' @rdname BCSreg_methods
 #' @export
 logLik.BCSreg <- function(object, ...) {
-  p <- object$nobs - object$df.residual + as.numeric(!is.null(object$zeta))
+  p <- object$nobs - object$df.residual
   structure(object$loglik, df = p, class = "logLik")
 }
 
 # AIC
 #' @export
-#' @rdname BCSreg-methods
+#' @rdname BCSreg_methods
 AIC.ugrpl <- function(object, ..., k = 2) {
-  p <- object$nobs - object$df.residual + as.numeric(!is.null(object$zeta))
+  p <- object$nobs - object$df.residual
   AIC <- - 2 * object$logLik + k * p
   class(AIC) <- "AIC"
   return(AIC)
 }
 
-# # Residuals
-# #' @export
-# #' @rdname BCSreg-methods
-# residuals.BCSreg <- function(object, ...) {
-# #residuals.BCSreg <- function(object, type = c("quantile"), ...) {
-#  # type <- match.arg(type)
-#  # y <- if (is.null(object$y)) stats::model.response(model.frame(object)) else object$y
-#  # X <- if (is.null(object$x$median)) stats::model.matrix(object, model = "mu") else object$x$mu
-#  # S <- if (is.null(object$x$dispersion)) stats::model.matrix(object, model = "sigma") else object$x$sigma
-#  # mu <- object$mu
-#  # lambda <- object$lambda
-#  # sigma <- object$sigma
-#  # family <- object$family
-#  # zeta <- object$zeta
-#  #
-#  # res <- switch(type,
-#  #               "quantile" = {
-#  #                 qnorm(pbcs(y, mu, sigma, lambda, zeta = zeta, family = family))
-#  #               }
-#  # )
-#  #
-#  # return(res)
-#  object$residuals
-#}
 
-# Print
-#' @rdname BCSreg-methods
-#' @param digits a non-null value for digits specifies the minimum number of significant digits to
-#'     be printed in values. The default, \code{getOption("digits")}.
+# Residuals -----------------------------------------------------------------------------------
+#' @name residuals
+#'
+#' @title Extract Residuals for a Box-Cox Symmetric Regression Fit
+#'
+#' @param object an object of class \code{"BCSreg"}, a result of a call to \link{BCSreg}.
+#' @param ... further arguments passed to or from other methods.
+#'
+#' @return Function \code{residuals} returns a vector with the quantile residuals
+#'     resulting from a Box-Cox symmetric regression fit.
+#'
 #' @export
-print.BCSreg <- function(x, digits = getOption("digits"), ...) {
-  cat("\nCall:", deparse(x$call, width.cutoff = floor(getOption("width") * 0.85)), "", sep = "\n")
-  if (!x$converged) {
-    cat("Model did not converge\n")
-  } else {
-    cat(paste("Scale submodel with ", x$link$mu, " link:\n", sep = ""))
-    print.default(format(x$coefficients$mu, digits = digits), print.gap = 2, quote = FALSE)
-    cat("\n")
+#'
+#' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
+#' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
+#'
+#' @examples
+#' ## Examples
+residuals.BCSreg <- function(object, ...) {
 
-    cat(paste("Relative dispersion submodel with ", x$link$sigma, " link:\n", sep = ""))
-    print.default(format(x$coefficients$sigma, digits = digits), print.gap = 2, quote = FALSE)
-    cat("\n")
+  y <- as.numeric(stats::model.response(stats::model.frame(object)))
+  ind <- ifelse(y == 0, 1, 0)
+  n <- object$nobs
 
-    lambda_id <- is.null(x$control$lambda)
-    zeta_id <- !is.null(x$zeta)
+  mu <- object$mu
+  sigma <- object$sigma
+  lambda <- object$lambda
+  zeta <- object$zeta
+  alpha <- if (is.null(object$alpha)) rep(0L, n) else object$alpha
+  family <- object$family
 
-    if (lambda_id) {
-      cat("Skewness parameter:\n", sep = "")
-      print.default(format(x$lambda, digits = digits), print.gap = 2, quote = FALSE)
-      cat("\n")
-    }
+  residuals <- cdf <- rep(NA, n)
+  cdf <- alpha
+  cdf[ind == 0] <- alpha[ind == 0] + (1 - alpha[ind == 0]) *
+    pbcs(y[ind == 0], mu = mu, sigma = sigma, lambda = lambda, zeta = zeta, family = family)
 
-
-    cat("---\nGenerating family:", x$family, if (zeta_id) paste0("(zeta = ", x$zeta, ")"),
-        "\nLog-lik value:", x$loglik,
-        "\nAIC:", stats::AIC(x),
-        "and BIC:", stats::AIC(x, k = log(x$nobs)), "\n")
+  u <- rep(NA, sum(ind))
+  j <- 1L
+  for (i in which(ind == 1)){
+    u[j] <- stats::runif(1, 0, alpha[i])
+    j <- j + 1
   }
 
-  invisible(x)
+  residuals[ind == 1] <- stats::qnorm(u)
+  residuals[ind == 0] <- qnorm(cdf[ind == 0])
+  residuals
+
 }
 
-# Summary
-#' @rdname BCSreg-methods
-#' @export
-summary.BCSreg <- function(object, ...) {
 
-  ## residuals
-  residuals <- stats::residuals(object)
+# Summary method ------------------------------------------------------------------------------
+#'
+#' @name summary.BCSreg
+#'
+#' @title Summarizing a Box-Cox Symmetric Regression Fit
+#'
+#' @description \code{summary} method for class \code{"BCSreg"}.
+#'
+#' @param object an object of class \code{"BCSreg"}, a result of a call to \link{BCSreg}.
+#' @param x an object of class \code{"summary.BCSreg"}, a result of a call to \link{summary.BCSreg}.
+#' @param digits a non-null value for digits specifies the minimum number of significant digits to
+#'     be printed in values.
+#' @param ... further arguments passed to or from other methods.
+#'
+#' @returns The function \code{summary.BCSreg} returns an object of class \code{"summary.BCSreg"},
+#'     which consists of a list with the following components:
+#'  \describe{
+#'     \item{call}{the original function call, given in \code{object}.}
+#'     \item{mu}{summary statistics for the scale submodel.}
+#'     \item{sigma}{summary statistics for the relative dispersion submodel.}
+#'     \item{lambda}{summary statistics for the skewness parameter. If this parameter is not
+#'         statistically different from zero, the fitted Box-Cox symmetric (BCS) distribution
+#'         can be reduced to a more parsimonious log-symmetric distribution.}
+#'     \item{alpha}{summary statistics for the zero-adjustment submodel when a zero-adjusted
+#'         model is considered; and \code{NULL}, otherwise.}
+#'     \item{zeta}{the specified value for the extra parameter of the fitted
+#'         BCS distribution, if applicable.}
+#'     \item{family}{the generating family of the fitted BCS distribution.}
+#'     \item{link}{a list with elements \code{"mu"} and \code{"sigma"} with the
+#'         specified link functions for the \code{mu} and \code{sigma} regression
+#'         structures, respectively. If the model is zero-adjusted, the element
+#'         \code{"alpha"} will also be returned with the link function for
+#'         the regression structure of the zero-adjustment parameter.}
+#'     \item{converged}{logical indicating successful convergence of the iterative
+#'         process.}
+#'     \item{iterations}{number of iterations reached until the optimization algorithm converges.}
+#'     \item{logLik}{log-likelihood of the fitted model.}
+#'     \item{df}{number of model parameters}
+#'     \item{residuals}{a vector of quantile residuals.}
+#'     \item{pseudo.r.squared}{pseudo R-squared value.}
+#'     \item{Upsilon.zeta}{an overall goodness-of-fit measure.}
+#'     \item{v}{a vector with the \eqn{v(z)} values for all the observations.
+#'         The \eqn{v} function is a weighting function that is involved in the
+#'         parameter estimation process. It depends on the generating density function
+#'         of the corresponding BCS distribution.}
+#'     \item{AIC, BIC}{Akaike and Bayesian information criteria.}
+#'  }
+#'
+#' @export
+#'
+#' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
+#' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
+#'
+#' @examples
+#' ## Examples
+summary.BCSreg <- function(object, ...) {
 
   ## extend coefficient tables
   est.beta <- stats::coef(object, "mu")
@@ -184,12 +238,48 @@ summary.BCSreg <- function(object, ...) {
     est.lambda <- object$lambda
     se.lambda <- sqrt(utils::tail(diag(object$vcov), 1L))
     lambda <- cbind(Estimate = est.lambda,
-                   `Std. error` = se.lambda,
-                   `z value` = est.lambda / se.lambda,
-                   `Pr(>|z|)` = 2 * pnorm(-abs(est.lambda / se.lambda)))
+                    `Std. error` = se.lambda,
+                    `z value` = est.lambda / se.lambda,
+                    `Pr(>|z|)` = 2 * pnorm(-abs(est.lambda / se.lambda)))
   } else {
     lambda <- object$lambda
   }
+
+  if (!is.null(object$alpha)) {
+    est.alpha <- stats::coef(object, "alpha")
+    se.alpha <- sqrt(diag(stats::vcov(object, "alpha")))
+
+    alpha <- cbind(Estimate = est.alpha,
+                `Std. error` = se.alpha,
+                `z value` = est.alpha / se.alpha,
+                `Pr(>|z|)` = 2 * pnorm(-abs(est.alpha / se.alpha)))
+  }
+
+  ## Goodness-of-fit quantities
+  y <- as.numeric(stats::model.response(stats::model.frame(object)))
+  ind <- ifelse(y == 0, 1, 0)
+  n <- object$nobs
+
+  ## Upsilon statistic
+  Upsilon <- function(zeta) {
+    cdf <- sort(pbcs(y[ind == 0], mu = object$mu, sigma = object$sigma, lambda = object$lambda,
+                     zeta = object$zeta, family = object$family))
+    Upsilon_zeta <- mean(abs(qnorm(cdf) - EnvStats::evNormOrdStats(n = length(y[ind == 0]))))
+    Upsilon_zeta
+  }
+  Upsilon.zeta <-  Upsilon(object$zeta)
+
+  ## Pseudo-R2
+  eta.1 <- stats::make.link(object$link$mu)$linkfun(object$mu)
+  y.1 <- stats::make.link(object$link$mu)$linkfun(y[ind == 0])
+  pseudo.r.squared <- ifelse(stats::var(eta.1) * stats::var(y.1) <= 0, NA, stats::cor(eta.1, y.1)^2)
+
+  ## v-function
+  v <- v.function(y[ind == 0], mu = object$mu, sigma = object$sigma, lambda = object$lambda,
+                  zeta = object$zeta, family = object$family)$v
+
+  ## Quantile residuals
+  residuals <- stats::residuals(object)
 
   ## number of iterations
   mytail <- function(x) x[length(x)]
@@ -199,16 +289,18 @@ summary.BCSreg <- function(object, ...) {
               mu = mu,
               sigma = sigma,
               lambda = lambda,
+              alpha = if (!is.null(object$alpha)) alpha else NULL,
               zeta = object$zeta,
-              link = object$link,
               family = object$family,
+              link = object$link,
               converged = object$converged,
               iterations = iterations,
               loglik = object$loglik,
-              df = object$nobs - object$df.residual + as.numeric(!is.null(object$zeta)),
+              df = object$nobs - object$df.residual,
               residuals = residuals,
-              Upsilon.zeta = object$Upsilon.zeta,
-              pseudo.r.squared = object$pseudo.r.squared,
+              pseudo.r.squared = pseudo.r.squared,
+              Upsilon.zeta = Upsilon.zeta,
+              v = v,
               AIC = stats::AIC(object),
               BIC = stats::AIC(object, k = object$nobs))
 
@@ -218,71 +310,74 @@ summary.BCSreg <- function(object, ...) {
 }
 
 # Print summary
-#' @rdname BCSreg-methods
+#' @rdname summary.BCSreg
 #' @export
 print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
-  cat("\nCall:", deparse(x$call, width.cutoff = floor(getOption("width") * 0.85)), "", sep = "\n")
+  cat("\nCall:", deparse(x$call, width.cutoff = floor(getOption("width") * 0.85)),  sep = "\n")
   if (!x$converged) {
     cat("Model did not converge\n")
   } else {
-    cat("Quantile residuals:\n")
+
+    cat("\nQuantile residuals:\n")
     print(structure(round(as.vector(stats::quantile(x$residuals)), digits = digits),
-      .Names = c("Min", "1Q", "Median", "3Q", "Max")
+                    .Names = c("Min", "1Q", "Median", "3Q", "Max")
     ))
-    cat("\n")
 
-    cat(paste("Scale submodel with ", x$link$mu, " link:\n", sep = ""))
+    # Discrete component (if applicable)
+    if (!is.null(x$alpha)) {
+      cat("\n--- Fit for the discrete component ---\n")
+      cat(paste("\nZero-adjustment submodel with ", x$link$alpha, " link:\n", sep = ""))
+      stats::printCoefmat(x$alpha, digits = digits, signif.legend = FALSE)
+      cat("\n--- Fit for the continuous component ---\n")
+    }
+
+    # Scale submodel
+    cat(paste("\nScale submodel with ", x$link$mu, " link:\n", sep = ""))
     stats::printCoefmat(x$mu, digits = digits, signif.legend = FALSE)
-    cat("\n")
 
-    cat(paste("Relative dispersion submodel with ", x$link$sigma, " link:\n", sep = ""))
+    # Relative dispersion submodel
+    cat(paste("\nRelative dispersion submodel with ", x$link$sigma, " link:\n", sep = ""))
     stats::printCoefmat(x$sigma, digits = digits, signif.legend = FALSE)
 
+    # Skewness parameter
     if (is.matrix(x$lambda)) {
       cat("\nSkewness parameter:\n", sep = "")
       stats::printCoefmat(x$lambda, digits = digits, signif.legend = FALSE)
-
-      #aux <- rbind(x$mu, x$sigma, x$lambda)[, 4]
-      #if (getOption("show.signif.stars") & any(aux < 0.1)) {
-        cat("---\nSignif. codes: ", "0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1", "\n")
-      #}
+      cat("---\nSignif. codes: ", "0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1", "\n")
 
       if (x$family == "NO" | x$family == "LOI" | x$family == "LOII") {
         cat("\nGenerating family: ", x$family, switch(x$family,
-                                          "NO"   = " (Box-Cox normal)",
-                                          "LOI"  = " (Box-Cox type I logistic)",
-                                          "LOII" = " (Box-Cox type II logistic)"
+                                                      "NO"   = " (Box-Cox normal)",
+                                                      "LOI"  = " (Box-Cox type I logistic)",
+                                                      "LOII" = " (Box-Cox type II logistic)"
         ), sep = "")
       } else {
         cat("\nGenerating family: ", x$family, "(", x$zeta, ")", switch(x$family,
-                                           "ST" = paste0(" (Box-Cox t with zeta = ", x$zeta, ")"),
-                                           "PE" = paste0(" (Box-Cox power exponential with zeta = ", x$zeta, ")"),
-                                           "HP" = paste0(" (Box-Cox hyperbolic with zeta = ", x$zeta, ")"),
-                                           "SL" = paste0(" (Box-Cox slash with zeta = ", x$zeta, ")"),
-                                           "SN" = paste0(" (Box-Cox sinh-normal with zeta = ", x$zeta, ")")
+                                                                        "ST" = paste0(" (Box-Cox t with zeta = ", x$zeta, ")"),
+                                                                        "PE" = paste0(" (Box-Cox power exponential with zeta = ", x$zeta, ")"),
+                                                                        "HP" = paste0(" (Box-Cox hyperbolic with zeta = ", x$zeta, ")"),
+                                                                        "SL" = paste0(" (Box-Cox slash with zeta = ", x$zeta, ")"),
+                                                                        "SN" = paste0(" (Box-Cox sinh-normal with zeta = ", x$zeta, ")")
         ), sep = "")
       }
 
     } else {
 
-      #aux <- rbind(x$mu, x$sigma)[, 4]
-      #if (getOption("show.signif.stars") & any(aux < 0.1)) {
-        cat("---\nSignif. codes: ", "0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1", "\n")
-      #}
+      cat("---\nSignif. codes: ", "0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1", "\n")
 
       if (x$family == "NO" | x$family == "LOI" | x$family == "LOII") {
         cat("\nGenerating family: ", x$family, switch(x$family,
-                                           "NO"   = " (log-normal)",
-                                           "LOI"  = " (log-type I logistic)",
-                                           "LOII" = " (log-type II logistic)"
+                                                      "NO"   = " (log-normal)",
+                                                      "LOI"  = " (log-type I logistic)",
+                                                      "LOII" = " (log-type II logistic)"
         ), sep = "")
       } else {
         cat("\nGenerating family: ", x$family, "(", x$zeta, ")", switch(x$family,
-                                                             "ST" = paste0(" (log-t with zeta = ", x$zeta, ")"),
-                                                             "PE" = paste0(" (log-power exponential with zeta = ", x$zeta, ")"),
-                                                             "HP" = paste0(" (log-hyperbolic with zeta = ", x$zeta, ")"),
-                                                             "SL" = paste0(" (log-slash with zeta = ", x$zeta, ")"),
-                                                             "SN" = paste0(" (log-sinh-normal with zeta = ", x$zeta, ")")
+                                                                        "ST" = paste0(" (log-t with zeta = ", x$zeta, ")"),
+                                                                        "PE" = paste0(" (log-power exponential with zeta = ", x$zeta, ")"),
+                                                                        "HP" = paste0(" (log-hyperbolic with zeta = ", x$zeta, ")"),
+                                                                        "SL" = paste0(" (log-slash with zeta = ", x$zeta, ")"),
+                                                                        "SN" = paste0(" (log-sinh-normal with zeta = ", x$zeta, ")")
         ), sep = "")
       }
 
@@ -303,144 +398,124 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
 
 
 
+# Plot ----------------------------------------------------------------------------------------
+#' Diagnostic Plots for a Box-Cox Symmetric Regression Fit
+#'
+#' This function provides plots for diagnostic analysis of a Box-Cox symmetric
+#'     regression fit.
+#'
+#' @param x an object of class \code{"sdlrm"}.
+#' @param which numeric; if a subset of the plots is required, specify a subset
+#'     of the numbers \code{1:6}.
+#' @param ask logical; if \code{TRUE}, the user is asked before each plot.
+#' @param pch,las,cex,lwd,... graphical parameters (see \code{\link[graphics]{par}})
+#'
+#' @details The \code{plot} method for \code{\link{BCSreg}} objects provides six types
+#'     of diagnostic plots in the following order:
+#'     \describe{
+#'         \item{Residuals vs fitted values}{a plot of the residuals
+#'             versus the fitted medians.}
+#'         \item{Residuals vs observation indices.}{an index plot of the residuals
+#'             versus the observation indices.}
+#'         \item{Density plot}{a graph that compares the empirical density of the residuals
+#'             with the density of the standard normal distribution.}
+#'         \item{Normal probability plot}{a normal probability plot of the residuals with a
+#'             confidence region constructed according to Fox (2016) using the
+#'             \code{\link[car]{qqPlot}} function.}
+#'         \item{Fitted vs observed values}{a dispersion diagram of the fitted values
+#'             versus the observed values.}
+#'         \item{Residuals vs v(z) function}{a dispersion diagram of the \eqn{v(z)} function
+#'             versus the residuals. For someBCS models, the \eqn{v(z)} function
+#'             may be interpreted as weights in the estimation process. If \code{family = "NO"},
+#'             the \eqn{v(z)} function is constant.}
+#'      }
+#'
+#'      The \code{which} argument can be used to select a subset of the implemented plots.
+#'      Default is \code{which = 1:4}.
+#'
+#' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
+#' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
+#'
+#' @return \code{plot} method for \code{"\link{BCSreg}"} objects returns 7 types
+#'     of diagnostic plots.
+#'
+#' @export
+#' @importFrom graphics abline identify mtext par points text title curve rug legend
+#'
+#' @examples
+#' ## Examples
+plot.BCSreg <- function(x, which = 1:4,
+                        ask = prod(graphics::par("mfcol")) < length(which) &&
+                        grDevices::dev.interactive(),
+                        pch = "+", las = 1, cex = 0.8, lwd = 2, ...)
+{
 
+  if(!is.numeric(which) || any(which < 1) || any(which > 6))
+    stop("`which' must be in 1:6")
 
+  ## Reading
+  res <- stats::residuals(x)
+  y <- stats::model.response(stats::model.frame(x))
 
+  ## Graphical parameters setting
+  if (ask) {
+    op <- graphics::par(ask = TRUE)
+    on.exit(graphics::par(op))
+  }
 
-# summary.BCSreg <- function(object, type = "quantile", ...) {
-#   ## residuals
-#   type <- match.arg(type, c("quantile"))
-#   object$residuals <- residuals(object, type = type)
-#   object$residuals.type <- type
-#
-#   ## extend coefficient table
-#   p <- length(object$coefficients$median)
-#   q <- length(object$coefficients$dispersion)
-#   cf <- as.vector(do.call("c", object$coefficients))
-#   cf <- if (is.null(object$lambda)) cf else cf[-(p + q + 1)]
-#   se <- sqrt(diag(object$vcov))
-#   cf <- cbind(cf, se, cf / se, 2 * pnorm(-abs(cf / se)))
-#   colnames(cf) <- c("Estimate", "Std. Error", "z value", "Pr(>|z|)")
-#
-#   cf <- if (is.null(object$lambda)) {
-#     list(
-#       median = cf[seq.int(length.out = p), , drop = FALSE],
-#       dispersion = cf[seq.int(length.out = q) + p, , drop = FALSE],
-#       shape = cf[seq.int(length.out = 1) + p + q, 1:2, drop = FALSE]
-#     )
-#   } else {
-#     list(
-#       median = cf[seq.int(length.out = p), , drop = FALSE],
-#       dispersion = cf[seq.int(length.out = q) + p, , drop = FALSE]
-#     )
-#   }
-#
-#   rownames(cf$median) <- names(object$coefficients$median)
-#   rownames(cf$dispersion) <- names(object$coefficients$dispersion)
-#   if (is.null(object$lambda)) rownames(cf$shape) <- names(object$coefficients$shape)
-#   object$coefficients <- cf
-#
-#   ## number of iterations
-#   mytail <- function(x) x[length(x)]
-#   object$iterations <- c("optim" = as.vector(mytail(na.omit(object$optim$count))))
-#
-#   ## AIC
-#   object$AIC <- -2 * object$loglik + 2 * (p + q + ifelse(is.null(object$lambda), 1, 0))
-#
-#   ## delete some slots
-#   object$fitted.values <- object$terms <- object$model <- object$y <-
-#     object$x <- object$levels <- object$contrasts <- object$start <- NULL
-#
-#   ## return
-#   class(object) <- "summary.BCSreg"
-#   object
-# }
+  ## Plots to shown
+  show <- rep(FALSE, 6)
+  show[which] <- TRUE
 
+  ## Residuals versus Fitted values
+  if (show[1]){
+    plot(stats::fitted(x), res, xlab = "Fitted values", ylab = "Quantile residuals",
+         pch = pch, las = las, cex = cex, ...)
+    abline(h = c(stats::qnorm(0.025), 0, stats::qnorm(0.975)),
+           lty = c(2, 1, 2), lwd = lwd, col = "dodgerblue")
+  }
 
+  ## Residuals versus observation indices
+  if (show[2]){
+    n <- x$nobs
+    plot(1:n, res, xlab = "Observation indices", ylab = "Quantile residuals",
+         pch = pch, las = las, cex = cex, ...)
+    abline(h = c(stats::qnorm(0.025), 0, stats::qnorm(0.975)),
+           lty = c(2, 1, 2), lwd = lwd, col = "dodgerblue")
+  }
 
-# print.summary.BCSreg <- function(x, ...) {
-#   cat("\nCall:", deparse(x$call, width.cutoff = floor(getOption("width") * 0.85)), "", sep = "\n")
-#   digits <- 4
-#   if (!x$converged) {
-#     cat("Model did not converge\n")
-#   } else {
-#     types <- c("quantile")
-#     Types <- c("Quantile residuals")
-#     cat(sprintf("%s:\n", Types[types == match.arg(x$residuals.type, types)]))
-#     print(structure(round(as.vector(quantile(x$residuals)), digits = digits),
-#                     .Names = c("Min", "1Q", "Median", "3Q", "Max")
-#     ))
-#
-#     if (NROW(x$coefficients$median)) {
-#       cat(paste("\nCoefficients (median model with ", x$link$median$name, " link):\n", sep = ""))
-#       printCoefmat(x$coefficients$median, digits = digits, signif.legend = FALSE)
-#     } else {
-#       cat("\nNo coefficients (in median model)\n")
-#     }
-#
-#     if (NROW(x$coefficients$dispersion)) {
-#       cat(paste("\nSigma coefficients (relative dispersion model with ", x$link$dispersion$name, " link):\n", sep = ""))
-#       printCoefmat(x$coefficients$dispersion, digits = digits, signif.legend = FALSE)
-#     } else {
-#       cat("\nNo coefficients (in relative dispersion model)\n")
-#     }
-#
-#     if (is.null(x$lambda)) {
-#       cat(paste("\nLambda coefficient:\n", sep = ""))
-#       printCoefmat(x$coefficients$shape, digits = digits, signif.legend = FALSE)
-#     } else {
-#       cat(paste("\nFixed shape parameter (lambda = ", x$lambda, ").\n", sep = ""))
-#     }
-#
-#     aux <- x$coefficients[c("median", "dispersion")]
-#
-#     if (getOption("show.signif.stars") & any(do.call("rbind", aux)[, 4L] < 0.1)) {
-#       cat("---\nSignif. codes: ", "0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1", "\n")
-#     }
-#
-#     if (!is.null(x$lambda) && x$lambda == 0) {
-#       if (x$family == "NO" | x$family == "LO") {
-#         cat("\nFamily: log -", x$family, switch(x$family,
-#                                                 "NO" = "(log normal)",
-#                                                 "LO" = "(log type II logistic)"
-#         ))
-#       } else {
-#         cat("\nFamily: log -", x$family, "(", x$zeta, ")", switch(x$family,
-#                                                                   "TF"    = "(log Student-t)",
-#                                                                   "PE"    = "(log power exponential)",
-#                                                                   "Hyp"   = "(log hyperbolic)",
-#                                                                   "SLASH" = "(log slash)",
-#                                                                   "SN"    = "(log sinh-normal)"
-#         ))
-#       }
-#     } else {
-#       if (x$family == "NO" | x$family == "LO") {
-#         cat("\nFamily: BCS -", x$family, switch(x$family,
-#                                                 "NO" = "(Box-Cox normal)",
-#                                                 "LO" = "(Box-Cox type II logistic)"
-#         ))
-#       } else {
-#         cat("\nFamily: BCS -", x$family, "(", x$zeta, ")", switch(x$family,
-#                                                                   "TF"    = "(Box-Cox Student-t)",
-#                                                                   "PE"    = "(Box-Cox power exponential)",
-#                                                                   "Hyp"   = "(Box-Cox hyperbolic)",
-#                                                                   "SLASH" = "(Box-Cox slash)",
-#                                                                   "SN"    = "(Box-Cox sinh-normal)"
-#         ))
-#       }
-#     }
-#
-#
-#     cat(
-#       "\nLog-likelihood:", formatC(x$loglik, digits = digits),
-#       "on", sum(sapply(x$coefficients, NROW)), "Df"
-#     )
-#     if (!is.na(x$pseudo.r.squared)) cat("\nPseudo R-squared:", formatC(x$pseudo.r.squared, digits = digits))
-#     if (!is.na(x$Upsilon.zeta)) cat("\nUpsilon statistic:", formatC(x$Upsilon.zeta, digits = digits))
-#     if (!is.na(x$AIC)) cat("\nAIC:", formatC(x$AIC, digits = digits))
-#     cat(paste("\nNumber of iterations in", x$method, "optimization:", x$iterations[1L], "\n"))
-#   }
-#
-#   invisible(x)
-# }
+  ## Density
+  if(show[3]) {
+    plot(stats::density(res), main = "", lwd = 2, ...)
+    curve(stats::dnorm(x), col = "dodgerblue", add = TRUE, lwd = 2)
+    rug(res)
+  }
+
+  ## Normal probability plot
+  if(show[4]) {
+    car::qqPlot(res, col.lines = "dodgerblue", grid = FALSE,
+                pch = pch, las = las, cex = cex, ...,
+                xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...)
+  }
+
+  ## Fitted vs observed values
+  if(show[5]) {
+    plot(y, stats::fitted(x), xlab = "Observed values", ylab = "Fitted values",
+         pch = pch, las = las, cex = cex, ...)
+    abline(0, 1, lty = lwd, lwd = lwd, col = "dodgerblue")
+  }
+
+  ## ACF of residuals
+  if(show[6]) {
+    v <- v.function(y[y > 0], x$mu, x$sigma, x$lambda, x$zeta, x$family)$v
+    if(x$family == "NO")
+      warning("The v(z) function is constant for this family.")
+    plot(res[y > 0], v, xlab = "Quantile residuals", ylab = expression(v(z)),
+           pch = pch, las = las, cex = cex, ...)
+  }
+
+  invisible(x)
+
+}
+
 
