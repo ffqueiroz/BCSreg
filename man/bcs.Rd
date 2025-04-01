@@ -189,3 +189,8 @@ Cole, T., and Green, P.J. (1992). Smoothing reference centile curves: the LMS
  Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
      statistical properties and parameter estimation. \emph{Brazilian Journal of Probability and Statistics}, 30, 196-220.
 }
+\author{
+Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
+
+Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
+}

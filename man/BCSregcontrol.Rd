@@ -56,3 +56,8 @@ The \code{BCSreg.control} controls the fitting process of Box-Cox symmetric mode
 \seealso{
 \code{\link{BCSreg}}
 }
+\author{
+Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
+
+Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
+}

@@ -103,6 +103,9 @@
 #'  Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
 #'      statistical properties and parameter estimation. \emph{Brazilian Journal of Probability and Statistics}, 30, 196-220.
 #'
+#' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
+#' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
+#'
 #' @examples
 #' # Probability density function
 #'
