@@ -2,6 +2,7 @@
 % Please edit documentation in R/2_fit_functions.R
 \name{BCSreg}
 \alias{BCSreg}
+\alias{print.BCSreg}
 \title{Box-Cox Symmetric Regression for Positive Data}
 \usage{
 BCSreg(
@@ -13,18 +14,29 @@ BCSreg(
   zeta,
   link = "log",
   sigma.link = "log",
+  alpha.link,
   control = BCSreg.control(...),
   model = TRUE,
   y = TRUE,
   x = FALSE,
   ...
 )
+
+\method{print}{BCSreg}(x, digits = max(3, getOption("digits") - 3), ...)
 }
 \arguments{
-\item{formula}{a symbolic description of the model, of type \code{y ~ x} to specify
-explanatory variables in the scale (\code{mu}) regression structure only or \code{y ~ x | z}
-to also specify explanatory variables in the relative dispersion (\code{sigma}) regression
-structure. See details below.}
+\item{formula}{a symbolic description of the model, allowing the specification of
+different regression structures for model parameters using the \code{\link[Formula]{Formula}} package.
+By default, the formula defines the regression structure for the scale parameter.
+It can include up to three parts, separated by the `|` operator:
+
+\itemize{
+  \item \bold{First part:} specifies the model for the scale parameter.
+  \item \bold{Second part (optional):} defines a regression structure for the relative dispersion parameter.
+  \item \bold{Third part (only applicable for zero-inflated positive data):} models the zero-adjustment parameter.
+}
+
+See "Details" for further explanation.}
 
 \item{data, subset, na.action}{arguments controlling formula processing via
 \code{\link[stats]{model.frame}}.}
@@ -36,73 +48,95 @@ Student-\emph{t}, type I logistic, type II logistic, power exponential, sinh-nor
 hyperbolic, and slash distributions, respectively.}
 
 \item{zeta}{strictly positive extra parameter. It must be specified with only one value
-in cases where the BCS distribution has an extra parameter. See “Details” below.}
+in cases where the BCS distribution has an extra parameter.}
 
-\item{link, sigma.link}{character specification of the link function for the
-scale (\code{mu}) and relative dispersion (\code{sigma}) regression structures, respectively.
+\item{link, sigma.link}{character specification of the link functions for
+the scale and relative dispersion regression structures, respectively.
 Currently, \code{"log"} (default), \code{"sqrt"}, \code{"1/mu^2"},
 \code{"inverse"}, and \code{"identity"} are supported.}
+
+\item{alpha.link}{character specification of the link function for the
+zero-adjustment regression structure (only applicable for zero-inflated positive data). Currently, \code{"logit"} (default),
+\code{"probit"}, \code{"cloglog"}, \code{"cauchit"}, and \code{"identity"}
+are supported.}
 
 \item{control}{a list of control parameters passed as arguments for
 the \code{\link[stats]{optim}} function specified via \code{\link{BCSreg.control}}.}
 
 \item{model, y, x}{logicals. If \code{TRUE}, the corresponding components of the fit
-(model frame, response, and model matrices) are returned.}
+(the model frame, the response, and the model matrices, respectively) are returned. For
+\code{print()}, \code{x} is a fitted model object of class \code{"BCSreg"}.}
 
 \item{...}{arguments passed to \code{\link{BCSreg.control}}.}
+
+\item{digits}{a non-null value for digits specifies the minimum number of significant digits to
+be printed in values.}
 }
 \value{
 The \code{BCSreg} function returns an object of class \code{"BCSreg"},
      which consists of a list with the following components:
  \describe{
-    \item{coefficients}{ a list containing the elements \code{"mu"} and
+    \item{coefficients}{a list containing the elements \code{"mu"} and
         \code{"sigma"} that consist of the estimates of the coefficients
-         associated with the scale and relative dispersion regression structures, respectively.}
-    \item{fitted.values}{ a vector with the fitted median responses. Not to be confused with the fitted values for \code{mu}.}
-    \item{mu}{ a vector with the fitted scale parameters.}
-    \item{sigma}{ a vector with the fitted relative dispersion parameters.}
+         associated with the scale and relative dispersion regression structures,
+         respectively. If the model is zero-adjusted, the element \code{"alpha"}
+         will also be returned with the estimated coefficients for the regression
+         structure of the zero-adjustment parameter.}
+    \item{fitted.values}{a vector with the fitted median responses. Not to be
+         confused with the fitted values for \code{mu}.}
+    \item{mu}{a vector with the fitted scale parameters.}
+    \item{sigma}{a vector with the fitted relative dispersion parameters.}
     \item{lambda}{ the maximum likelihood estimate of the skewness parameter (\code{lambda}), or its fixed value
         specified in the \code{BCSreg} function.}
-    \item{zeta}{ the specified value for the extra parameter of the corresponding BCS distribution, if applicable.}
-    \item{family}{ the generating family of the fitted BCS distribution.}
-    \item{link}{ a list with elements \code{"mu"} and \code{"sigma"} with the
-        specified link functions for the \code{mu} and \code{sigma} regression structures, respectively.}
-    \item{logLik}{ log-likelihood of the fitted model.}
-    \item{vcov}{ asymptotic covariance matrix of the estimators. By default, the asymptotic
+    \item{zeta}{the specified value for the extra parameter of the corresponding
+        BCS distribution, if applicable.}
+    \item{family}{the generating family of the fitted BCS distribution.}
+    \item{link}{a list with elements \code{"mu"} and \code{"sigma"} with the
+        specified link functions for the \code{mu} and \code{sigma} regression
+        structures, respectively. If the model is zero-adjusted, the element
+        \code{"alpha"} will also be returned with the link function for
+        the regression structure of the zero-adjustment parameter.}
+    \item{logLik}{log-likelihood of the fitted model.}
+    \item{vcov}{asymptotic covariance matrix of the estimators. By default, the asymptotic
         covariance matrix is based on a analytical expression of the observed information matrix.
         It can be obtained numerically based on the Hessian matrix via \code{\link[stats]{optim}})
         if the argument \code{hessian = TRUE} is used in the \code{BCSreg} function.}
-    \item{residuals}{ a vector of quantile residuals.}
-    \item{pseudo.r.squared}{pseudo R-squared value.}
-    \item{Upsilon.zeta}{an overall goodness-of-fit measure.}
-    \item{v}{a vector with the \eqn{v(z)} values for all the observations.
-        The \eqn{v} function is a weighting function that is involved in the
-        parameter estimation process. It depends on the generating density function
-        of the corresponding BCS distribution.}
-    \item{nobs}{ number of observations.}
-    \item{df.null}{ residual degrees of freedom in the null model (constant scale and relative dispersion).}
-    \item{df.residual}{ residual degrees of freedom in the fitted model.}
+    \item{nobs}{number of observations.}
+    \item{df.null}{residual degrees of freedom in the null model (a model without
+        any regression structure).}
+    \item{df.residual}{residual degrees of freedom in the fitted model, that is,
+        the sample size minus the number of model parameters.}
     \item{control}{the control arguments passed to the optim call.}
     \item{start}{a vector with the starting values used in the iterative process.}
     \item{optim}{a list with the output from \code{\link[stats]{optim}}.}
-    \item{converged}{logical indicating successful convergence of the iterative process.}
+    \item{converged}{logical indicating successful convergence of the iterative
+        process.}
     \item{call}{the original function call.}
     \item{formula}{the formula used.}
     \item{terms}{a list with elements "\code{mu}", "\code{sigma}", and "\code{full}" containing
-        the term objects for the respective models.}
+        the term objects for the respective models. If the model is zero-adjusted,
+        the element \code{"alpha"} will also be returned with the term object for the
+        zero-adjustment model.}
     \item{levels}{a list with elements "\code{mu}", "\code{sigma}", and "\code{full}" containing
-        the levels of the categorical regressors.}
+        the levels of the categorical regressors. If the model is zero-adjusted, the element
+        \code{"alpha"} will also be returned.}
     \item{contrasts}{a list with elements "\code{mu}" and "\code{sigma}"
-        containing the contrasts corresponding to levels from the respective models.}
+        containing the contrasts corresponding to levels from the respective models. If the model is zero-adjusted, the element
+        \code{"alpha"} will also be returned. }
     \item{model}{the full model frame (if \code{y = TRUE}).}
     \item{y}{the response variable (if \code{y = TRUE}).}
     \item{x}{a list with elements "\code{mu}" and "\code{sigma}" with the model matrices from
-        the \code{mu} and \code{sigma} submodels (if \code{x = TRUE}).}
+        the \code{mu} and \code{sigma} submodels (if \code{x = TRUE}). If the model is zero-adjusted, the element
+        \code{"alpha"} will also be returned with the model matrix for the
+        zero-adjustment submodel.}
+    \item{alpha}{a vector with the fitted zero-adjustment parameters when a zero-adjusted
+        model is considered; and \code{NULL}, otherwise.}
    }
 }
 \description{
-Maximum likelihood estimation in the class of the Box-Cox symmetric (BCS) regression models
-    for the analysis of positive data.
+Fits Box-Cox symmetric (BCS) and zero-adjusted BCS regression models
+    using maximum likelihood estimation, providing a flexible approach
+    for modeling positive data.
 }
 \details{
 The \code{BCSreg} function implements maximum likelihood estimation in the
@@ -111,51 +145,79 @@ The \code{BCSreg} function implements maximum likelihood estimation in the
     are a broad class of flexible distributions that achieve different levels of
     skewness and tail-heaviness. See details in \link{bcs}.
 
+
     The distributions currently implemented in the \code{BCSreg} package, along
     with their abbreviations used in the \code{family} argument, are listed below:
     \tabular{llc}{
-     \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{Number of parameters}\cr
-     Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  4  \cr
-     Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  3  \cr
-     Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  3  \cr
-     Box-Cox Normal  \tab \code{"NO"}      \tab  3  \cr
-     Box-Cox Power Exponential  \tab \code{"PE"}      \tab  4  \cr
-     Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  4  \cr
-     Box-Cox Slash  \tab \code{"SL"}      \tab  4  \cr
-     Box-Cox \emph{t}  \tab \code{"ST"}      \tab  4  \cr
-     }
+    \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{N. of extra parameters}\cr
+    Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  1  \cr
+    Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  0  \cr
+    Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  0  \cr
+    Box-Cox Normal  \tab \code{"NO"}      \tab  0  \cr
+    Box-Cox Power Exponential  \tab \code{"PE"}      \tab  1  \cr
+    Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  1  \cr
+    Box-Cox Slash  \tab \code{"SL"}      \tab  1  \cr
+    Box-Cox \emph{t}  \tab \code{"ST"}      \tab  1  \cr
+    }
 
     The BCS distributions have at least three parameters: scale (\code{mu}),
     relative dispersion (\code{sigma}), and skewness (\code{lambda}) parameters.
     Some distributions may also depend on an additional parameter (\code{zeta}),
     such as the Box-Cox \emph{t} and Box-Cox power exponential distributions. The
-    BCS distributions reduce to the log-symmetric distributions when \code{lambda}
-    is fixed at zero. The Log-symmetric distributions are an important class of
-    probability models for positive data, which includes well-known distributions such
-    as the log-normal and log-\emph{t} distributions. The \code{BCSreg} function
-    allows fitting a log-symmetric regression using \code{lambda = 0} as an
-    argument (see \code{\link{BCSreg.control}}).
+    BCS distributions reduce to the log-symmetric distributions
+    (Vanegas and Paula, 2016) when \code{lambda} is fixed at zero. The Log-symmetric
+    distributions are an important class of probability models for positive data,
+    which includes well-known distributions such as the log-normal and log-\emph{t}
+    distributions. The \code{BCSreg} function allows fitting a log-symmetric
+    regression using \code{lambda = 0} as an argument
+    (see \code{\link{BCSreg.control}}).
 
+    The \code{formula} argument defines the regression structures for different model
+    parameters using the \code{\link[Formula]{Formula}} package (Zeileis and Croissant, 2010).
+    It can have up to three parts, separated by the "\code{|}" operator:
+    \itemize{
+     \item \bold{First part:} specifies the model for the scale parameter.
+     \item \bold{Second part (optional):} defines a regression structure for the relative dispersion parameter.
+     \item \bold{Third part (only applicable for zero-inflated positive data):} models the zero-adjustment parameter.
+    }
 
-    The \code{BCSreg} function allows defining a regression structure in the
-    \code{mu} and \code{sigma} parameters via the \code{formula} argument. The
-    basic formula is of type \code{y ~ x1 + x2 + ... + xp} which specifies the
-    regression structure for \code{mu} only. Following the syntax of the
-    \code{betareg} package (Cribari-Neto and Zeileis, 2010), the regression structure
-    for \code{sigma}, say in terms of \code{s1, s2, ..., sq}, is specified as
-    \code{y ~ x1 + x2 + ... + xp | s1 + s2 + ... + sq} using functionalities inherited
-    from the \code{\link[Formula]{Formula}} package (Zeileis and Croissant, 2010).
+    If only the first part is provided, the model applies only to the scale parameter.
+    When a second part is included, a regression structure is defined for the relative
+    dispersion parameter. If the data contains zero inflation, a third part can be
+    specified to model the zero-adjustment parameter.
+
+    For instance, consider a dataset where \code{y} is the zero-inflated
+    dependent variable, and \code{x}, \code{s}, and \code{z} are explanatory
+    variables associated with the scale, relative dispersion, and zero-adjustment
+    parameters, respectively. The following formulas illustrate different model structures:
+    \itemize{
+     \item \code{y ~ x}  # Scale parameter only
+     \item \code{y ~ x | s} # Scale and relative dispersion parameters
+     \item \code{y ~ x | s | z} # Scale, relative dispersion, and zero-adjustment parameters
+     \item \code{y ~ x | 1 | z} # Scale and zero-adjustment parameters
+     \item \code{y ~ 1 | s | z} # Relative dispersion and zero-adjustment parameters
+    }
 }
 \references{
 Cribari-Neto F, Zeileis A (2010). Beta Regression in R. \emph{Journal of Statistical
-    Software}, \bold{34}, 1-24
+    Software}, \bold{34}, 1---24
 
     Ferrari, S. L. P., and Fumes, G. (2017). Box-Cox symmetric distributions and
-    applications to nutritional data. \emph{AStA Advances in Statistical Analysis}, \bold{101}, 321-344.
+    applications to nutritional data. \emph{AStA Advances in Statistical Analysis},
+    \bold{101}, 321---344.
 
     Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
     Box-Cox symmetric regression models and their extensions
 
+    Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
+    statistical properties and parameter estimation. \emph{Brazilian Journal of
+    Probability and Statistics}, \bold{30},196---220
+
     Zeileis A, Croissant Y (2010). Extended Model Formulas in R: Multiple Parts and Multiple
-    Responses. \emph{Journal of Statistical Software}, \bold{34}, 1-13.
+    Responses. \emph{Journal of Statistical Software}, \bold{34}, 1---13.
+}
+\author{
+Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
+
+Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 }
