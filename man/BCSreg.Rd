@@ -16,8 +16,8 @@ BCSreg(
   sigma.link = "log",
   alpha.link,
   control = BCSreg.control(...),
-  model = TRUE,
-  y = TRUE,
+  model = FALSE,
+  y = FALSE,
   x = FALSE,
   ...
 )

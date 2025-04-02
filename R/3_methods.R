@@ -144,7 +144,8 @@ residuals.BCSreg <- function(object, ...) {
   residuals <- cdf <- rep(NA, n)
   cdf <- alpha
   cdf[ind == 0] <- alpha[ind == 0] + (1 - alpha[ind == 0]) *
-    pbcs(y[ind == 0], mu = mu, sigma = sigma, lambda = lambda, zeta = zeta, family = family)
+    pbcs(y[ind == 0], mu = mu[ind == 0], sigma = sigma[ind == 0],
+         lambda = lambda, zeta = zeta, family = family)
 
   u <- rep(NA, sum(ind))
   j <- 1L
@@ -436,7 +437,7 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #'
-#' @return \code{plot} method for \code{"\link{BCSreg}"} objects returns 7 types
+#' @return \code{plot} method for \code{"\link{BCSreg}"} objects returns six types
 #'     of diagnostic plots.
 #'
 #' @export
@@ -507,7 +508,7 @@ plot.BCSreg <- function(x, which = 1:4,
 
   ## ACF of residuals
   if(show[6]) {
-    v <- v.function(y[y > 0], x$mu, x$sigma, x$lambda, x$zeta, x$family)$v
+    v <- v.function(y[y > 0], x$mu[y > 0], x$sigma[y > 0], x$lambda, x$zeta, x$family)$v
     if(x$family == "NO")
       warning("The v(z) function is constant for this family.")
     plot(res[y > 0], v, xlab = "Quantile residuals", ylab = expression(v(z)),

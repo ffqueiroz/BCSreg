@@ -206,31 +206,31 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
   p <- dim(X)[2]
 
   ## Model matrices
-  if (is.null(colnames(X))) {
-    if (p == 1) {
-      colnames(X) <- "(Intercept)"
-    } else {
-      colnames(X) <- c("(Intercept)", paste0("X", 1:(p-1)))
-    }
-  }
+  # if (is.null(colnames(X))) {
+  #   if (p == 1) {
+  #     colnames(X) <- "(Intercept)"
+  #   } else {
+  #     colnames(X) <- c("(Intercept)", paste0("X", 1:(p-1)))
+  #   }
+  # }
 
   if (is.null(S)) {
-    q <- 1
-    S <- matrix(1, ncol = q, nrow = n)
-    colnames(S) <- "(Intercept)"
-    rownames(S) <- rownames(X)
-  } else {
-    q <- dim(S)[2]
-    if (is.null(colnames(S))) {
-      if (q == 1) {
-        colnames(S) <- "(Intercept)"
-      } else {
-        colnames(S) <- c("(Intercept)", paste0("S", 1:(p-1)))
-      }
-    }
-  }
-
-  sigma_const <- (q == 1) && (sigma.link == "identity")
+    # q <- 1
+    S <- matrix(1, nrow = n)
+    #colnames(S) <- "(Intercept)"
+    #rownames(S) <- rownames(X)
+  } #else {
+  #   q <- dim(S)[2]
+  #   if (is.null(colnames(S))) {
+  #     if (q == 1) {
+  #       colnames(S) <- "(Intercept)"
+  #     } else {
+  #       colnames(S) <- c("(Intercept)", paste0("S", 1:(p-1)))
+  #     }
+  #   }
+  # }
+  q <- ncol(S)
+  #sigma_const <- (q == 1) && (sigma.link == "identity")
 
   ## Link functions
   if (is.character(link)) {
@@ -541,15 +541,13 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 
   beta <- theta.opt$par[seq.int(length.out = p)]
   tau <- theta.opt$par[seq.int(length.out = q) + p]
-  lambda <- if (lambda_id) theta.opt$par[1L + p + q] else lambda_fix
-
-  if (theta.opt$convergence == 0) {
-    converged <- TRUE
+  if (lambda_id) {
+    lambda <- theta.opt$par[p + q + 1L]
   } else {
-    converged <- FALSE
-    warning("Optimization failed to converge.", call. = FALSE)
+    lambda <- lambda_fix
   }
 
+  ## Covariance matrix
   if (hessian) {
     vcov <- solve(theta.opt$hessian)
   } else {
@@ -561,6 +559,30 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
     }
 
   }
+
+  # if (lambda_id) {
+  #   rownames(vcov) <- colnames(vcov) <- c(colnames(X), if (sigma_const) {
+  #     "(sigma)"
+  #   } else {
+  #     paste("(sigma)",
+  #           colnames(S),
+  #           sep = "_"
+  #     )
+  #   }, "(lambda)")
+  # } else {
+  #   rownames(vcov) <- colnames(vcov) <- c(colnames(X), if (sigma_const) {
+  #     "(sigma)"
+  #   } else {
+  #     paste("(sigma)",
+  #           colnames(S),
+  #           sep = "_"
+  #     )
+  #   })
+  # }
+
+  theta.opt$vcov <- vcov
+  theta.opt$start <- start
+
 
   # if (lambda_id) {
   #   theta.opt <- optim(
@@ -594,62 +616,8 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
   #   vcov <- solve(Jfunction(beta, tau, lambda)[seq.int(length.out = p + q), seq.int(length.out = p + q)])
   # }
 
-  eta.1 <- as.vector(X %*% beta)
-  eta.2 <- as.vector(S %*% tau)
-  mu <- linkinv(eta.1)
-  sigma <- sigma_linkinv(eta.2)
+  theta.opt
 
-  optim.fit <- theta.opt
-  ll <- logL(c(beta, tau, lambda), lambda_id = TRUE)
-
-  names(beta) <- colnames(X)
-  names(tau) <- if (sigma_const) "(sigma)" else colnames(S)
-  names(lambda) <- "(lambda)"
-
-  if (lambda_id) {
-    rownames(vcov) <- colnames(vcov) <- c(colnames(X), if (sigma_const) {
-      "(sigma)"
-    } else {
-      paste("(sigma)",
-            colnames(S),
-            sep = "_"
-      )
-    }, "(lambda)")
-  } else {
-    rownames(vcov) <- colnames(vcov) <- c(colnames(X), if (sigma_const) {
-      "(sigma)"
-    } else {
-      paste("(sigma)",
-            colnames(S),
-            sep = "_"
-      )
-    })
-  }
-
-  fitted.values <- structure(qbcs(0.5, mu, sigma, lambda, zeta, family), .Names = names(y))
-
-  ## Out
-  val <- list(
-    coefficients = list(mu = beta, sigma = tau),
-    mu = mu,
-    sigma = sigma,
-    lambda = lambda,
-    zeta = zeta,
-    fitted.values = fitted.values,
-    family = family,
-    link = list(mu = link, sigma = sigma.link),
-    loglik = ll,
-    vcov = vcov,
-    nobs = n,
-    df.null = n - 2 - as.numeric(lambda_id) - as.numeric(zeta_id),
-    df.residual = n - p - q - as.numeric(lambda_id) - as.numeric(zeta_id),
-    control = ocontrol,
-    start = start,
-    optim = optim.fit,
-    converged = converged
-  )
-
-  val
 }
 
 # Main fit function ---------------------------------------------------------------------------
@@ -838,8 +806,8 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 BCSreg <- function(formula, data, subset, na.action,
                     family = "NO", zeta,
                     link = "log", sigma.link = "log", alpha.link,
-                    control = BCSreg.control(...), model = TRUE,
-                    y = TRUE, x = FALSE, ...) {
+                    control = BCSreg.control(...), model = FALSE,
+                    y = FALSE, x = FALSE, ...) {
   ## Model call
   cl <- match.call()
 
@@ -881,7 +849,12 @@ BCSreg <- function(formula, data, subset, na.action,
   if (min(Y) < 0) {
     stop("Invalid dependent variable, all observations must be non-negative.", call. = FALSE)
   }
+
+  ## Lenghts
   n <- length(Y)
+  p <- ncol(X)
+  q <- ncol(S)
+  m <- ncol(Z)
 
   ## Symmetric generating family
   family <- match.arg(family, c("NO", "HP", "LOI", "LOII", "PE", "SN", "SL", "ST"))
@@ -912,12 +885,70 @@ BCSreg <- function(formula, data, subset, na.action,
   }
 
   ## Model fit
-  val <- BCSreg.fit(
-    X = as.matrix(X[ind == 0, ]), y = Y[ind == 0], S = as.matrix(S[ind == 0, ]), zeta = zeta, family = family,
+  opt_fit <- BCSreg.fit(
+    X = as.matrix(X[ind == 0, ]), y = Y[ind == 0], S = as.matrix(S[ind == 0, ]),
+    zeta = zeta, family = family,
     link = link, sigma.link = sigma.link, control = control
   )
 
-  ## Out
+  if (opt_fit$convergence == 0) {
+    converged <- TRUE
+  } else {
+    converged <- FALSE
+    warning("Optimization failed to converge.", call. = FALSE)
+  }
+
+  ## Model parameters
+  start <- opt_fit$start
+  opt_fit$start <- NULL
+
+  beta <- opt_fit$par[seq.int(length.out = p)]
+  names(beta) <- colnames(X)
+  if (is.null(names(beta))) names(beta) <- paste0("X", 1:p)
+
+  tau <- opt_fit$par[seq.int(length.out = q) + p]
+  names(tau) <- colnames(S)
+  if (is.null(names(tau))) names(tau) <- paste0("S", 1:p)
+
+  mu <- stats::make.link(link)$linkinv(as.vector(X %*% beta))
+  sigma <- stats::make.link(sigma.link)$linkinv(as.vector(S %*% tau))
+  if (lambda_id) {
+    lambda <- opt_fit$par[p + q + 1]
+    names(lambda) <- "(lambda)"
+  } else {
+    lambda <- control$lambda
+  }
+
+  ## Covariance matrix
+  vcov <- opt_fit$vcov
+  opt_fit$vcov <- NULL
+  rownames(vcov) <- colnames(vcov) <- c(names(beta),
+                                        paste0("(sigma)_", names(tau)),
+                                        names(lambda))
+
+  ## Fitted values
+  fitted.values <- structure(qbcs(0.5, mu, sigma, lambda, zeta, family), .Names = names(y))
+
+  val <- list(
+    coefficients = list(mu = beta, sigma = tau),
+    fitted.values = fitted.values,
+    mu = mu,
+    sigma = sigma,
+    lambda = lambda,
+    zeta = zeta,
+    family = family,
+    link = list(mu = link, sigma = sigma.link),
+    loglik = opt_fit$value,
+    vcov = vcov,
+    nobs = n,
+    df.null = n - 2 - as.numeric(lambda_id) - as.numeric(zeta_id),
+    df.residual = n - p - q - as.numeric(lambda_id) - as.numeric(zeta_id),
+    control = control,
+    start = start,
+    optim = opt_fit,
+    converged = converged
+  )
+
   val$call <- cl
   val$formula <- oformula
   val$terms <- list(mu = mtX, sigma = mtS, full = mt)
@@ -960,32 +991,43 @@ BCSreg <- function(formula, data, subset, na.action,
         val$x$alpha <- Z
       }
 
-      val$coefficients$alpha <- glm_fit$coefficients
+      kappa <- glm_fit$coefficients
+      names(kappa) <- colnames(Z)
+      if (is.null(names(kappa))) names(kappa) <- paste0("Z", 1:m)
+      val$coefficients$alpha <- kappa
       val$alpha <- as.numeric(glm_fit$fitted.values)
       val$link$alpha <- alpha.link
 
+      ## Fitted values
       fitted.values <- rep(NA, n)
-      fitted.values[val$alpha > 0.5 | ind == 1L] <- 0L
-      fitted.values[val$alpha <= 0.5 & ind == 0L] <- qbcs((0.5 - val$alpha[ind == 0]) /
-                                                (1 - val$alpha[ind == 0]),
-                                              mu = val$mu, sigma = val$sigma,
-                                              lambda = val$lambda, zeta = val$zeta,
-                                              family = val$family)
-
+      fitted.values[val$alpha > 0.5] <- 0L
+      fitted.values[val$alpha <= 0.5] <- qbcs((0.5 - val$alpha[val$alpha <= 0.5]) /
+                                                (1 - val$alpha[val$alpha <= 0.5]),
+                                              mu = mu[val$alpha <= 0.5],
+                                              sigma = sigma[val$alpha <= 0.5],
+                                              lambda = lambda, zeta = zeta,
+                                              family = family)
       val$fitted.values <- fitted.values
 
-
-      npar_alpha <- length(val$coefficients$alpha)
-      npar_BCS <- length(val$coefficients$mu) + length(val$coefficients$sigma) + as.numeric(lambda_id)
-      vcov <- matrix(0L, npar_BCS + npar_alpha, npar_BCS + npar_alpha)
+      ## Covariance matrix
+      npar_BCS <- p + q + as.numeric(lambda_id)
+      vcov <- matrix(0L, npar_BCS + m, npar_BCS + m)
       vcov[1:npar_BCS, 1:npar_BCS] <- val$vcov
-      vcov[1:npar_alpha + npar_BCS, 1:npar_alpha + npar_BCS] <- chol2inv(chol(t(Z)%*%diag(glm_fit$weights)%*%Z))
-      rownames(vcov) <- colnames(vcov) <- c(colnames(val$vcov), paste0("(alpha)_", colnames(Z)))
+      vcov[1:m + npar_BCS, 1:m + npar_BCS] <- chol2inv(chol(t(Z)%*%diag(glm_fit$weights)%*%Z))
+      rownames(vcov) <- colnames(vcov) <- c(colnames(val$vcov), paste0("(alpha)_", names(kappa)))
       val$vcov <- vcov
-
-      val$nobs <- n
       val$df.null <- n - 3 - as.numeric(lambda_id) - as.numeric(zeta_id)
-      val$df.residual <- n - npar_BCS - as.numeric(zeta_id) - npar_alpha
+      val$df.residual <- n - npar_BCS - as.numeric(zeta_id) - m
+
+      ## Log-likelihood value
+      ll <- rep(NA, n)
+      ll[ind == 1L] <- log(val$alpha[ind == 1])
+      ll[ind == 0L] <- log((1 - val$alpha[ind == 0]) * dbcs(Y[ind == 0],
+                                                        mu = mu[ind == 0],
+                                                        sigma = sigma[ind == 0],
+                                                        lambda = lambda, zeta = zeta,
+                                                        family = family))
+      val$loglik <- sum(ll)
     }
 
   }

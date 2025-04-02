@@ -26,7 +26,7 @@ of the numbers \code{1:6}.}
 \item{pch, las, cex, lwd, ...}{graphical parameters (see \code{\link[graphics]{par}})}
 }
 \value{
-\code{plot} method for \code{"\link{BCSreg}"} objects returns 7 types
+\code{plot} method for \code{"\link{BCSreg}"} objects returns six types
     of diagnostic plots.
 }
 \description{
