@@ -6,7 +6,7 @@
 \alias{pBCS}
 \alias{qBCS}
 \alias{rBCS}
-\title{The Box-Cox Symmetric (BCS) Distributions}
+\title{The Box-Cox Symmetric Distributions}
 \usage{
 dBCS(x, mu, sigma, lambda, zeta, family = "NO", log = FALSE)
 
@@ -152,22 +152,21 @@ legend("topright", legend = c("BCNO", "BCT", "BCPE"), lty = 1, col = c(1, 2, 4))
 # Random generation
 
 ## Parameter setting
-mu <- 5 # scale parameter
-sigma <- 0.2 # relative dispersion parameter
-lambda <- -2 # skewness parameter
-zeta <- 6 # extra parameter (if necessary)
+mu <- 5        # scale parameter
+sigma <- 0.2   # relative dispersion parameter
+lambda <- -0.2 # skewness parameter
 
 ## Generating family
 family <- "NO"
 
 ## Visualization
-x <- rBCS(10000, mu, sigma, lambda, zeta, family = family)
+x <- rBCS(10000, mu, sigma, lambda, family = family)
 
 hist(x, prob = TRUE, col = "white", main = "")
-curve(dBCS(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)
+curve(dBCS(x, mu, sigma, lambda, family = family), col = "blue", add = TRUE)
 
 plot(ecdf(x), main = "")
-curve(pBCS(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)
+curve(pBCS(x, mu, sigma, lambda, family = family), col = "blue", add = TRUE)
 }
 \references{
 Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions: statistical
