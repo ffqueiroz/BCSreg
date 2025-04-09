@@ -3,7 +3,7 @@
 #' Density, distribution function, quantile function, and random generation
 #'     for the class of the Box-Cox symmetric (BCS) distributions.
 #'
-#' @name bcs
+#' @name BCS
 #' @param x,q vector of positive quantiles.
 #' @param p vector of probabilities.
 #' @param n number of observations. If `n` is a vector, its length is used as the number of
@@ -80,8 +80,8 @@
 #'     }
 #'
 #' @return
-#' \code{dbcs} returns the density function, \code{pbcs} gives the cumulative distribution function,
-#' \code{qbcs} provides the quantile function, and \code{rbcs} generates random variables.
+#' \code{dBCS} returns the density function, \code{pBCS} gives the cumulative distribution function,
+#' \code{qBCS} provides the quantile function, and \code{rBCS} generates random variables.
 #'
 #' @references Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions: statistical
 #'     properties and parameter estimation. \emph{Brazilian Journal of Probability and Statistics}, 30, 196-220.
@@ -110,21 +110,21 @@
 #' # Probability density function
 #'
 #' ## Right-skewed distributions
-#' curve(dbcs(x, 3, 0.3, -1.5, family = "NO"), xlim = c(0, 7), ylim = c(0, 0.7), ylab = "Density")
-#' curve(dbcs(x, 3, 0.3, -1.5, 4, family = "ST"), add = TRUE, col = 2)
-#' curve(dbcs(x, 3, 0.3, -1.5, 5, family = "PE"), add = TRUE, col = 4)
+#' curve(dBCS(x, 3, 0.3, -1.5, family = "NO"), xlim = c(0, 7), ylim = c(0, 0.7), ylab = "Density")
+#' curve(dBCS(x, 3, 0.3, -1.5, 4, family = "ST"), add = TRUE, col = 2)
+#' curve(dBCS(x, 3, 0.3, -1.5, 5, family = "PE"), add = TRUE, col = 4)
 #' legend("topright", legend = c("BCNO", "BCT", "BCPE"), lty = 1, col = c(1, 2, 4))
 #'
 #' ## Truncated symmetric distributions (with support on (0, Inf))
-#' curve(dbcs(x, 3, 0.3, 1, family = "NO"), xlim = c(0, 7), ylim = c(0, 0.7), ylab = "Density")
-#' curve(dbcs(x, 3, 0.3, 1, 4, family = "ST"), add = TRUE, col = 2)
-#' curve(dbcs(x, 3, 0.3, 1, 5, family = "PE"), add = TRUE, col = 4)
+#' curve(dBCS(x, 3, 0.3, 1, family = "NO"), xlim = c(0, 7), ylim = c(0, 0.7), ylab = "Density")
+#' curve(dBCS(x, 3, 0.3, 1, 4, family = "ST"), add = TRUE, col = 2)
+#' curve(dBCS(x, 3, 0.3, 1, 5, family = "PE"), add = TRUE, col = 4)
 #' legend("topright", legend = c("BCNO", "BCT", "BCPE"), lty = 1, col = c(1, 2, 4))
 #'
 #' ## Left-skewed distributions
-#' curve(dbcs(x, 3, 0.3, 3, family = "NO"), xlim = c(0, 7), ylim = c(0, 0.7), ylab = "Density")
-#' curve(dbcs(x, 3, 0.3, 3, 4, family = "ST"), add = TRUE, col = 2)
-#' curve(dbcs(x, 3, 0.3, 3, 5, family = "PE"), add = TRUE, col = 4)
+#' curve(dBCS(x, 3, 0.3, 3, family = "NO"), xlim = c(0, 7), ylim = c(0, 0.7), ylab = "Density")
+#' curve(dBCS(x, 3, 0.3, 3, 4, family = "ST"), add = TRUE, col = 2)
+#' curve(dBCS(x, 3, 0.3, 3, 5, family = "PE"), add = TRUE, col = 4)
 #' legend("topright", legend = c("BCNO", "BCT", "BCPE"), lty = 1, col = c(1, 2, 4))
 #'
 #' # Random generation
@@ -139,17 +139,17 @@
 #' family <- "NO"
 #'
 #' ## Visualization
-#' x <- rbcs(10000, mu, sigma, lambda, zeta, family = family)
+#' x <- rBCS(10000, mu, sigma, lambda, zeta, family = family)
 #'
 #' hist(x, prob = TRUE, col = "white", main = "")
-#' curve(dbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)
+#' curve(dBCS(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)
 #'
 #' plot(ecdf(x), main = "")
-#' curve(pbcs(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)
+#' curve(pBCS(x, mu, sigma, lambda, zeta, family = family), col = "blue", add = TRUE)
 #' @importFrom stats dnorm qnorm rnorm pnorm dlogis plogis qlogis runif dt pt qt
 #'
 #' @export
-dbcs <- function(x, mu, sigma, lambda, zeta, family = "NO", log = FALSE) {
+dBCS <- function(x, mu, sigma, lambda, zeta, family = "NO", log = FALSE) {
   if (is.matrix(x)) d <- ncol(x) else d <- 1L
 
   maxl <- max(c(length(x), length(mu), length(sigma), length(lambda)))
@@ -239,9 +239,9 @@ dbcs <- function(x, mu, sigma, lambda, zeta, family = "NO", log = FALSE) {
   if (d > 1L) matrix(log.lik, ncol = d) else log.lik
 }
 
-#' @rdname bcs
+#' @rdname BCS
 #' @export
-pbcs <- function(q, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, log.p = FALSE) {
+pBCS <- function(q, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, log.p = FALSE) {
   if (is.matrix(q)) d <- ncol(q) else d <- 1L
 
   maxl <- max(c(length(q), length(mu), length(sigma), length(lambda)))
@@ -339,9 +339,9 @@ pbcs <- function(q, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, l
 
 ## Não mexi a partir daqui
 
-#' @rdname bcs
+#' @rdname BCS
 #' @export
-qbcs <- function(p, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, log.p = FALSE) {
+qBCS <- function(p, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, log.p = FALSE) {
   if (is.matrix(p)) d <- ncol(p) else d <- 1L
 
   maxl <- max(length(p), length(mu), length(sigma), length(lambda))
@@ -441,9 +441,9 @@ qbcs <- function(p, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, l
   if (d > 1L) matrix(qtf, ncol = d) else qtf
 }
 
-#' @rdname bcs
+#' @rdname BCS
 #' @export
-rbcs <- function(n, mu, sigma, lambda, zeta, family = "NO") {
+rBCS <- function(n, mu, sigma, lambda, zeta, family = "NO") {
   if (any(mu <= 0)) {
     stop(paste("mu must be positive ", "\n", ""))
   }
@@ -466,7 +466,7 @@ rbcs <- function(n, mu, sigma, lambda, zeta, family = "NO") {
 
   n <- ceiling(n)
   p <- runif(n)
-  qbcs(p, mu = mu, sigma = sigma, lambda = lambda, zeta = zeta, family = family)
+  qBCS(p, mu = mu, sigma = sigma, lambda = lambda, zeta = zeta, family = family)
 }
 
 

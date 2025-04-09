@@ -144,7 +144,7 @@ residuals.BCSreg <- function(object, ...) {
   residuals <- cdf <- rep(NA, n)
   cdf <- alpha
   cdf[ind == 0] <- alpha[ind == 0] + (1 - alpha[ind == 0]) *
-    pbcs(y[ind == 0], mu = mu[ind == 0], sigma = sigma[ind == 0],
+    pBCS(y[ind == 0], mu = mu[ind == 0], sigma = sigma[ind == 0],
          lambda = lambda, zeta = zeta, family = family)
 
   u <- rep(NA, sum(ind))
@@ -263,7 +263,7 @@ summary.BCSreg <- function(object, ...) {
 
   ## Upsilon statistic
   Upsilon <- function(zeta) {
-    cdf <- sort(pbcs(y[ind == 0], mu = object$mu, sigma = object$sigma, lambda = object$lambda,
+    cdf <- sort(pBCS(y[ind == 0], mu = object$mu, sigma = object$sigma, lambda = object$lambda,
                      zeta = object$zeta, family = object$family))
     Upsilon_zeta <- mean(abs(qnorm(cdf) - EnvStats::evNormOrdStats(n = length(y[ind == 0]))))
     Upsilon_zeta

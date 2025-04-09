@@ -143,7 +143,7 @@ The \code{BCSreg} function implements maximum likelihood estimation in the
     class of the BCS regression models for the analysis of positive
     data (Medeiros and Queiroz, 2025). The BCS distributions (Ferrari and Fumes, 2017)
     are a broad class of flexible distributions that achieve different levels of
-    skewness and tail-heaviness. See details in \link{bcs}.
+    skewness and tail-heaviness. See details in \link{BCS}.
 
 
     The distributions currently implemented in the \code{BCSreg} package, along

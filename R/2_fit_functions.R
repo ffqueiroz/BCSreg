@@ -322,7 +322,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
     if (any(!is.finite(z))) {
       NaN
     } else {
-      ll <- suppressWarnings(dbcs(y,
+      ll <- suppressWarnings(dBCS(y,
                                   mu = mu, sigma = sigma, lambda = lambda,
                                   zeta = zeta, family = family, log = TRUE
       ))
@@ -356,7 +356,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
   #   if (any(!is.finite(z))) {
   #     NaN
   #   } else {
-  #     ll <- suppressWarnings(dbcs(y,
+  #     ll <- suppressWarnings(dBCS(y,
   #       mu = mu, sigma = sigma, lambda = lambda,
   #       zeta = zeta, family = family, log = TRUE
   #     ))
@@ -644,7 +644,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #' See "Details" for further explanation.
 #' @param data,subset,na.action arguments controlling formula processing via
 #'     \code{\link[stats]{model.frame}}.
-#' @inheritParams bcs
+#' @inheritParams BCS
 #' @param zeta strictly positive extra parameter. It must be specified with only one value
 #'     in cases where the BCS distribution has an extra parameter.
 #' @param link,sigma.link character specification of the link functions for
@@ -666,7 +666,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'     class of the BCS regression models for the analysis of positive
 #'     data (Medeiros and Queiroz, 2025). The BCS distributions (Ferrari and Fumes, 2017)
 #'     are a broad class of flexible distributions that achieve different levels of
-#'     skewness and tail-heaviness. See details in \link{bcs}.
+#'     skewness and tail-heaviness. See details in \link{BCS}.
 #'
 #'
 #'     The distributions currently implemented in the \code{BCSreg} package, along
@@ -927,7 +927,7 @@ BCSreg <- function(formula, data, subset, na.action,
                                         names(lambda))
 
   ## Fitted values
-  fitted.values <- structure(qbcs(0.5, mu, sigma, lambda, zeta, family), .Names = names(y))
+  fitted.values <- structure(qBCS(0.5, mu, sigma, lambda, zeta, family), .Names = names(y))
 
   val <- list(
     coefficients = list(mu = beta, sigma = tau),
@@ -1001,7 +1001,7 @@ BCSreg <- function(formula, data, subset, na.action,
       ## Fitted values
       fitted.values <- rep(NA, n)
       fitted.values[val$alpha > 0.5] <- 0L
-      fitted.values[val$alpha <= 0.5] <- qbcs((0.5 - val$alpha[val$alpha <= 0.5]) /
+      fitted.values[val$alpha <= 0.5] <- qBCS((0.5 - val$alpha[val$alpha <= 0.5]) /
                                                 (1 - val$alpha[val$alpha <= 0.5]),
                                               mu = mu[val$alpha <= 0.5],
                                               sigma = sigma[val$alpha <= 0.5],
@@ -1022,7 +1022,7 @@ BCSreg <- function(formula, data, subset, na.action,
       ## Log-likelihood value
       ll <- rep(NA, n)
       ll[ind == 1L] <- log(val$alpha[ind == 1])
-      ll[ind == 0L] <- log((1 - val$alpha[ind == 0]) * dbcs(Y[ind == 0],
+      ll[ind == 0L] <- log((1 - val$alpha[ind == 0]) * dBCS(Y[ind == 0],
                                                         mu = mu[ind == 0],
                                                         sigma = sigma[ind == 0],
                                                         lambda = lambda, zeta = zeta,
@@ -1068,13 +1068,12 @@ print.BCSreg <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 
     cat(paste("\nRelative dispersion submodel with ", x$link$sigma, " link:\n", sep = ""))
     print.default(format(x$coefficients$sigma, digits = digits), print.gap = 2, quote = FALSE)
-    # if (lambda_id) {
-    #   cat("\nSkewness parameter:\n", sep = "")
-    #   print.default(format(x$lambda, digits = digits), print.gap = 2, quote = FALSE)
-    # }
+    if (lambda_id) {
+      cat("\nSkewness parameter:\n", sep = "")
+      print.default(format(x$lambda, digits = digits), print.gap = 2, quote = FALSE)
+    }
 
     cat("\n---\nGenerating family:", x$family, if (zeta_id) paste0("(zeta = ", x$zeta, ")"),
-        if (lambda_id) paste0("\nSkewness parameter: ", format(x$lambda, digits = digits)),
         "\nLog-lik value:", x$loglik, "\n")
   }
 
