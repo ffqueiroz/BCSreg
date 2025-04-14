@@ -263,7 +263,8 @@ summary.BCSreg <- function(object, ...) {
 
   ## Upsilon statistic
   Upsilon <- function(zeta) {
-    cdf <- sort(pBCS(y[ind == 0], mu = object$mu, sigma = object$sigma, lambda = object$lambda,
+    cdf <- sort(pBCS(y[ind == 0], mu = object$mu[ind == 0],
+                     sigma = object$sigma[ind == 0], lambda = object$lambda,
                      zeta = object$zeta, family = object$family))
     Upsilon_zeta <- mean(abs(qnorm(cdf) - EnvStats::evNormOrdStats(n = length(y[ind == 0]))))
     Upsilon_zeta
@@ -271,12 +272,19 @@ summary.BCSreg <- function(object, ...) {
   Upsilon.zeta <-  Upsilon(object$zeta)
 
   ## Pseudo-R2
-  eta.1 <- stats::make.link(object$link$mu)$linkfun(object$mu)
   y.1 <- stats::make.link(object$link$mu)$linkfun(y[ind == 0])
-  pseudo.r.squared <- ifelse(stats::var(eta.1) * stats::var(y.1) <= 0, NA, stats::cor(eta.1, y.1)^2)
+  if (is.null(object$alpha)) {
+    yhat.1 <- stats::make.link(object$link$mu)$linkfun(qBCS(0.5, object$mu, object$sigma,
+                                                            object$lambda, object$zeta, object$family))[ind == 0]
+  } else {
+    yhat.1 <- stats::make.link(object$link$mu)$linkfun(qZABCS(0.5, object$alpha, object$mu, object$sigma,
+                                                            object$lambda, object$zeta, object$family))[ind == 0]
+  }
+
+  pseudo.r.squared <- ifelse(stats::var(yhat.1) * stats::var(y.1) <= 0, NA, stats::cor(yhat.1, y.1)^2)
 
   ## v-function
-  v <- v.function(y[ind == 0], mu = object$mu, sigma = object$sigma, lambda = object$lambda,
+  v <- v.function(y[ind == 0], mu = object$mu[ind == 0], sigma = object$sigma[ind == 0], lambda = object$lambda,
                   zeta = object$zeta, family = object$family)$v
 
   ## Quantile residuals
@@ -506,7 +514,7 @@ plot.BCSreg <- function(x, which = 1:4,
     abline(0, 1, lty = lwd, lwd = lwd, col = "dodgerblue")
   }
 
-  ## ACF of residuals
+  ## v(z) function
   if(show[6]) {
     v <- v.function(y[y > 0], x$mu[y > 0], x$sigma[y > 0], x$lambda, x$zeta, x$family)$v
     if(x$family == "NO")

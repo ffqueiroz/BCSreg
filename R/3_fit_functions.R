@@ -969,67 +969,67 @@ BCSreg <- function(formula, data, subset, na.action,
   }
 
   ## Zero-adjusted model
-  if (formula_len == 3L) {
-    if (p0 == 0) {
-      warning("The third part of the RHS formula will be ignored: the dependent variable is not zero-inflated")
-    } else {
-      if (missing(alpha.link)){
-        alpha.link <- "logit"
-      }
+  if (sum(ind) == 0 & formula_len == 3) {
+    warning("The third part of the RHS formula will be ignored: the dependent variable is not zero-inflated")
+  }
 
-      glm_fit <- stats::glm.fit(Z, ind, family = stats::binomial(link = alpha.link))
+  if (sum(ind) > 0) {
 
-      val$terms <- list(mu = mtX, sigma = mtS, alpha = mtZ, full = mt)
-      val$levels <- list(
-        mu = stats::.getXlevels(mtX, mf),
-        sigma = stats::.getXlevels(mtS, mf),
-        alpha = stats::.getXlevels(mtZ, mf),
-        full = stats::.getXlevels(mt, mf)
-      )
-      val$contrasts$alpha <- attr(Z, "contrasts")
-      if (x) {
-        val$x$alpha <- Z
-      }
-
-      kappa <- glm_fit$coefficients
-      names(kappa) <- colnames(Z)
-      if (is.null(names(kappa))) names(kappa) <- paste0("Z", 1:m)
-      val$coefficients$alpha <- kappa
-      val$alpha <- as.numeric(glm_fit$fitted.values)
-      val$link$alpha <- alpha.link
-
-      ## Fitted values
-      fitted.values <- rep(NA, n)
-      fitted.values[val$alpha > 0.5] <- 0L
-      fitted.values[val$alpha <= 0.5] <- qBCS((0.5 - val$alpha[val$alpha <= 0.5]) /
-                                                (1 - val$alpha[val$alpha <= 0.5]),
-                                              mu = mu[val$alpha <= 0.5],
-                                              sigma = sigma[val$alpha <= 0.5],
-                                              lambda = lambda, zeta = zeta,
-                                              family = family)
-      val$fitted.values <- fitted.values
-
-      ## Covariance matrix
-      npar_BCS <- p + q + as.numeric(lambda_id)
-      vcov <- matrix(0L, npar_BCS + m, npar_BCS + m)
-      vcov[1:npar_BCS, 1:npar_BCS] <- val$vcov
-      vcov[1:m + npar_BCS, 1:m + npar_BCS] <- chol2inv(chol(t(Z)%*%diag(glm_fit$weights)%*%Z))
-      rownames(vcov) <- colnames(vcov) <- c(colnames(val$vcov), paste0("(alpha)_", names(kappa)))
-      val$vcov <- vcov
-      val$df.null <- n - 3 - as.numeric(lambda_id) - as.numeric(zeta_id)
-      val$df.residual <- n - npar_BCS - as.numeric(zeta_id) - m
-
-      ## Log-likelihood value
-      ll <- rep(NA, n)
-      ll[ind == 1L] <- log(val$alpha[ind == 1])
-      ll[ind == 0L] <- log((1 - val$alpha[ind == 0]) * dBCS(Y[ind == 0],
-                                                        mu = mu[ind == 0],
-                                                        sigma = sigma[ind == 0],
-                                                        lambda = lambda, zeta = zeta,
-                                                        family = family))
-      val$loglik <- sum(ll)
+    if (missing(alpha.link)){
+      alpha.link <- "logit"
     }
 
+    glm_fit <- stats::glm.fit(Z, ind, family = stats::binomial(link = alpha.link))
+
+    val$terms <- list(mu = mtX, sigma = mtS, alpha = mtZ, full = mt)
+    val$levels <- list(
+      mu = stats::.getXlevels(mtX, mf),
+      sigma = stats::.getXlevels(mtS, mf),
+      alpha = stats::.getXlevels(mtZ, mf),
+      full = stats::.getXlevels(mt, mf)
+    )
+    val$contrasts$alpha <- attr(Z, "contrasts")
+    if (x) {
+      val$x$alpha <- Z
+    }
+
+    kappa <- glm_fit$coefficients
+    names(kappa) <- colnames(Z)
+    if (is.null(names(kappa))) names(kappa) <- paste0("Z", 1:m)
+    val$coefficients$alpha <- kappa
+    val$alpha <- as.numeric(glm_fit$fitted.values)
+    val$link$alpha <- alpha.link
+
+    ## Fitted values
+    fitted.values <- rep(NA, n)
+    fitted.values[val$alpha > 0.5] <- 0L
+    fitted.values[val$alpha <= 0.5] <- qBCS((0.5 - val$alpha[val$alpha <= 0.5]) /
+                                              (1 - val$alpha[val$alpha <= 0.5]),
+                                            mu = mu[val$alpha <= 0.5],
+                                            sigma = sigma[val$alpha <= 0.5],
+                                            lambda = lambda, zeta = zeta,
+                                            family = family)
+    val$fitted.values <- fitted.values
+
+    ## Covariance matrix
+    npar_BCS <- p + q + as.numeric(lambda_id)
+    vcov <- matrix(0L, npar_BCS + m, npar_BCS + m)
+    vcov[1:npar_BCS, 1:npar_BCS] <- val$vcov
+    vcov[1:m + npar_BCS, 1:m + npar_BCS] <- chol2inv(chol(t(Z)%*%diag(glm_fit$weights)%*%Z))
+    rownames(vcov) <- colnames(vcov) <- c(colnames(val$vcov), paste0("(alpha)_", names(kappa)))
+    val$vcov <- vcov
+    val$df.null <- n - 3 - as.numeric(lambda_id) - as.numeric(zeta_id)
+    val$df.residual <- n - npar_BCS - as.numeric(zeta_id) - m
+
+    ## Log-likelihood value
+    ll <- rep(NA, n)
+    ll[ind == 1L] <- log(val$alpha[ind == 1])
+    ll[ind == 0L] <- log((1 - val$alpha[ind == 0]) * dBCS(Y[ind == 0],
+                                                          mu = mu[ind == 0],
+                                                          sigma = sigma[ind == 0],
+                                                          lambda = lambda, zeta = zeta,
+                                                          family = family))
+    val$loglik <- sum(ll)
   }
 
   class(val) <- "BCSreg"
