@@ -89,7 +89,7 @@ v.function <- function(y, mu, sigma, lambda, zeta, family) {
     dvz <- -2 * (zeta + 1) * z / ((zeta + z^2)^2)
   }
   if (family == "LOI") {
-    vz <- -2 * (1 - exp(-z^2)) / (1 + exp(-z^2))
+    vz <- -2 * (exp(-z^2) - 1) / (1 + exp(-z^2))
     dvz <- 8 * z * exp(-z^2) / ((1 + exp(-z^2))^2)
   }
   if (family == "LOII") {
@@ -151,7 +151,7 @@ xi.function <- function(mu, sigma, lambda, zeta, family) {
       R <- pt(1 / (sigma * abs(lambda)), zeta)
     }
     if (family == "LOI") {
-      vz <- -2 * (1 - exp(-(1 / ((sigma * lambda)))^2)) / (1 + exp(-(1 / ((sigma * lambda)))^2))
+      vz <- -2 * (exp(-(1 / ((sigma * lambda)))^2) - 1) / (1 + exp(-(1 / ((sigma * lambda)))^2))
       r <- dlogisI(1 / ((sigma * lambda)))
       R <- plogisI(1 / (sigma * abs(lambda)))
     }
@@ -626,7 +626,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'
 #' @title Box-Cox Symmetric Regression for Positive Data
 #'
-#' @description Fits Box-Cox symmetric (BCS) and zero-adjusted BCS regression models
+#' @description Fit the Box-Cox symmetric (BCS) or the zero-adjusted BCS regression models
 #'     using maximum likelihood estimation, providing a flexible approach
 #'     for modeling positive data.
 #'

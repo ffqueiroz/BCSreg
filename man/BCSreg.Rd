@@ -134,7 +134,7 @@ The \code{BCSreg} function returns an object of class \code{"BCSreg"},
    }
 }
 \description{
-Fits Box-Cox symmetric (BCS) and zero-adjusted BCS regression models
+Fit the Box-Cox symmetric (BCS) or the zero-adjusted BCS regression models
     using maximum likelihood estimation, providing a flexible approach
     for modeling positive data.
 }
