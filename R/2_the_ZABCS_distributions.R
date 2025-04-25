@@ -8,12 +8,12 @@
 #' @param p vector of probabilities.
 #' @param n number of observations. If `n` is a vector, its length is used as the number of
 #'     required observations.
-#' @param alpha vector of zero-adjusted parameters, with values on [0, 1].
+#' @param alpha vector of zero-adjusted parameters, with values on (0, 1).
 #' @param mu vector of strictly positive scale parameters.
 #' @param sigma vector of strictly positive relative dispersion parameters.
 #' @param lambda vector of real-valued skewness parameters. If \code{lambda = 0}, the BCS
 #'     distribution reduces to the corresponding log-symmetric distribution with parameters
-#'     \code{mu}, \code{sigma}, and \code{zeta}.
+#'     \code{mu} and \code{sigma} (and a possible extra parameter \code{zeta}).
 #' @param zeta strictly positive extra parameter. It must be specified with only one value
 #'     in cases where the BCS distribution has an extra parameter. See “Details” below.
 #' @param family a character that specifies the symmetric generating family of the BCS distribution.
@@ -32,7 +32,7 @@
 #'     distributions for positive continuous data which may include zeros.
 #'
 #'     Let \eqn{Y} be a positive continuous random variable with a ZABCS distribution
-#'     with parameters \eqn{\alpha \in [0, 1]}, \eqn{\mu > 0}, \eqn{\sigma > 0},
+#'     with parameters \eqn{\alpha \in (0, 1)}, \eqn{\mu > 0}, \eqn{\sigma > 0},
 #'     and \eqn{\lambda \in \mathbb{R}} and density generating function \eqn{r}.
 #'     The probability density function of
 #'     \eqn{Y} is given by
@@ -78,14 +78,14 @@
 #'     \code{BCSreg} package are listed below:
 #'     \tabular{llc}{
 #'     \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{N. of extra parameters}\cr
-#'     Zero-adjustedBox-Cox Hyperbolic  \tab \code{"HP"}      \tab  1  \cr
-#'     Zero-adjustedBox-Cox Type I Logistic  \tab \code{"LOI"}      \tab  0  \cr
-#'     Zero-adjustedBox-Cox Type II Logistic  \tab \code{"LOII"}      \tab  0  \cr
-#'     Zero-adjustedBox-Cox Normal  \tab \code{"NO"}      \tab  0  \cr
-#'     Zero-adjustedBox-Cox Power Exponential  \tab \code{"PE"}      \tab  1  \cr
-#'     Zero-adjustedBox-Cox Sinh-Normal  \tab \code{"SN"}      \tab  1  \cr
-#'     Zero-adjustedBox-Cox Slash  \tab \code{"SL"}      \tab  1  \cr
-#'     Zero-adjustedBox-Cox \emph{t}  \tab \code{"ST"}      \tab  1  \cr
+#'     Zero-adjusted Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  1  \cr
+#'     Zero-adjusted Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  0  \cr
+#'     Zero-adjusted Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  0  \cr
+#'     Zero-adjusted Box-Cox Normal  \tab \code{"NO"}      \tab  0  \cr
+#'     Zero-adjusted Box-Cox Power Exponential  \tab \code{"PE"}      \tab  1  \cr
+#'     Zero-adjusted Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  1  \cr
+#'     Zero-adjusted Box-Cox Slash  \tab \code{"SL"}      \tab  1  \cr
+#'     Zero-adjusted Box-Cox \emph{t}  \tab \code{"ST"}      \tab  1  \cr
 #'     }
 #'
 #' @return
@@ -101,6 +101,11 @@
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
+#'
+#' @seealso \code{\link{BCS}} to access the density function, distribution
+#'     function, quantile function, and a random number generator for the BCS
+#'     distributions. \code{\link{BCSreg}} for estimating the parameters of a
+#'     ZABCS regression model.
 #'
 #' @examples
 #' # Probability density function

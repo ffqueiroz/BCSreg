@@ -43,7 +43,7 @@ rBCS(n, mu, sigma, lambda, zeta, family = "NO")
 
 \item{lambda}{vector of real-valued skewness parameters. If \code{lambda = 0}, the BCS
 distribution reduces to the corresponding log-symmetric distribution with parameters
-\code{mu}, \code{sigma}, and \code{zeta}.}
+\code{mu} and \code{sigma} (and a possible extra parameter \code{zeta}).}
 
 \item{zeta}{strictly positive extra parameter. It must be specified with only one value
 in cases where the BCS distribution has an extra parameter. See “Details” below.}
@@ -169,9 +169,6 @@ plot(ecdf(x), main = "")
 curve(pBCS(x, mu, sigma, lambda, family = family), col = "blue", add = TRUE)
 }
 \references{
-Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions: statistical
-    properties and parameter estimation. \emph{Brazilian Journal of Probability and Statistics}, 30, 196-220.
-
 Cole, T., and Green, P.J. (1992). Smoothing reference centile curves: the LMS
      method and penalized likelihood. \emph{Statistics in medicine}, 11, 1305-1319.
 
@@ -187,6 +184,12 @@ Cole, T., and Green, P.J. (1992). Smoothing reference centile curves: the LMS
 
  Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
      statistical properties and parameter estimation. \emph{Brazilian Journal of Probability and Statistics}, 30, 196-220.
+}
+\seealso{
+\code{\link{ZABCS}} to access the density function, distribution
+    function, quantile function, and a random number generator for the
+    zero-adjusted BCS distributions. \code{\link{BCSreg}} for estimating the
+    parameters of a BCS regression model.
 }
 \author{
 Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>

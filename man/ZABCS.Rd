@@ -39,7 +39,7 @@ rZABCS(n, alpha, mu, sigma, lambda, zeta, family = "NO")
 \arguments{
 \item{x, q}{vector of positive quantiles.}
 
-\item{alpha}{vector of zero-adjusted parameters, with values on [0, 1].}
+\item{alpha}{vector of zero-adjusted parameters, with values on (0, 1).}
 
 \item{mu}{vector of strictly positive scale parameters.}
 
@@ -47,7 +47,7 @@ rZABCS(n, alpha, mu, sigma, lambda, zeta, family = "NO")
 
 \item{lambda}{vector of real-valued skewness parameters. If \code{lambda = 0}, the BCS
 distribution reduces to the corresponding log-symmetric distribution with parameters
-\code{mu}, \code{sigma}, and \code{zeta}.}
+\code{mu} and \code{sigma} (and a possible extra parameter \code{zeta}).}
 
 \item{zeta}{strictly positive extra parameter. It must be specified with only one value
 in cases where the BCS distribution has an extra parameter. See “Details” below.}
@@ -84,7 +84,7 @@ The class of the ZABCS distributions was introduced by Medeiros and
     distributions for positive continuous data which may include zeros.
 
     Let \eqn{Y} be a positive continuous random variable with a ZABCS distribution
-    with parameters \eqn{\alpha \in [0, 1]}, \eqn{\mu > 0}, \eqn{\sigma > 0},
+    with parameters \eqn{\alpha \in (0, 1)}, \eqn{\mu > 0}, \eqn{\sigma > 0},
     and \eqn{\lambda \in \mathbb{R}} and density generating function \eqn{r}.
     The probability density function of
     \eqn{Y} is given by
@@ -130,14 +130,14 @@ The class of the ZABCS distributions was introduced by Medeiros and
     \code{BCSreg} package are listed below:
     \tabular{llc}{
     \bold{Distribution}  \tab \bold{Family abbreviation} \tab \bold{N. of extra parameters}\cr
-    Zero-adjustedBox-Cox Hyperbolic  \tab \code{"HP"}      \tab  1  \cr
-    Zero-adjustedBox-Cox Type I Logistic  \tab \code{"LOI"}      \tab  0  \cr
-    Zero-adjustedBox-Cox Type II Logistic  \tab \code{"LOII"}      \tab  0  \cr
-    Zero-adjustedBox-Cox Normal  \tab \code{"NO"}      \tab  0  \cr
-    Zero-adjustedBox-Cox Power Exponential  \tab \code{"PE"}      \tab  1  \cr
-    Zero-adjustedBox-Cox Sinh-Normal  \tab \code{"SN"}      \tab  1  \cr
-    Zero-adjustedBox-Cox Slash  \tab \code{"SL"}      \tab  1  \cr
-    Zero-adjustedBox-Cox \emph{t}  \tab \code{"ST"}      \tab  1  \cr
+    Zero-adjusted Box-Cox Hyperbolic  \tab \code{"HP"}      \tab  1  \cr
+    Zero-adjusted Box-Cox Type I Logistic  \tab \code{"LOI"}      \tab  0  \cr
+    Zero-adjusted Box-Cox Type II Logistic  \tab \code{"LOII"}      \tab  0  \cr
+    Zero-adjusted Box-Cox Normal  \tab \code{"NO"}      \tab  0  \cr
+    Zero-adjusted Box-Cox Power Exponential  \tab \code{"PE"}      \tab  1  \cr
+    Zero-adjusted Box-Cox Sinh-Normal  \tab \code{"SN"}      \tab  1  \cr
+    Zero-adjusted Box-Cox Slash  \tab \code{"SL"}      \tab  1  \cr
+    Zero-adjusted Box-Cox \emph{t}  \tab \code{"ST"}      \tab  1  \cr
     }
 }
 \examples{
@@ -200,6 +200,12 @@ Ferrari, S. L. P., and Fumes, G. (2017). Box-Cox symmetric distributions and
 
  Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
      Box-Cox symmetric regression models and their extensions.
+}
+\seealso{
+\code{\link{BCS}} to access the density function, distribution
+    function, quantile function, and a random number generator for the BCS
+    distributions. \code{\link{BCSreg}} for estimating the parameters of a
+    ZABCS regression model.
 }
 \author{
 Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>

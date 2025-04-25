@@ -12,7 +12,7 @@
 #' @param sigma vector of strictly positive relative dispersion parameters.
 #' @param lambda vector of real-valued skewness parameters. If \code{lambda = 0}, the BCS
 #'     distribution reduces to the corresponding log-symmetric distribution with parameters
-#'     \code{mu}, \code{sigma}, and \code{zeta}.
+#'     \code{mu} and \code{sigma} (and a possible extra parameter \code{zeta}).
 #' @param zeta strictly positive extra parameter. It must be specified with only one value
 #'     in cases where the BCS distribution has an extra parameter. See “Details” below.
 #' @param family a character that specifies the symmetric generating family of the BCS distribution.
@@ -83,8 +83,10 @@
 #' \code{dBCS} returns the density function, \code{pBCS} gives the cumulative distribution function,
 #' \code{qBCS} provides the quantile function, and \code{rBCS} generates random variables.
 #'
-#' @references Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions: statistical
-#'     properties and parameter estimation. \emph{Brazilian Journal of Probability and Statistics}, 30, 196-220.
+#' @seealso \code{\link{ZABCS}} to access the density function, distribution
+#'     function, quantile function, and a random number generator for the
+#'     zero-adjusted BCS distributions. \code{\link{BCSreg}} for estimating the
+#'     parameters of a BCS regression model.
 #'
 #' @references
 #'  Cole, T., and Green, P.J. (1992). Smoothing reference centile curves: the LMS
