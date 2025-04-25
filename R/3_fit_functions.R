@@ -1,8 +1,9 @@
 # Control the optimization process ------------------------------------------------------------
 
-#' Auxiliary for Controlling BCS Fitting
+#' Auxiliary for Controlling a Box-Cox Symmetric Fitting
 #'
-#' Optimization parameters that control the fitting of Box-Cox symmetric regression
+#' Optimization parameters that control the fitting of Box-Cox symmetric or
+#'     zero-adjusted Box-Cox symmetric regression
 #'     models using the \code{\link{BCSreg}} function.
 #'
 #' @name BCSregcontrol
@@ -14,7 +15,7 @@
 #' @param maxit,trace,... arguments passed to \code{\link{optim}}.
 #' @param start an optional vector with starting values for the regression coefficients
 #'      associated with the \code{mu} and \code{sigma} submodels (starting value for the
-#'      \code{lambda} parameter must not be included).
+#'      \code{lambda} or the zero-adjustment parameters must not be included).
 #'
 #' @details The \code{BCSreg.control} controls the fitting process of Box-Cox symmetric models.
 #'     Almost all the arguments are passed directly to \code{\link{optim}}, which
@@ -26,15 +27,41 @@
 #'     for the \code{lambda} argument. A natural value is \code{lambda = 0}, where a log-symmetric
 #'     regression model will be estimated.
 #'
+#'     When a regression fit with a zero-adjusted BCS distribution is performed, the regression
+#'     coefficients associated with the zero-adjustment parameter are estimated
+#'     using the \code{\link[stats]{glm}} function.
+#'
 #' @return A list with components named as the arguments.
 #' @seealso \code{\link{BCSreg}}
 #' @export
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #' @examples
-#' # Set an example
+#' ## Data set: fishery (for description, run ?fishery)
+#' hist(fishery$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, fishery,
+#'      xlab = "Tide phase", ylab = "Catch per unit effort")
 #'
+#' ### Fit a Box-Cox normal regression model:
+#' fit_bcno <- BCSreg(cpue ~ tide_phase, fishery)
+#' fit_bcno
 #'
+#' ### Fit a log-normal regression model (setting lambda = 0):
+#' fit_lno <- BCSreg(cpue ~ tide_phase, fishery, lambda = 0)
+#' fit_lno
+#'
+#' ### Standard errors obtained from the numerical Hessian matrix
+#' ### provided by optim instead of the analytical solution:
+#' fit_bcno2 <- BCSreg(cpue ~ tide_phase, fishery, hessian = TRUE)
+#' fit_lno2 <- BCSreg(cpue ~ tide_phase, fishery, lambda = 0, hessian = TRUE)
+#'
+#' # In this case, there are differences only in the eighth decimal place:
+#' vcov(fit_bcno)
+#' vcov(fit_bcno2)
+#'
+#' # In this case, there are no differences:
+#' vcov(fit_lno)
+#' vcov(fit_lno2)
 BCSreg.control <- function(lambda = NULL, method = "BFGS", maxit = 2000, hessian = FALSE,
                            trace = FALSE, start = NULL, ...) {
   val <- list(
@@ -549,7 +576,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 
   ## Covariance matrix
   if (hessian) {
-    vcov <- solve(theta.opt$hessian)
+    vcov <- solve(-theta.opt$hessian)
   } else {
     if (lambda_id) {
       vcov <- solve(Jfunction(beta, tau, lambda))
@@ -626,9 +653,8 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'
 #' @title Box-Cox Symmetric Regression for Positive Data
 #'
-#' @description Fit the Box-Cox symmetric (BCS) or the zero-adjusted BCS regression models
-#'     using maximum likelihood estimation, providing a flexible approach
-#'     for modeling positive data.
+#' @description Fit a Box-Cox symmetric (BCS) or a zero-adjusted BCS regression models
+#'     using maximum likelihood estimation.
 #'
 #' @param formula a symbolic description of the model, allowing the specification of
 #' different regression structures for model parameters using the \code{\link[Formula]{Formula}} package.
@@ -660,14 +686,15 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #' @param model,y,x logicals. If \code{TRUE}, the corresponding components of the fit
 #'     (the model frame, the response, and the model matrices, respectively) are returned. For
 #'     \code{print()}, \code{x} is a fitted model object of class \code{"BCSreg"}.
-#' @param ... arguments passed to \code{\link{BCSreg.control}}.
+#' @param ... arguments passed to \code{\link{BCSreg.control}}. A particularly relevant argument is
+#'     \code{lambda = 0}, which specifies the correspondent log-symmetric or zero-adjusted
+#'     regression model.
 #'
 #' @details The \code{BCSreg} function implements maximum likelihood estimation in the
-#'     class of the BCS regression models for the analysis of positive
-#'     data (Medeiros and Queiroz, 2025). The BCS distributions (Ferrari and Fumes, 2017)
-#'     are a broad class of flexible distributions that achieve different levels of
-#'     skewness and tail-heaviness. See details in \link{BCS}.
-#'
+#'     class of the BCS and zero-adjusted BCS regression models for the analysis of positive
+#'     or zero-inflated data (Medeiros and Queiroz, 2025). The BCS distributions
+#'     (Ferrari and Fumes, 2017) are a broad class of flexible distributions that achieve different
+#'     levels of skewness and tail-heaviness. See details in \link{BCS}.
 #'
 #'     The distributions currently implemented in the \code{BCSreg} package, along
 #'     with their abbreviations used in the \code{family} argument, are listed below:
@@ -695,6 +722,14 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'     regression using \code{lambda = 0} as an argument
 #'     (see \code{\link{BCSreg.control}}).
 #'
+#'     The \code{BCSreg} function also implements the class of zero-adjusted BCS regression models,
+#'     for analyzing mixed data that is positive but can assume zero. In this case, the
+#'     zero-adjusted BCS model corresponding to the \code{family} is fitted to the data. In
+#'     addition to the parameters \code{mu}, \code{sigma}, \code{lambda}, and possibly \code{zeta},
+#'     the zero-adjusted BCS distributions have a zero-adjustment parameter (\code{alpha}) that
+#'     corresponds to the probability of observing a zero response. This parameter can also be
+#'     modeled with a regression structure.
+#'
 #'     The \code{formula} argument defines the regression structures for different model
 #'     parameters using the \code{\link[Formula]{Formula}} package (Zeileis and Croissant, 2010).
 #'     It can have up to three parts, separated by the "\code{|}" operator:
@@ -714,8 +749,8 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'     variables associated with the scale, relative dispersion, and zero-adjustment
 #'     parameters, respectively. The following formulas illustrate different model structures:
 #'     \itemize{
-#'      \item \code{y ~ x}  # Scale parameter only
-#'      \item \code{y ~ x | s} # Scale and relative dispersion parameters
+#'      \item \code{y ~ x}         # Scale parameter only
+#'      \item \code{y ~ x | s}     # Scale and relative dispersion parameters
 #'      \item \code{y ~ x | s | z} # Scale, relative dispersion, and zero-adjustment parameters
 #'      \item \code{y ~ x | 1 | z} # Scale and zero-adjustment parameters
 #'      \item \code{y ~ 1 | s | z} # Relative dispersion and zero-adjustment parameters
@@ -800,9 +835,49 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
+#'
+#' @seealso
+#' \code{\link{summary.BCSreg}} for more detailed summaries,
+#' \code{\link{residuals.BCSreg}} to extract residuals from the fitted model,
+#' \code{\link{plot.BCSreg}} for diagnostic plots, and
+#' \code{\link{extra.parameter}} for selection of the extra parameter \code{zeta} via Upsilon goodness-of-fit statistic and profile likelihood.
+#' Information on additional methods for \code{"BCSreg"} objects can be found at \code{\link{BCSreg-methods}}.
+#'
+#'
 #' @export
 #'
+#' @examples
+#' ## Data set: fishery (for description, run ?fishery)
+#' hist(fishery$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#'      xlab = "Tide phase", ylab = "Catch per unit effort")
+#' plot(cpue ~ location, fishery, pch = 16,
+#'      xlab = "Location", ylab = "Catch per unit effort")
+#' plot(cpue ~ max_temp, fishery, pch = 16,
+#'      xlab = "Maximum temperature", ylab = "Catch per unit effort")
 #'
+#' ## Fit examples
+#'
+#' ### Fit a single Box-Cox normal regression model:
+#' fit_bcno1 <- BCSreg(cpue ~ location + tide_phase + max_temp, fishery)
+#' fit_bcno1
+#'
+#' ### Fit a double Box-Cox normal regression model:
+#' fit_bcno2 <- BCSreg(cpue ~ location + tide_phase |
+#'                       location + tide_phase + max_temp, fishery)
+#' fit_bcno2
+#'
+#'
+#' ### Fit a double Box-Cox power exponential regression model:
+#' fit_bcpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
+#'                      location + tide_phase + max_temp, fishery, family = "PE", zeta = 4)
+#' fit_bcpe
+#'
+#' ### Fit a double log-power exponential regression model:
+#' fit_lpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
+#'                     location + tide_phase + max_temp, fishery, family = "PE",
+#'                   zeta = 4, lambda = 0)
+#' fit_lpe
 BCSreg <- function(formula, data, subset, na.action,
                     family = "NO", zeta,
                     link = "log", sigma.link = "log", alpha.link,

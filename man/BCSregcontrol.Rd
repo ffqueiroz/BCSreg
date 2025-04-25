@@ -3,7 +3,7 @@
 \name{BCSregcontrol}
 \alias{BCSregcontrol}
 \alias{BCSreg.control}
-\title{Auxiliary for Controlling BCS Fitting}
+\title{Auxiliary for Controlling a Box-Cox Symmetric Fitting}
 \usage{
 BCSreg.control(
   lambda = NULL,
@@ -28,13 +28,14 @@ used for estimation of the covariance matrix? By default the analytical solution
 
 \item{start}{an optional vector with starting values for the regression coefficients
 associated with the \code{mu} and \code{sigma} submodels (starting value for the
-\code{lambda} parameter must not be included).}
+\code{lambda} or the zero-adjustment parameters must not be included).}
 }
 \value{
 A list with components named as the arguments.
 }
 \description{
-Optimization parameters that control the fitting of Box-Cox symmetric regression
+Optimization parameters that control the fitting of Box-Cox symmetric or
+    zero-adjusted Box-Cox symmetric regression
     models using the \code{\link{BCSreg}} function.
 }
 \details{
@@ -47,11 +48,37 @@ The \code{BCSreg.control} controls the fitting process of Box-Cox symmetric mode
     estimation process is to be performed with a fixed \code{lambda}, a value must be specified
     for the \code{lambda} argument. A natural value is \code{lambda = 0}, where a log-symmetric
     regression model will be estimated.
+
+    When a regression fit with a zero-adjusted BCS distribution is performed, the regression
+    coefficients associated with the zero-adjustment parameter are estimated
+    using the \code{\link[stats]{glm}} function.
 }
 \examples{
-# Set an example
+## Data set: fishery (for description, run ?fishery)
+hist(fishery$cpue, xlab = "Catch per unit effort")
+plot(cpue ~ tide_phase, fishery,
+     xlab = "Tide phase", ylab = "Catch per unit effort")
 
+### Fit a Box-Cox normal regression model:
+fit_bcno <- BCSreg(cpue ~ tide_phase, fishery)
+fit_bcno
 
+### Fit a log-normal regression model (setting lambda = 0):
+fit_lno <- BCSreg(cpue ~ tide_phase, fishery, lambda = 0)
+fit_lno
+
+### Standard errors obtained from the numerical Hessian matrix
+### provided by optim instead of the analytical solution:
+fit_bcno2 <- BCSreg(cpue ~ tide_phase, fishery, hessian = TRUE)
+fit_lno2 <- BCSreg(cpue ~ tide_phase, fishery, lambda = 0, hessian = TRUE)
+
+# In this case, there are differences only in the eighth decimal place:
+vcov(fit_bcno)
+vcov(fit_bcno2)
+
+# In this case, there are no differences:
+vcov(fit_lno)
+vcov(fit_lno2)
 }
 \seealso{
 \code{\link{BCSreg}}
