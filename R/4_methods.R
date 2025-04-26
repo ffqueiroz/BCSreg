@@ -604,65 +604,102 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
 }
 
 
-
 # Plot ----------------------------------------------------------------------------------------
 #' Diagnostic Plots for a Box-Cox Symmetric Regression Fit
 #'
 #' This function provides plots for diagnostic analysis of a Box-Cox symmetric
-#'     regression fit.
+#'     or a zero-adjusted regression fit.
 #'
-#' @param x an object of class \code{"sdlrm"}.
+#' @param x an object of class \code{"BCSreg"}.
 #' @param which numeric; if a subset of the plots is required, specify a subset
-#'     of the numbers \code{1:6}.
+#'     of the numbers \code{1:7}.
 #' @param ask logical; if \code{TRUE}, the user is asked before each plot.
 #' @param pch,las,cex,lwd,... graphical parameters (see \code{\link[graphics]{par}})
 #'
-#' @details The \code{plot} method for \code{\link{BCSreg}} objects provides six types
+#' @details The \code{plot} method for \code{\link{BCSreg}} objects provides seven types
 #'     of diagnostic plots in the following order:
 #'     \describe{
 #'         \item{Residuals vs fitted values}{a plot of the residuals
 #'             versus the fitted medians.}
 #'         \item{Residuals vs observation indices.}{an index plot of the residuals
 #'             versus the observation indices.}
-#'         \item{Density plot}{a graph that compares the empirical density of the residuals
-#'             with the density of the standard normal distribution.}
 #'         \item{Normal probability plot}{a normal probability plot of the residuals with a
 #'             confidence region constructed according to Fox (2016) using the
 #'             \code{\link[car]{qqPlot}} function.}
+#'         \item{Case-weight perturbation}{An index plot of local influence based on the
+#'             case-weight perturbation scheme.}
+#'         \item{Density plot}{a graph that compares the empirical density of the residuals
+#'             with the density of the standard normal distribution.}
 #'         \item{Fitted vs observed values}{a dispersion diagram of the fitted values
 #'             versus the observed values.}
 #'         \item{Residuals vs v(z) function}{a dispersion diagram of the \eqn{v(z)} function
-#'             versus the residuals. For someBCS models, the \eqn{v(z)} function
+#'             versus the residuals. For some BCS models, the \eqn{v(z)} function
 #'             may be interpreted as weights in the estimation process. If \code{family = "NO"},
 #'             the \eqn{v(z)} function is constant.}
 #'      }
 #'
 #'      The \code{which} argument can be used to select a subset of the implemented plots.
-#'      Default is \code{which = 1:4}.
+#'      Default is \code{which = 1:4}. See \code{\link{residuals.BCSreg}} for details on
+#'      the residuals.
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #'
-#' @return \code{plot} method for \code{"\link{BCSreg}"} objects returns six types
+#' @return \code{plot} method for \code{"\link{BCSreg}"} objects returns seven types
 #'     of diagnostic plots.
 #'
 #' @export
 #' @importFrom graphics abline identify mtext par points text title curve rug legend
 #'
 #' @examples
-#' ## Examples
+#' ## Data set: fishery (for description, run ?fishery)
+#' hist(fishery$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#'     xlab = "Tide phase", ylab = "Catch per unit effort")
+#' plot(cpue ~ location, fishery, pch = 16,
+#'     xlab = "Location", ylab = "Catch per unit effort")
+#' plot(cpue ~ max_temp, fishery, pch = 16,
+#'     xlab = "Maximum temperature", ylab = "Catch per unit effort")
+#'
+#' ## Fit a double Box-Cox normal regression model:
+#' fit <- BCSreg(cpue ~ location + tide_phase |
+#'                 location + tide_phase + max_temp, fishery)
+#'
+#' ## Available plots:
+#'
+#' ### Residuals vs fitted values (fitted medians)
+#' plot(fit, which = 1)
+#'
+#' ### Residuals vs observation indices
+#' plot(fit, which = 2)
+#'
+#' ### Normal probability plot
+#' plot(fit, which = 3)
+#'
+#' ### Local influence
+#' plot(fit, which = 4)
+#'
+#' ### Density plot
+#' plot(fit, which = 5)
+#'
+#' ### Fitted medians vs response
+#' plot(fit, which = 6)
+#'
+#' ### v(z) function
+#' plot(fit, which = 7)
 plot.BCSreg <- function(x, which = 1:4,
                         ask = prod(graphics::par("mfcol")) < length(which) &&
                         grDevices::dev.interactive(),
                         pch = "+", las = 1, cex = 0.8, lwd = 2, ...)
 {
 
-  if(!is.numeric(which) || any(which < 1) || any(which > 6))
-    stop("`which' must be in 1:6")
+  if(!is.numeric(which) || any(which < 1) || any(which > 7))
+    stop("`which' must be in 1:7")
 
   ## Reading
   res <- stats::residuals(x)
   y <- stats::model.response(stats::model.frame(x))
+  n <- x$nobs
 
   ## Graphical parameters setting
   if (ask) {
@@ -671,7 +708,7 @@ plot.BCSreg <- function(x, which = 1:4,
   }
 
   ## Plots to shown
-  show <- rep(FALSE, 6)
+  show <- rep(FALSE, 7)
   show[which] <- TRUE
 
   ## Residuals versus Fitted values
@@ -684,36 +721,44 @@ plot.BCSreg <- function(x, which = 1:4,
 
   ## Residuals versus observation indices
   if (show[2]){
-    n <- x$nobs
     plot(1:n, res, xlab = "Observation indices", ylab = "Quantile residuals",
          pch = pch, las = las, cex = cex, ...)
     abline(h = c(stats::qnorm(0.025), 0, stats::qnorm(0.975)),
            lty = c(2, 1, 2), lwd = lwd, col = "dodgerblue")
   }
 
-  ## Density
-  if(show[3]) {
-    plot(stats::density(res), main = "", lwd = 2, ...)
-    curve(stats::dnorm(x), col = "dodgerblue", add = TRUE, lwd = 2)
-    rug(res)
-  }
-
   ## Normal probability plot
-  if(show[4]) {
+  if(show[3]) {
     car::qqPlot(res, col.lines = "dodgerblue", grid = FALSE,
                 pch = pch, las = las, cex = cex, ...,
                 xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...)
   }
 
-  ## Fitted vs observed values
+  ## Local influence
+  cw <- influence(x, plot = FALSE)$case.weights
+  if(show[4]) {
+    plot(1:n, cw, xlab = "Observation indices", ylab = "Local influence", type = "h",
+         main = "", las = las, ...)
+  }
+
+  ## Density
   if(show[5]) {
+    plot(stats::density(res), main = "", lwd = 2, ...)
+    curve(stats::dnorm(x), col = "dodgerblue", add = TRUE, lwd = 2)
+    legend("topright", c("Sample density", "N(0, 1)"),
+           lty = 1, lwd = 2, col = c(1, "dodgerblue"), cex = 0.9, bty = "n")
+    rug(res)
+  }
+
+  ## Fitted vs observed values
+  if(show[6]) {
     plot(y, stats::fitted(x), xlab = "Observed values", ylab = "Fitted values",
          pch = pch, las = las, cex = cex, ...)
     abline(0, 1, lty = lwd, lwd = lwd, col = "dodgerblue")
   }
 
   ## v(z) function
-  if(show[6]) {
+  if(show[7]) {
     v <- v.function(y[y > 0], x$mu[y > 0], x$sigma[y > 0], x$lambda, x$zeta, x$family)$v
     if(x$family == "NO")
       warning("The v(z) function is constant for this family.")
