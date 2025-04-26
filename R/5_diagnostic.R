@@ -1,19 +1,22 @@
 #' Influence Diagnostics for BCSreg Objects
 #'
-#' The \code{influence} function provides two influence measures for Box-Cox symmetric regression
-#'     models.
+#' The \code{influence} function provides two influence measures for a Box-Cox symmetric or a
+#'     zero-adusted Box-Cox symmetric regression fit.
 #'
 #' @param object an object of class \code{"BCSreg"}.
 #' @param plot logical. If \code{plot = TRUE} (default), the plots are shown.
 #' @param ask logical; if \code{TRUE}, the user is asked before each plot, if \code{plot = TRUE}.
 #' @param ... currently not used.
 #'
-#' @return \code{influence} returns a list with three objects:
+#' @return \code{influence} returns a list with two objects:
 #'     \item{case.weights}{The values of \eqn{d_{max}} eigenvector based on case
 #'     weights perturbation scheme (see Medeiros and Queiroz (2025)).}
 #'     \item{totalLI}{The total local influence (see Lesaffre and Verbeke (1998)).}
 #'
-#' @seealso \code{\link{BCSreg}}, \code{\link{plot.BCSreg}}
+#' @seealso \code{\link{BCSreg}} for parameter estimation in the class of the Box-Cox
+#'     symmetric or zero-adjusted Box-Cox symmetric regression models,
+#'     \code{\link{residuals.BCSreg}} for extracting residuals for a fitted model, and
+#'     \code{\link{plot.BCSreg}} for diagnostic plots.
 #'
 #' @references
 #'  Lesaffre, E., and Verbeke, G. (1998). Local influence in linear mixed models.
@@ -26,8 +29,22 @@
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #'
 #' @examples
-#' ## Examples
+#' ## Data set: fishery (for description, run ?fishery)
+#' hist(fishery$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#'    xlab = "Tide phase", ylab = "Catch per unit effort")
+#' plot(cpue ~ location, fishery, pch = 16,
+#'    xlab = "Location", ylab = "Catch per unit effort")
+#' plot(cpue ~ max_temp, fishery, pch = 16,
+#'    xlab = "Maximum temperature", ylab = "Catch per unit effort")
 #'
+#' ## Fit a double Box-Cox normal regression model:
+#' fit <- BCSreg(cpue ~ location + tide_phase |
+#'                location + tide_phase + max_temp, fishery)
+#'
+#' ## Influence measures under case-weights perturbation scheme:
+#' cw <- influence(fit) ## two index plots are shown
+#' str(cw)
 #' @export
 influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), ...){
 
@@ -222,7 +239,7 @@ influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), .
   for(i in 1:n){
     totalLI[i] <- 2 * abs(t(Delta[, i])%*%solve(-J)%*%Delta[, i])
   }
-  #totalLI <- abs((totalLI - mean(totalLI)) / sd(totalLI))
+  totalLI <- abs((totalLI - mean(totalLI)) / stats::sd(totalLI))
 
   if(plot == TRUE){
 
@@ -232,15 +249,9 @@ influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), .
     }
 
     plot(case.weights, type = "h", main = "Case-weight perturbation", las = 1, xlab = "Index", ylab = "Local influence")
-    # cat(paste("\nClick on points you would like to identify and press Esc."))
-    # identify(seq_len(n), case.weights, cex = 0.8)
-
     plot(totalLI, type = "h", main = "Case-weight perturbation", las = 1, xlab = "Index", ylab = "Total local influence")
-    # identify(seq_len(n), totalLI, cex = 0.8)
 
-    #plot(diag(GL), pch = "+", las = 1, cex = 0.8, main = "Generalized leverage", xlab = "Index", ylab = expression(GL[ii]))
-    # identify(seq_len(n), diag(GL), cex = 0.8)
   }
 
-  list(case.weights = case.weights, totalLI = totalLI)#, GL = diag(GL))
+  list(case.weights = case.weights, totalLI = totalLI)
 }
