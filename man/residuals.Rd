@@ -5,22 +5,103 @@
 \alias{residuals.BCSreg}
 \title{Extract Residuals for a Box-Cox Symmetric Regression Fit}
 \usage{
-\method{residuals}{BCSreg}(object, ...)
+\method{residuals}{BCSreg}(object, approach = c("combined", "separated"), ...)
 }
 \arguments{
 \item{object}{an object of class \code{"BCSreg"}, a result of a call to \link{BCSreg}.}
 
+\item{approach}{a character string indicating the approach for calculating residuals
+when a zero-adjusted regression is fitted. Should be either \code{"combined"} (default)
+for combined residuals or \code{"separated"} for separate residuals. Ignored if
+the model is not zero-adjusted.}
+
 \item{...}{further arguments passed to or from other methods.}
 }
 \value{
-Function \code{residuals} returns a vector with the quantile residuals
-    resulting from a Box-Cox symmetric regression fit.
+If a Box-Cox symmetric regression is fitted to the data, it returns a numeric vector
+containing the quantile residuals (Dunn and Smyth, 1996).
+
+If the model is a zero-adjusted Box-Cox symmetric regression:
+\itemize{
+  \item{For \code{approach = "combined"}, it returns a numeric vector with "combined" quantile residuals. See details}
+  \item{For \code{approach = "separated"}, it returns a list with two components:
+  \code{continuous} (quantile residuals for strictly positive responses) and
+  \code{discrete} (standardized Pearson residuals for the discrete component).}
+}
 }
 \description{
-Extract Residuals for a Box-Cox Symmetric Regression Fit
+Residuals resulting from fitting a Box-Cox symmetric or a zero-adjusted
+    Box-Cox symmetric regression.
+}
+\details{
+For a Box-Cox symmetric regression fit, the residuals are the quantile residuals
+(Dunn and Smyth, 1996), defined by \eqn{r_i^q = \Phi^{-1}(\widehat{F}(y_i))},
+where \eqn{\widehat{F}(\cdot)} is the fitted cumulative distribution function and
+\eqn{\Phi(\cdot)} is cumulative distribution function of the standard normal distribution.
+
+For zero-adjusted Box-Cox symmetric regressions, two approaches are available:
+\itemize{
+  \item{\strong{Combined approach}: Returns a single vector of residuals defined as
+
+  \eqn{
+  r_i^q =
+  \begin{cases}
+    \Phi^{-1}(u_i), & y_i = 0, \\
+    \Phi^{-1}\left[\widehat{F}^{(0)}(y_i)\right], & y_i > 0,
+  \end{cases}
+  }
+
+  where \eqn{u_i} is a random variable uniformly distributed in \eqn{(0, \widehat{\alpha}_i]}
+  and \eqn{F^{(0)}} is the fitted cumulative distribution function of the mixed response.}
+
+  \item{\strong{Separated approach}: Returns a list containing:
+  \itemize{
+    \item{Quantile residuals for the positive (continuous) component.}
+    \item{Standardized Pearson residuals for the discrete component, defined by
+
+    \eqn{
+    r_i^p = \frac{\mathbb{I}(y_i = 0) - \widehat{\alpha}_i}
+    {\sqrt{\widehat{\alpha}_i(1-\widehat{\alpha}_i)(1-\widehat{h}_{ii})}},
+    }
+
+    where \eqn{\widehat{h}_{ii}} is the \eqn{i}th diagonal element of the
+    "hat matrix" resulting from a fit of a generalized linear model with a
+    binary response given by \eqn{\mathbb{I}(y_i = 0)}, being \eqn{\mathbb{I}} the indicator
+    function.}
+  }
+  }
+}
+
+See more details in Medeiros and Queiroz (2025).
 }
 \examples{
-## Examples
+## Data set: fishery (for description, run ?fishery)
+hist(fishery$cpue, xlab = "Catch per unit effort")
+plot(cpue ~ tide_phase, fishery, pch = 16,
+    xlab = "Tide phase", ylab = "Catch per unit effort")
+plot(cpue ~ location, fishery, pch = 16,
+    xlab = "Location", ylab = "Catch per unit effort")
+plot(cpue ~ max_temp, fishery, pch = 16,
+    xlab = "Maximum temperature", ylab = "Catch per unit effort")
+
+## BCS fit
+fit <- BCSreg(cpue ~ location + tide_phase + max_temp |
+                location + tide_phase + max_temp, fishery)
+
+## Quantile residuals
+rq <- residuals(fit)
+rq
+
+## Normal probability plot
+qqnorm(rq, pch = "+", cex = 0.8)
+qqline(rq, col = "dodgerblue", lwd = 2)
+}
+\references{
+Dunn, P. K. and Smyth, G. K. (1996). Randomized quantile residuals.
+    \emph{Journal of Computational and Graphical Statistics}, \bold{5}, 236---244.
+
+    Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
+    Box-Cox symmetric regression models and their extensions
 }
 \author{
 Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>

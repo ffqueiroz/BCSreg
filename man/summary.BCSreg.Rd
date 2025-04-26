@@ -129,7 +129,7 @@ summary(fit_lpe)
 }
 \references{
 Dunn, P. K. and Smyth, G. K. (1996). Randomized quantile residuals.
-    \emph{Journal of Computational and Graphical Statistics}, \bold{5},236---244.
+    \emph{Journal of Computational and Graphical Statistics}, \bold{5}, 236---244.
 
     Ferrari, S., and Cribari-Neto, F. (2004). Beta regression for modelling
     rates and proportions. \emph{Journal of Applied Statistics}, \bold{31}, 799---815.

@@ -115,50 +115,168 @@ AIC.ugrpl <- function(object, ..., k = 2) {
 #'
 #' @title Extract Residuals for a Box-Cox Symmetric Regression Fit
 #'
+#' @description Residuals resulting from fitting a Box-Cox symmetric or a zero-adjusted
+#'     Box-Cox symmetric regression.
+#'
 #' @param object an object of class \code{"BCSreg"}, a result of a call to \link{BCSreg}.
+#' @param approach a character string indicating the approach for calculating residuals
+#'     when a zero-adjusted regression is fitted. Should be either \code{"combined"} (default)
+#'     for combined residuals or \code{"separated"} for separate residuals. Ignored if
+#'     the model is not zero-adjusted.
 #' @param ... further arguments passed to or from other methods.
 #'
-#' @return Function \code{residuals} returns a vector with the quantile residuals
-#'     resulting from a Box-Cox symmetric regression fit.
+#' @return
+#' If a Box-Cox symmetric regression is fitted to the data, it returns a numeric vector
+#' containing the quantile residuals (Dunn and Smyth, 1996).
+#'
+#' If the model is a zero-adjusted Box-Cox symmetric regression:
+#' \itemize{
+#'   \item{For \code{approach = "combined"}, it returns a numeric vector with "combined" quantile residuals. See details}
+#'   \item{For \code{approach = "separated"}, it returns a list with two components:
+#'   \code{continuous} (quantile residuals for strictly positive responses) and
+#'   \code{discrete} (standardized Pearson residuals for the discrete component).}
+#' }
+#'
+#' @details
+#'
+#' For a Box-Cox symmetric regression fit, the residuals are the quantile residuals
+#' (Dunn and Smyth, 1996), defined by \eqn{r_i^q = \Phi^{-1}(\widehat{F}(y_i))},
+#' where \eqn{\widehat{F}(\cdot)} is the fitted cumulative distribution function and
+#' \eqn{\Phi(\cdot)} is cumulative distribution function of the standard normal distribution.
+#'
+#' For zero-adjusted Box-Cox symmetric regressions, two approaches are available:
+#' \itemize{
+#'   \item{\strong{Combined approach}: Returns a single vector of residuals defined as
+#'
+#'   \eqn{
+#'   r_i^q =
+#'   \begin{cases}
+#'     \Phi^{-1}(u_i), & y_i = 0, \\
+#'     \Phi^{-1}\left[\widehat{F}^{(0)}(y_i)\right], & y_i > 0,
+#'   \end{cases}
+#'   }
+#'
+#'   where \eqn{u_i} is a random variable uniformly distributed in \eqn{(0, \widehat{\alpha}_i]}
+#'   and \eqn{F^{(0)}} is the fitted cumulative distribution function of the mixed response.}
+#'
+#'   \item{\strong{Separated approach}: Returns a list containing:
+#'   \itemize{
+#'     \item{Quantile residuals for the positive (continuous) component.}
+#'     \item{Standardized Pearson residuals for the discrete component, defined by
+#'
+#'     \eqn{
+#'     r_i^p = \frac{\mathbb{I}(y_i = 0) - \widehat{\alpha}_i}
+#'     {\sqrt{\widehat{\alpha}_i(1-\widehat{\alpha}_i)(1-\widehat{h}_{ii})}},
+#'     }
+#'
+#'     where \eqn{\widehat{h}_{ii}} is the \eqn{i}th diagonal element of the
+#'     "hat matrix" resulting from a fit of a generalized linear model with a
+#'     binary response given by \eqn{\mathbb{I}(y_i = 0)}, being \eqn{\mathbb{I}} the indicator
+#'     function.}
+#'   }
+#'   }
+#' }
+#'
+#' See more details in Medeiros and Queiroz (2025).
 #'
 #' @export
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #'
+#' @references
+#'     Dunn, P. K. and Smyth, G. K. (1996). Randomized quantile residuals.
+#'     \emph{Journal of Computational and Graphical Statistics}, \bold{5}, 236---244.
+#'
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
+#'     Box-Cox symmetric regression models and their extensions
+#'
 #' @examples
-#' ## Examples
-residuals.BCSreg <- function(object, ...) {
+#' ## Data set: fishery (for description, run ?fishery)
+#' hist(fishery$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#'     xlab = "Tide phase", ylab = "Catch per unit effort")
+#' plot(cpue ~ location, fishery, pch = 16,
+#'     xlab = "Location", ylab = "Catch per unit effort")
+#' plot(cpue ~ max_temp, fishery, pch = 16,
+#'     xlab = "Maximum temperature", ylab = "Catch per unit effort")
+#'
+#' ## BCS fit
+#' fit <- BCSreg(cpue ~ location + tide_phase + max_temp |
+#'                 location + tide_phase + max_temp, fishery)
+#'
+#' ## Quantile residuals
+#' rq <- residuals(fit)
+#' rq
+#'
+#' ## Normal probability plot
+#' qqnorm(rq, pch = "+", cex = 0.8)
+#' qqline(rq, col = "dodgerblue", lwd = 2)
+residuals.BCSreg <- function(object, approach = c("combined", "separated"), ...) {
+
+  approach <- match.arg(approach, c("combined", "separated"))
 
   y <- as.numeric(stats::model.response(stats::model.frame(object)))
-  ind <- ifelse(y == 0, 1, 0)
   n <- object$nobs
-
   mu <- object$mu
   sigma <- object$sigma
   lambda <- object$lambda
   zeta <- object$zeta
-  alpha <- if (is.null(object$alpha)) rep(0L, n) else object$alpha
   family <- object$family
+  alpha <- if (is.null(object$alpha)) rep(0L, n) else object$alpha
+  is_zero_adjusted <- any(alpha > 0)
 
-  residuals <- cdf <- rep(NA, n)
-  cdf <- alpha
-  cdf[ind == 0] <- alpha[ind == 0] + (1 - alpha[ind == 0]) *
-    pBCS(y[ind == 0], mu = mu[ind == 0], sigma = sigma[ind == 0],
-         lambda = lambda, zeta = zeta, family = family)
+  ind <- as.numeric(y == 0)
 
-  u <- rep(NA, sum(ind))
-  j <- 1L
-  for (i in which(ind == 1)){
-    u[j] <- stats::runif(1, 0, alpha[i])
-    j <- j + 1
+  if (!is_zero_adjusted) {
+    # Quantile residuals
+    cdf <- pBCS(y, mu = mu, sigma = sigma, lambda = lambda,
+                zeta = zeta, family = family)
+    residuals <- stats::qnorm(cdf)
+    return(residuals)
   }
 
-  residuals[ind == 1] <- stats::qnorm(u)
-  residuals[ind == 0] <- qnorm(cdf[ind == 0])
-  residuals
+  # Zero-adjusted case
+  if (approach == "combined") {
 
+    cdf <- pZABCS(y, alpha = alpha, mu = mu, sigma = sigma,
+                  lambda = lambda, zeta = zeta, family = family)
+
+    residuals <- numeric(n)
+    u <- numeric(sum(ind))
+    j <- 1L
+    for (i in which(ind == 1)){
+      u[j] <- stats::runif(1, 0, alpha[i])
+      j <- j + 1
+    }
+
+    residuals[ind == 1] <- stats::qnorm(u)
+    residuals[ind == 0] <- stats::qnorm(cdf[ind == 0])
+    return(residuals)
+
+  } else if (approach == "separated") {
+
+    # Residuals for the continuous component (positive responses)
+    cdf_continuous <- pBCS(y[ind == 0], mu = mu[ind == 0], sigma = sigma[ind == 0],
+                           lambda = lambda, zeta = zeta, family = family)
+    residuals_continuous <- stats::qnorm(cdf_continuous)
+
+    # Residuals for the discrete part
+    Z <- stats::model.matrix(object, model = "alpha")
+    dalpha.deta <- c(stats::make.link(object$link$alpha)$mu.eta(Z %*% object$coefficients$alpha))
+    Q <- diag(dalpha.deta^2 / (alpha * (1 - alpha)))
+    h_diag <- diag(sqrt(Q)%*%Z%*%solve(t(Z)%*%Q%*%Z)%*%t(Z)%*%sqrt(Q))
+
+    residuals_discrete <- (ind - alpha) /
+      sqrt(alpha * (1 - alpha) * (1 - h_diag))
+
+    return(list(
+      continuous = residuals_continuous,
+      discrete = residuals_discrete
+    ))
+  }
 }
+
 
 
 # Summary method ------------------------------------------------------------------------------
@@ -248,7 +366,7 @@ residuals.BCSreg <- function(object, ...) {
 #'
 #' @references
 #'     Dunn, P. K. and Smyth, G. K. (1996). Randomized quantile residuals.
-#'     \emph{Journal of Computational and Graphical Statistics}, \bold{5},236---244.
+#'     \emph{Journal of Computational and Graphical Statistics}, \bold{5}, 236---244.
 #'
 #'     Ferrari, S., and Cribari-Neto, F. (2004). Beta regression for modelling
 #'     rates and proportions. \emph{Journal of Applied Statistics}, \bold{31}, 799---815.
