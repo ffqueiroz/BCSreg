@@ -1,7 +1,7 @@
 Package: BCSreg
 Type: Package
 Title: Box-Cox Symmetric Regression for Positive Data
-Version: 0.1.0
+Version: 1.1.0
 Authors@R: c(
   person("Felipe", "Queiroz",
           email = "ffelipeq@outlook.com", 
