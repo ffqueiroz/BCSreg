@@ -37,8 +37,61 @@ for both regression structures.}
 \item{k}{numeric, the penalty per parameter to be used; the default
 \code{k = 2} is the classical Akaike information criteria (AIC).}
 }
+\value{
+\itemize{
+\item \code{model.frame} returns a \code{data.frame} containing the variables required
+    by \code{formula} and any additional arguments provided via \code{...}.
+\item \code{model.matrix} returns the design matrix used in the regression structure,
+    as specified by the \code{model} argument.
+\item \code{coef} returns a numeric vector of estimated regression coefficients, based
+    on the \code{model} argument. If \code{parm = "full"}, it returns a list with the
+    components \code{"mu"} and \code{"sigma"}, each containing the corresponding
+    coefficient estimates. If the model is zero-adjusted, it will also have a
+    \code{"alpha"} component with the estimates of the associated regression coefficients.
+\item \code{vcov} returns the asymptotic covariance matrix of the regression coefficients,
+    based on the \code{model} argument.
+\item \code{logLik} returns the log-likelihood value of the fitted model.
+\item \code{AIC} returns a numeric value representing the Akaike Information Criterion
+    (AIC), Bayesian Information Criterion, or another criterion, depending on \code{k}.
+}
+}
 \description{
 Methods for \code{"BCSreg"} objects.
+}
+\examples{
+## Data set: fishery (for description, run ?fishery)
+hist(fishery$cpue, xlab = "Catch per unit effort")
+plot(cpue ~ tide_phase, fishery, pch = 16,
+   xlab = "Tide phase", ylab = "Catch per unit effort")
+plot(cpue ~ location, fishery, pch = 16,
+   xlab = "Location", ylab = "Catch per unit effort")
+plot(cpue ~ max_temp, fishery, pch = 16,
+   xlab = "Maximum temperature", ylab = "Catch per unit effort")
+
+## Fit the Box-Cox normal regression as a reference model
+fit <- BCSreg(cpue ~ location + tide_phase |
+                location + tide_phase + max_temp, fishery)
+
+## coef
+coef(fit)
+coef(fit, model = "sigma")
+coef(fit, model = "full")
+
+## vcov
+vcov(fit)
+vcov(fit, model = "sigma")
+vcov(fit, model = "full")
+
+## Log-likelihood value
+logLik(fit)
+
+## AIC and BIC
+AIC(fit)
+AIC(fit, k = log(fit$nobs))
+
+## Model matrices
+model.matrix(fit)
+model.matrix(fit, model = "sigma")
 }
 \author{
 Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
