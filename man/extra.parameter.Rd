@@ -4,7 +4,7 @@
 \alias{extra.parameter}
 \alias{print.extra.parameter}
 \alias{plot.extra.parameter}
-\title{Select the Extra Parameter of a Box-Cox Symmetric Regression}
+\title{Select the Extra Parameter of a Box-Cox Symmetric Regression Model}
 \usage{
 extra.parameter(
   object,
@@ -18,55 +18,95 @@ extra.parameter(
 
 \method{print}{extra.parameter}(x, ...)
 
-\method{plot}{extra.parameter}(x, ...)
+\method{plot}{extra.parameter}(x, which = 1, ...)
 }
 \arguments{
-\item{object}{an object of class \code{"BCSreg"}, a result of a call to \code{\link{BCSreg}}.}
+\item{object}{an object of class \code{"BCSreg"}, resulting from a call to \code{\link{BCSreg}}.}
 
-\item{family}{a character that specifies the symmetric generating family of the
-BCS distribution. The options available are: \code{"ST"}, \code{"PE"},
-\code{"SN"}, \code{"HP"}, and \code{"SL"}. The \code{"NO"}, \code{"LOI"},
-and \code{"LOII"} generating families do not depend on additional parameters.}
+\item{family}{a character string specifying the symmetric generating family of the
+BCS distribution. The available options are: \code{"ST"}, \code{"PE"},
+\code{"SN"}, \code{"HP"}, and \code{"SL"}. The families \code{"NO"}, \code{"LOI"},
+and \code{"LOII"} do not depend on an additional parameter.}
 
-\item{grid}{grid of values that will be used to evaluate the Upsilon statistics and the profiled
-log-likelihood function.}
+\item{grid}{a numeric vector of positive values at which the Upsilon statistic and
+the profile log-likelihood function will be evaluated.}
 
-\item{trace}{logical; if \code{TRUE}, a summary with the profiled log-likelihood value and the
-Upsilon statistics is displayed.}
+\item{trace}{logical; if \code{TRUE}, a summary displaying the profile log-likelihood
+values and the Upsilon statistics is shown.}
 
-\item{plot}{logical; if \code{TRUE}, a graph of the Upsilon statistics evaluated in the
-considered grid of values is shown.}
+\item{plot}{logical; if \code{TRUE}, a plot of the Upsilon statistics evaluated over
+the specified grid of values is displayed.}
 
 \item{control}{a list of control arguments specified via \code{\link{BCSreg.control}}.}
 
 \item{...}{further arguments passed to \code{\link{BCSreg.control}}.}
 
 \item{x}{an object of class \code{"extra.parameter"}.}
+
+\item{which}{numeric; if \code{which = 1}, the plot shows the Upsilon statistic versus \code{zeta};
+if \code{which = 2}, the plot shows the profile log-likelihood versus \code{zeta}.}
 }
 \value{
-An object of class \code{"extra.parameter"}. More specifically, it returns a list in which
-    each element consists of the fit of the BCS regression with each value of the extra
-    parameter zeta specified in \code{grid}. In addition, it has the elements \code{"logLik"}
-    with the vector of log-likelihood values for each fit, \code{"Upsilon"} with the values
-    of the Upsilon statistics for each fit, and \code{"grid"} with the specified grid of
-    values.
+An object of class \code{"extra.parameter"}, which is a list containing the fits of the
+    BCS regression model for each value of the extra parameter \code{zeta} specified in \code{grid}.
+    The object also includes:
+    \itemize{
+     \item{\code{logLik}: a vector with the log-likelihood values for each fit;}
+     \item{\code{Upsilon}: a vector with the Upsilon statistic values for each fit;}
+     \item{\code{grid}: the specified grid of values.}
+    }
 
-    The \code{print} function summarizes the fits by displaying, for each value in \code{grid},
-    the log-likelihood value and the Upsilon statistic. The
-    \code{plot} function returns a graph of the Upsilon statistics, highlighting its
-    minimum.
+    The value of the extra parameter (\code{zeta}) can be selected using two alternative
+    approaches:
+    \itemize{
+     \item{the value that minimizes the Upsilon goodness-of-fit statistic;}
+     \item{the value that maximizes the log-likelihood.}
+    }
+
+    The \code{print} method summarizes the fits by displaying, for each value in \code{grid},
+    the corresponding log-likelihood value and Upsilon statistic.
+    The \code{plot} method returns a graph of the Upsilon statistics, highlighting its minimum.
 }
 \description{
-Estimation of the extra parameter in a Box-Cox regression fit based on the Upsilon
-    goodness-of-fit statistic and profiled likelihood.
+Estimation of the extra parameter in a Box-Cox symmetric or zero-adjusted
+    Box-Cox symmetric regression model based on the Upsilon goodness-of-fit statistic and
+    the profile log-likelihood.
 }
 \examples{
-# Examples
+## Data set: fishery (for description, run ?fishery)
+hist(fishery$cpue, xlab = "Catch per unit effort")
+plot(cpue ~ tide_phase, fishery, pch = 16,
+   xlab = "Tide phase", ylab = "Catch per unit effort")
+plot(cpue ~ location, fishery, pch = 16,
+   xlab = "Location", ylab = "Catch per unit effort")
+plot(cpue ~ max_temp, fishery, pch = 16,
+   xlab = "Maximum temperature", ylab = "Catch per unit effort")
 
+## Fit the Box-Cox normal regression as a reference model
+fit_bcno <- BCSreg(cpue ~ location + tide_phase |
+                location + tide_phase + max_temp, fishery)
+
+## Use the specifications of the reference model to change the distribution
+## to, for example, Box-Cox t, and select the value of the extra parameter:
+select_bct <- extra.parameter(fit_bcno, family = "ST", grid = 1:20)
+
+## Class
+class(select_bct)
+
+## It is possible to recover the plots:
+plot(select_bct)
+plot(select_bct, which = 2)
+
+## and the trace:
+select_bct
+
+## Selected fit based on the Upsilon statistic
+fit_bct <- select_bct[["zeta = 19"]]
+summary(fit_bct)
 }
 \references{
-Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-    Box-Cox symmetric regression models and their extensions
+Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling Positive Continuous Data:
+    Box-Cox Symmetric Regression Models and Their Extensions.
 }
 \author{
 Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>

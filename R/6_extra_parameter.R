@@ -1,47 +1,85 @@
 #' @name extra.parameter
 #'
-#' @title Select the Extra Parameter of a Box-Cox Symmetric Regression
+#' @title Select the Extra Parameter of a Box-Cox Symmetric Regression Model
 #'
-#' @description Estimation of the extra parameter in a Box-Cox regression fit based on the Upsilon
-#'     goodness-of-fit statistic and profiled likelihood.
+#' @description Estimation of the extra parameter in a Box-Cox symmetric or zero-adjusted
+#'     Box-Cox symmetric regression model based on the Upsilon goodness-of-fit statistic and
+#'     the profile log-likelihood.
 #'
-#' @param object an object of class \code{"BCSreg"}, a result of a call to \code{\link{BCSreg}}.
-#' @param family a character that specifies the symmetric generating family of the
-#'     BCS distribution. The options available are: \code{"ST"}, \code{"PE"},
-#'     \code{"SN"}, \code{"HP"}, and \code{"SL"}. The \code{"NO"}, \code{"LOI"},
-#'     and \code{"LOII"} generating families do not depend on additional parameters.
-#' @param grid grid of values that will be used to evaluate the Upsilon statistics and the profiled
-#'     log-likelihood function.
-#' @param trace logical; if \code{TRUE}, a summary with the profiled log-likelihood value and the
-#'     Upsilon statistics is displayed.
-#' @param plot logical; if \code{TRUE}, a graph of the Upsilon statistics evaluated in the
-#'     considered grid of values is shown.
+#' @param object an object of class \code{"BCSreg"}, resulting from a call to \code{\link{BCSreg}}.
+#' @param family a character string specifying the symmetric generating family of the
+#'     BCS distribution. The available options are: \code{"ST"}, \code{"PE"},
+#'     \code{"SN"}, \code{"HP"}, and \code{"SL"}. The families \code{"NO"}, \code{"LOI"},
+#'     and \code{"LOII"} do not depend on an additional parameter.
+#' @param grid a numeric vector of positive values at which the Upsilon statistic and
+#'     the profile log-likelihood function will be evaluated.
+#' @param trace logical; if \code{TRUE}, a summary displaying the profile log-likelihood
+#'     values and the Upsilon statistics is shown.
+#' @param plot logical; if \code{TRUE}, a plot of the Upsilon statistics evaluated over
+#'     the specified grid of values is displayed.
+#' @param which numeric; if \code{which = 1}, the plot shows the Upsilon statistic versus \code{zeta};
+#'     if \code{which = 2}, the plot shows the profile log-likelihood versus \code{zeta}.
 #' @param control a list of control arguments specified via \code{\link{BCSreg.control}}.
 #' @param ... further arguments passed to \code{\link{BCSreg.control}}.
 #'
-#' @return An object of class \code{"extra.parameter"}. More specifically, it returns a list in which
-#'     each element consists of the fit of the BCS regression with each value of the extra
-#'     parameter zeta specified in \code{grid}. In addition, it has the elements \code{"logLik"}
-#'     with the vector of log-likelihood values for each fit, \code{"Upsilon"} with the values
-#'     of the Upsilon statistics for each fit, and \code{"grid"} with the specified grid of
-#'     values.
+#' @return An object of class \code{"extra.parameter"}, which is a list containing the fits of the
+#'     BCS regression model for each value of the extra parameter \code{zeta} specified in \code{grid}.
+#'     The object also includes:
+#'     \itemize{
+#'      \item{\code{logLik}: a vector with the log-likelihood values for each fit;}
+#'      \item{\code{Upsilon}: a vector with the Upsilon statistic values for each fit;}
+#'      \item{\code{grid}: the specified grid of values.}
+#'     }
 #'
-#'     The \code{print} function summarizes the fits by displaying, for each value in \code{grid},
-#'     the log-likelihood value and the Upsilon statistic. The
-#'     \code{plot} function returns a graph of the Upsilon statistics, highlighting its
-#'     minimum.
+#'     The value of the extra parameter (\code{zeta}) can be selected using two alternative
+#'     approaches:
+#'     \itemize{
+#'      \item{the value that minimizes the Upsilon goodness-of-fit statistic;}
+#'      \item{the value that maximizes the log-likelihood.}
+#'     }
 #'
-#' @references Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-#'     Box-Cox symmetric regression models and their extensions
+#'     The \code{print} method summarizes the fits by displaying, for each value in \code{grid},
+#'     the corresponding log-likelihood value and Upsilon statistic.
+#'     The \code{plot} method returns a graph of the Upsilon statistics, highlighting its minimum.
+#'
+#' @references Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling Positive Continuous Data:
+#'     Box-Cox Symmetric Regression Models and Their Extensions.
 #'
 #' @examples
-#' # Examples
+#' ## Data set: fishery (for description, run ?fishery)
+#' hist(fishery$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#'    xlab = "Tide phase", ylab = "Catch per unit effort")
+#' plot(cpue ~ location, fishery, pch = 16,
+#'    xlab = "Location", ylab = "Catch per unit effort")
+#' plot(cpue ~ max_temp, fishery, pch = 16,
+#'    xlab = "Maximum temperature", ylab = "Catch per unit effort")
 #'
+#' ## Fit the Box-Cox normal regression as a reference model
+#' fit_bcno <- BCSreg(cpue ~ location + tide_phase |
+#'                 location + tide_phase + max_temp, fishery)
+#'
+#' ## Use the specifications of the reference model to change the distribution
+#' ## to, for example, Box-Cox t, and select the value of the extra parameter:
+#' select_bct <- extra.parameter(fit_bcno, family = "ST", grid = 1:20)
+#'
+#' ## Class
+#' class(select_bct)
+#'
+#' ## It is possible to recover the plots:
+#' plot(select_bct)
+#' plot(select_bct, which = 2)
+#'
+#' ## and the trace:
+#' select_bct
+#'
+#' ## Selected fit based on the Upsilon statistic
+#' fit_bct <- select_bct[["zeta = 19"]]
+#' summary(fit_bct)
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #'
 #' @export
-#'
 extra.parameter <- function(object, family, grid = seq(1, 30, 2), trace = TRUE, plot = TRUE,
          control = BCSreg.control(...), ...) {
 
@@ -55,11 +93,12 @@ extra.parameter <- function(object, family, grid = seq(1, 30, 2), trace = TRUE, 
 
     if (trace) {
       cat(
-        "\nzeta:", zeta,
+        "zeta:", zeta,
         "|",
         "logLik:", if (unique(grepl("Error", opt))) NA else sprintf("%.3f", stats::logLik(opt)),
         "|",
-        "Upsilon:", if (unique(grepl("Error", opt))) NA else sprintf("%.3f", summary(opt)$Upsilon)
+        "Upsilon:", if (unique(grepl("Error", opt))) NA else sprintf("%.3f", suppressWarnings(summary(opt)$Upsilon)),
+        "\n"
       )
     }
 
@@ -69,12 +108,18 @@ extra.parameter <- function(object, family, grid = seq(1, 30, 2), trace = TRUE, 
   ll <- Upsilon <- vector("numeric", length(grid))
   for (i in 1:length(grid)) {
     ll[i] <- if (unique(grepl("Error", fit_update[[i]]))) NA else stats::logLik(fit_update[[i]])
-    Upsilon[i] <- if (unique(grepl("Error", fit_update[[i]]))) NA else summary(fit_update[[i]])$Upsilon
+    Upsilon[i] <- if (unique(grepl("Error", fit_update[[i]]))) NA else suppressWarnings(summary(fit_update[[i]])$Upsilon)
   }
 
-
+  if (trace) {
+    cat("\nBest value for zeta according to Upsilon:", grid[which.min(Upsilon)],
+        "and Profile log-lik.:", grid[which.max(ll)], "\n")
+  }
 
   if (plot) {
+
+    op <- graphics::par(mfrow = c(1, 2))
+    on.exit(graphics::par(op))
 
     plot(grid, Upsilon, type = "o", pch = 16, cex = 0.6,
          xlab = expression(zeta), ylab = expression(Upsilon(zeta)), las = 1)
@@ -83,6 +128,13 @@ extra.parameter <- function(object, family, grid = seq(1, 30, 2), trace = TRUE, 
                      c(Upsilon[which.min(Upsilon)], Upsilon[which.min(Upsilon)]),
                      col = c("dodgerblue", 1), pch = c(16, 1))
 
+
+    plot(grid, ll, type = "o", pch = 16, cex = 0.6,
+         xlab = expression(zeta), ylab = "Profile log-likelihood", las = 1)
+    graphics::abline(h = ll[which.max(ll)], lty = 3, col = "grey", lwd = 2)
+    graphics::points(c(grid[which.max(ll)], grid[which.max(ll)]),
+                     c(ll[which.max(ll)], ll[which.max(ll)]),
+                     col = c("dodgerblue", 1), pch = c(16, 1))
 
   }
 
@@ -135,7 +187,10 @@ print.extra.parameter <- function(x, ...) {
 #' @param x an object of class \code{"extra.parameter"}.
 #'
 #' @export
-plot.extra.parameter <- function(x, ...) {
+plot.extra.parameter <- function(x, which = 1, ...) {
+
+  if(!is.numeric(which) || any(which < 1) || any(which > 2))
+    stop("`which' must be in 1:2")
 
   grid <- x$grid
   ll <- Upsilon <- vector("numeric", length(grid))
@@ -144,12 +199,21 @@ plot.extra.parameter <- function(x, ...) {
     Upsilon[i] <- if (unique(grepl("Error", x[[i]]))) NA else x$Upsilon[i]
   }
 
-  plot(grid, Upsilon, type = "o", pch = 16, cex = 0.6,
-       xlab = expression(zeta), ylab = expression(Upsilon(zeta)), las = 1)
-  graphics::abline(h = Upsilon[which.min(Upsilon)], lty = 3, col = "grey", lwd = 2)
-  graphics::points(c(grid[which.min(Upsilon)], grid[which.min(Upsilon)]),
-                   c(Upsilon[which.min(Upsilon)], Upsilon[which.min(Upsilon)]),
-                   col = c("dodgerblue", 1), pch = c(16, 1))
+  if (which == 1L) {
+    plot(grid, Upsilon, type = "o", pch = 16, cex = 0.6,
+         xlab = expression(zeta), ylab = expression(Upsilon(zeta)), las = 1)
+    graphics::abline(h = Upsilon[which.min(Upsilon)], lty = 3, col = "grey", lwd = 2)
+    graphics::points(c(grid[which.min(Upsilon)], grid[which.min(Upsilon)]),
+                     c(Upsilon[which.min(Upsilon)], Upsilon[which.min(Upsilon)]),
+                     col = c("dodgerblue", 1), pch = c(16, 1))
+  } else if (which == 2L) {
+    plot(grid, ll, type = "o", pch = 16, cex = 0.6,
+         xlab = expression(zeta), ylab = "Profile log-likelihood", las = 1)
+    graphics::abline(h = ll[which.max(ll)], lty = 3, col = "grey", lwd = 2)
+    graphics::points(c(grid[which.max(ll)], grid[which.max(ll)]),
+                     c(ll[which.max(ll)], ll[which.max(ll)]),
+                     col = c("dodgerblue", 1), pch = c(16, 1))
+  }
 
   invisible(x)
 }
