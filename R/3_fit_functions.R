@@ -120,8 +120,9 @@ v.function <- function(y, mu, sigma, lambda, zeta, family) {
     dvz <- 8 * z * exp(-z^2) / ((1 + exp(-z^2))^2)
   }
   if (family == "LOII") {
-    vz <- (1 - exp(-abs(z))) / (abs(z) * (1 + exp(-abs(z))))
-    dvz <- (2 * abs(z) * exp(-abs(z)) + exp(-2 * abs(z)) - 1) / (((z^2)^3 / 2) * ((1 + exp(-abs(z)))^2))
+    vz <- (exp(abs(z)) - 1) / (abs(z) * (1 + exp(abs(z))))
+    dvz <- sign(z) * (2 * abs(z) * exp(abs(z)) - exp(2 * abs(z)) + 1) /
+      (z^2 * (1 + exp(abs(z)))^2)
   }
   if (family == "SN") {
     vz <- 4 * sinh(z) * cosh(z) / (zeta^2 * z) - tanh(z) / z
@@ -183,7 +184,7 @@ xi.function <- function(mu, sigma, lambda, zeta, family) {
       R <- plogisI(1 / (sigma * abs(lambda)))
     }
     if (family == "LOII") {
-      vz <- (1 - exp(-abs((1 / ((sigma * lambda)))))) / (abs((1 / ((sigma * lambda)))) * (1 + exp(-abs((1 / ((sigma * lambda)))))))
+      vz <- (exp(abs(1 / (sigma * lambda))) - 1) / (abs(1 / (sigma * lambda)) * (1 + exp(abs(1 / (sigma * lambda)))))
       r <- dlogis(1 / ((sigma * lambda)))
       R <- plogis(1 / (sigma * abs(lambda)))
     }
@@ -1078,12 +1079,15 @@ BCSreg <- function(formula, data, subset, na.action,
     ## Fitted values
     fitted.values <- rep(NA, n)
     fitted.values[val$alpha > 0.5] <- 0L
-    fitted.values[val$alpha <= 0.5] <- qBCS((0.5 - val$alpha[val$alpha <= 0.5]) /
-                                              (1 - val$alpha[val$alpha <= 0.5]),
-                                            mu = mu[val$alpha <= 0.5],
-                                            sigma = sigma[val$alpha <= 0.5],
-                                            lambda = lambda, zeta = zeta,
-                                            family = family)
+    if (any(val$alpha <= 0.5)) {
+      fitted.values[val$alpha <= 0.5] <- qBCS((0.5 - val$alpha[val$alpha <= 0.5]) /
+                                                (1 - val$alpha[val$alpha <= 0.5]),
+                                              mu = mu[val$alpha <= 0.5],
+                                              sigma = sigma[val$alpha <= 0.5],
+                                              lambda = lambda, zeta = zeta,
+                                              family = family)
+    }
+
     val$fitted.values <- fitted.values
 
     ## Covariance matrix
