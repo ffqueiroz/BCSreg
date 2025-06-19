@@ -654,7 +654,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'
 #' @title Box-Cox Symmetric Regression for Positive Data
 #'
-#' @description Fit a Box-Cox symmetric (BCS) or a zero-adjusted BCS regression models
+#' @description Fit a Box-Cox symmetric (BCS) or a zero-adjusted BCS regression model
 #'     using maximum likelihood estimation.
 #'
 #' @param formula a symbolic description of the model, allowing the specification of

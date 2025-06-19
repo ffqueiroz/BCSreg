@@ -143,7 +143,7 @@ extra.parameter <- function(object, family, grid = seq(1, 30, 2), trace = TRUE, 
   fit_update$Upsilon <- Upsilon
   fit_update$grid <- grid
   class(fit_update) <- "extra.parameter"
-  fit_update
+  invisible(fit_update)
 
 }
 
@@ -175,7 +175,7 @@ print.extra.parameter <- function(x, ...) {
     i <- i + 1
   }
 
-  cat("\n\nBest value for zeta according to Upsilon:", grid[which.min(Upsilon)],
+  cat("\nBest value for zeta according to Upsilon:", grid[which.min(Upsilon)],
       "and logLik:", grid[which.max(ll)])
 
   invisible(x)

@@ -746,6 +746,8 @@ plot.BCSreg <- function(x, which = 1:4,
                         pch = "+", las = 1, cex = 0.8, lwd = 2, ...)
 {
 
+  dots <- list(...)
+
   if(!is.numeric(which) || any(which < 1) || any(which > 7))
     stop("`which' must be in 1:7")
 
@@ -766,37 +768,78 @@ plot.BCSreg <- function(x, which = 1:4,
 
   ## Residuals versus Fitted values
   if (show[1]){
-    plot(stats::fitted(x), res, xlab = "Fitted values", ylab = "Quantile residuals",
+
+    xlab <- if (is.null(dots$xlab)) "Fitted values" else dots$xlab
+    ylab <- if (is.null(dots$ylab)) "Quantile residuals" else dots$ylab
+
+    plot(stats::fitted(x), res, xlab = xlab, ylab = ylab,
          pch = pch, las = las, cex = cex, ...)
-    abline(h = c(stats::qnorm(0.025), 0, stats::qnorm(0.975)),
-           lty = c(2, 1, 2), lwd = lwd, col = "dodgerblue")
+    abline(h = c(-2.5, 0, 2.5), lty = c(2, 1, 2), lwd = lwd, col = "dodgerblue")
   }
 
   ## Residuals versus observation indices
   if (show[2]){
-    plot(1:n, res, xlab = "Observation indices", ylab = "Quantile residuals",
+
+    xlab <- if (is.null(dots$xlab)) "Observation indices" else dots$xlab
+    ylab <- if (is.null(dots$ylab)) "Quantile residuals" else dots$ylab
+
+    plot(1:n, res, xlab = xlab, ylab = ylab,
          pch = pch, las = las, cex = cex, ...)
-    abline(h = c(stats::qnorm(0.025), 0, stats::qnorm(0.975)),
-           lty = c(2, 1, 2), lwd = lwd, col = "dodgerblue")
+    abline(h = c(-2.5, 0, 2.5), lty = c(2, 1, 2), lwd = lwd, col = "dodgerblue")
   }
 
   ## Normal probability plot
   if(show[3]) {
-    car::qqPlot(res, col.lines = "dodgerblue", grid = FALSE,
-                pch = pch, las = las, cex = cex, ...,
-                xlab = "Theoretical quantiles", ylab = "Sample quantiles", ...)
+
+    ## Normal probability plot
+    Pi <- (1:n - 0.5) / n
+    zi <- stats::qnorm(Pi)
+    s.h <- stats::IQR(res) / 1.349
+    m.h <- stats::median(res)
+    xi <- m.h + s.h * zi
+    se <- s.h * sqrt(Pi * (1 - Pi) / n) / stats::dnorm(zi)
+
+    ## qqline
+    qqx <- stats::qnorm(c(0.25, 0.75))
+    qqy <- stats::quantile(res, probs = c(0.25, 0.75), names = FALSE, type = 7, na.rm = TRUE)
+    slope <- diff(qqy) / diff(qqx)
+    int <- qqy[[1L]] - slope * qqx[[1L]]
+
+    ## Plot
+    xlab <- if (is.null(dots$xlab)) "Theoretical quantiles" else dots$xlab
+    ylab <- if (is.null(dots$ylab)) "Sample quantiles" else dots$ylab
+    ylim <- if (is.null(dots$xlim)) c(min(xi - stats::qnorm(0.975) * se),
+                                      max(xi + stats::qnorm(0.975) * se)) else dots$ylim
+
+    plot(zi, sort(res), xlab = xlab, ylab = ylab, type = "n", ylim = ylim, ...)
+    graphics::polygon(x = c(zi, rev(zi)),
+            y = c(xi - stats::qnorm(0.975) * se,
+                  rev(xi + stats::qnorm(0.975) * se)),
+            border = NA,
+            col = grDevices::rgb(30, 144, 255, alpha = 0.2 * 255, maxColorValue = 255))
+    graphics::points(zi, sort(res), pch = pch, las = las, cex = cex, ...)
+    graphics::segments(min(zi), int + slope * min(zi),
+                       max(zi), int + slope * max(zi),
+                       col = "dodgerblue", lwd = 2)
   }
 
   ## Local influence
   cw <- influence(x, plot = FALSE)$case.weights
   if(show[4]) {
-    plot(1:n, cw, xlab = "Observation indices", ylab = "Local influence", type = "h",
-         main = "", las = las, ...)
+
+    xlab <- if (is.null(dots$xlab)) "Observation indices" else dots$xlab
+    ylab <- if (is.null(dots$ylab)) "Local influence" else dots$ylab
+
+    plot(1:n, cw, xlab = xlab, ylab = ylab, type = "h", las = las, ...)
   }
 
   ## Density
   if(show[5]) {
-    plot(stats::density(res), main = "", lwd = 2, ...)
+
+    main <- if (is.null(dots$main)) " " else dots$main
+    xlab <- if (is.null(dots$xlab)) "Quantile residuals" else dots$xlab
+
+    plot(stats::density(res), main = main, xlab = xlab, lwd = 2, ...)
     curve(stats::dnorm(x), col = "dodgerblue", add = TRUE, lwd = 2)
     legend("topright", c("Sample density", "N(0, 1)"),
            lty = 1, lwd = 2, col = c(1, "dodgerblue"), cex = 0.9, bty = "n")
@@ -812,10 +855,14 @@ plot.BCSreg <- function(x, which = 1:4,
 
   ## v(z) function
   if(show[7]) {
+
+    xlab <- if (is.null(dots$xlab)) "Quantile residuals" else dots$xlab
+    ylab <- if (is.null(dots$ylab)) expression(v(z)) else dots$ylab
+
     v <- v.function(y[y > 0], x$mu[y > 0], x$sigma[y > 0], x$lambda, x$zeta, x$family)$v
     if(x$family == "NO")
       warning("The v(z) function is constant for this family.")
-    plot(res[y > 0], v, xlab = "Quantile residuals", ylab = expression(v(z)),
+    plot(res[y > 0], v, xlab = xlab, ylab = ylab,
            pch = pch, las = las, cex = cex, ...)
   }
 
