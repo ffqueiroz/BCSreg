@@ -234,7 +234,9 @@ dBCS <- function(x, mu, sigma, lambda, zeta, family = "NO", log = FALSE) {
   id1 <- which(x > 0 & lambda != 0 & !is.nan(log.lik))
 
   log.lik[id0] <- -log(x[id0] * sigma[id0]) + log(r[id0])
-  log.lik[id1] <- (lambda[id1] - 1) * log(x[id1]) - log(sigma[id1] * mu[id1]^lambda[id1]) + log(r[id1]) - log(R[id1])
+  #log.lik[id1] <- (lambda[id1] - 1) * log(x[id1]) - log(sigma[id1] * mu[id1]^lambda[id1]) + log(r[id1]) - log(R[id1])
+  log.lik[id1] <- (lambda[id1] - 1) * log(x[id1]) - log(sigma[id1]) -
+    lambda[id1] * log(mu[id1]) + log(r[id1]) - log(R[id1])
 
   if (!log) log.lik <- exp(log.lik)
   if (d > 1L) matrix(log.lik, ncol = d) else log.lik
