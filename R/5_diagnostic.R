@@ -255,3 +255,160 @@ influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), .
 
   list(case.weights = case.weights, totalLI = totalLI)
 }
+
+
+#' Normal Probability Plots with Simulated Envelope for a Box-Cox Symmetric Regression Fit
+#'
+#' Produce the normal probability plot with simulated envelope of the quantile
+#'     residuals obtained from a Box-Cox symmetric regression fit.
+#'
+#' @param object a fitted model object of class "\code{BCSreg}".
+#' @param rep a positive integer representing the number of iterations to calculate
+#'     the simulated envelopes. Default is \code{rep = 60}.
+#' @param conf a numeric value in the interval (0,1) that represents the confidence
+#'     level of the simulated envelope. Default is \code{conf = 0.95}.
+#' @param envcol character specifying the color of the envelope.
+#' @param ... additional graphical parameters (see par).
+#'
+#' @details The \code{envelope} uses the idea of Atkinson (1985) to create normal
+#'     probability plots with simulated envelope. Under the correct model,
+#'     approximately 100 * \code{conf} of the residuals are expected to be inside
+#'     the envelope.
+#'
+#' @return \code{envelope} returns normal probability plot with simulated envelopes
+#'     for the quantile residuals.
+#'
+#' @export
+#'
+#' @references
+#'   Atkinson, A. C. (1985). \emph{Plots, Transformations and Regression: An Introduction
+#'      to Graphical Methods of Diagnostic Regression Analysis}.
+#'      Oxford Science Publications, Oxford.
+#'
+#'  Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
+#'     Box-Cox symmetric regression models and their extensions
+#'
+#' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
+#' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
+#'
+#' @importFrom methods missingArg
+#' @importFrom utils setTxtProgressBar txtProgressBar
+#' @seealso \code{\link{BCSreg}}, \code{\link{residuals.BCSreg}}
+#'
+#' @examples
+#' ## Data set: fishery (for description, run ?fishery)
+#' hist(fishery$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#'    xlab = "Tide phase", ylab = "Catch per unit effort")
+#' plot(cpue ~ location, fishery, pch = 16,
+#'    xlab = "Location", ylab = "Catch per unit effort")
+#' plot(cpue ~ max_temp, fishery, pch = 16,
+#'    xlab = "Maximum temperature", ylab = "Catch per unit effort")
+#'
+#' ## Fit a double Box-Cox normal regression model:
+#' fit <- BCSreg(cpue ~ location + tide_phase |
+#'                location + tide_phase + max_temp, fishery)
+#' envelope(fit)
+envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
+
+  dots <- list(...)
+  rep <- max(30, floor(rep))
+
+  if(rep != floor(rep) | rep <= 0) stop("The rep argument must be a positive integer.", call. = FALSE)
+  if(conf <= 0  | conf >= 1) stop("The conf argument must be within the interval (0, 1).", call. = FALSE)
+
+  family  <- object$family
+  n       <- object$nobs
+  X       <- model.matrix(object, model = "mu")
+  S       <- model.matrix(object, model = "sigma")
+  p <- ncol(X)
+  q <- ncol(S)
+  muhat     <- object$mu
+  sigmahat  <- object$sigma
+  lambdahat <- object$lambda
+  zetahat <- object$zeta
+  lambda_id <- !is.null(lambdahat)
+  zeta_id <- !is.null(zetahat)
+
+  resRid <- residuals(object)
+
+  resid_env <- matrix(0, n, rep)
+  i <- 1
+  bar <- txtProgressBar(min = 0, max = rep, initial = 0, width = 50, char = "+", style = 3)
+  while(i <= rep){
+    tryCatch({
+      y_env <- rBCS(n, muhat, sigmahat, lambdahat, zetahat, family = family)
+      val <- suppressWarnings(BCSreg.fit(X = X, y = y_env, S = S, family = family,
+                                         zeta = zetahat,
+                                         link = object$link$mu,
+                                         sigma.link = object$link$sigma,
+                                         control = object$control))
+
+      mu     <- c(make.link(object$link$mu)$linkinv(X%*%val$par[1:p]))
+      sigma  <- c(make.link(object$link$sigma)$linkinv(S%*%val$par[1:q + p]))
+      lambda <- if (lambda_id) val$par[p + q + 1] else 0L
+      zeta   <- if (zeta_id) tail(val$par, 1) else NA
+
+      resid_env[,i] <- sort(qnorm(pBCS(y_env, mu, sigma, lambda,
+                                       zeta = zeta, family = family)))
+      setTxtProgressBar(bar,i)
+      i = i + 1
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  }
+
+  liml <- apply(resid_env, 1, quantile, prob=(1-conf)/2)
+  limu <- apply(resid_env, 1, quantile, prob=(1-(1-conf)/2))
+  mm   <- apply(resid_env, 1, median)
+
+  close(bar)
+  cat("\n")
+  faixaRid <- range(resRid , liml , limu)
+
+  if(is.null(dots$xlab)) xlab <- "Theoretical quantiles"
+  if(is.null(dots$ylab)) ylab <- "Sample quantiles"
+  if(is.null(dots$main)) main <- ""
+  if(is.null(dots$ylim)) ylim <- faixaRid
+  if(missingArg(envcol) || !is.character(envcol)) envcol <- "black"
+  if(is.null(dots$xlim)){
+    qqnormInt <- function(y,IDENTIFY = TRUE){
+      qqnorm(y, pch = "+", las = 1, ylim = ylim, xlab = xlab, ylab = ylab, main = main, cex = 0.8,
+             lwd = 3, las = 1) -> X
+      par(new = TRUE)
+      qqnorm(liml, axes = FALSE, xlab = "", ylab = "", type = "l", ylim = ylim, lty = 1, main = "",
+             col = envcol)
+      par(new = TRUE)
+      qqnorm(limu, axes = FALSE, xlab = "", ylab = "", type = "l", ylim = ylim, lty = 1, main = "",
+             col = envcol)
+      par(new = TRUE)
+      qqnorm(mm, axes = FALSE, xlab = "", ylab = "", type = "l", ylim = ylim, lty = 2, main = main,
+             col = envcol)
+
+      invisible(X)
+      cat(paste("\nClick on points you would like to identify and press Esc."), "\n")
+      if(IDENTIFY) return(identify(X, cex = 0.8))
+
+    }
+    qqnormInt(resRid)
+
+  }else{
+    qqnormInt <- function(y,IDENTIFY = TRUE){
+      qqnorm(y, pch = "+", las = 1, ylim = ylim, xlim = xlim, xlab = xlab, ylab = ylab, main = main, cex = 0.8,
+             lwd = 3, las = 1) -> X
+      par(new = TRUE)
+      qqnorm(liml, axes = FALSE, xlab = "", ylab = "", type = "l", ylim = ylim, xlim = xlim, lty = 1, main = "",
+             col = envcol)
+      par(new = TRUE)
+      qqnorm(limu, axes = FALSE, xlab = "", ylab = "", type = "l", ylim = ylim, xlim = xlim, lty = 1, main = "",
+             col = envcol)
+      par(new = TRUE)
+      qqnorm(mm, axes = FALSE, xlab = "", ylab = "", type = "l", ylim = ylim, xlim = xlim, lty = 2, main = main, col = envcol)
+      cat(paste("\nClick on points you would like to identify and press Esc."), "\n")
+      if(IDENTIFY) return(identify(X, cex = 0.8))
+      invisible(X)
+    }
+    qqnormInt(resRid)
+  }
+
+}
+
+
