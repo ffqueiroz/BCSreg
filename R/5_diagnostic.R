@@ -347,10 +347,9 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
       mu     <- c(make.link(object$link$mu)$linkinv(X%*%val$par[1:p]))
       sigma  <- c(make.link(object$link$sigma)$linkinv(S%*%val$par[1:q + p]))
       lambda <- if (lambda_id) val$par[p + q + 1] else 0L
-      zeta   <- if (zeta_id) tail(val$par, 1) else NA
 
       resid_env[,i] <- sort(qnorm(pBCS(y_env, mu, sigma, lambda,
-                                       zeta = zeta, family = family)))
+                                       zeta = zetahat, family = family)))
       setTxtProgressBar(bar,i)
       i = i + 1
     }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
