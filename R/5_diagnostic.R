@@ -319,59 +319,82 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
 
   family  <- object$family
   n       <- object$nobs
-  X       <- model.matrix(object, model = "mu")
-  S       <- model.matrix(object, model = "sigma")
-  p <- ncol(X)
-  q <- ncol(S)
   muhat     <- object$mu
   sigmahat  <- object$sigma
   lambdahat <- object$lambda
+  alphahat <- object$alpha
   zetahat <- object$zeta
+
+  alpha_id <- !is.null(alphahat)
   lambda_id <- !is.null(lambdahat)
   zeta_id <- !is.null(zetahat)
 
-  resRid <- residuals(object)
+  mf <- model.frame(object)
+  y <- as.numeric(model.response(mf))
+  ind <- as.numeric(y == 0)
+  formula <- Formula::as.Formula(object$formula)
+  link <- object$link$mu
+  sigma.link <- object$link$sigma
+  alpha.link <- object$link$alpha
+
+  resRid <- residuals(object, approach = approach)
 
   resid_env <- matrix(0, n, rep)
+
   i <- 1
   bar <- txtProgressBar(min = 0, max = rep, initial = 0, width = 50, char = "+", style = 3)
   while(i <= rep){
     tryCatch({
-      y_env <- rBCS(n, muhat, sigmahat, lambdahat, zetahat, family = family)
-      val <- suppressWarnings(BCSreg.fit(X = X, y = y_env, S = S, family = family,
-                                         zeta = zetahat,
-                                         link = object$link$mu,
-                                         sigma.link = object$link$sigma,
-                                         control = object$control))
 
-      mu     <- c(make.link(object$link$mu)$linkinv(X%*%val$par[1:p]))
-      sigma  <- c(make.link(object$link$sigma)$linkinv(S%*%val$par[1:q + p]))
-      lambda <- if (lambda_id) val$par[p + q + 1] else 0L
+      if (alpha_id) {
 
-      resid_env[,i] <- sort(qnorm(pBCS(y_env, mu, sigma, lambda,
-                                       zeta = zetahat, family = family)))
+        y_env <- rZABCS(n, alphahat, muhat, sigmahat, lambdahat, zetahat, family = family)
+        data_env <- cbind(mf, y_env = y_env)
+        formula_env <- paste("y_env ~",  paste(deparse(formula[[3]]), collapse = ""))
+
+        val <- suppressWarnings(BCSreg(formula_env, data = data_env,
+                                       family = family,
+                                       zeta = zetahat, link = link,
+                                       sigma.link = sigma.link,
+                                       alpha.link = alpha.link,
+                                       control = object$control))
+      } else {
+
+        y_env <- rBCS(n, muhat, sigmahat, lambdahat, zetahat, family = family)
+        data_env <- cbind(mf, y_env = y_env)
+        formula_env <- paste("y_env ~",  paste(deparse(formula[[3]]), collapse = ""))
+
+        val <- suppressWarnings(BCSreg(formula_env, data = data_env,
+                                       family = family,
+                                       zeta = zetahat, link = link,
+                                       sigma.link = sigma.link,
+                                       alpha.link = alpha.link,
+                                       control = object$control))
+      }
+
+      resid_env[,i] <- sort(residuals(val))
       setTxtProgressBar(bar,i)
       i = i + 1
     }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
 
-  liml <- apply(resid_env, 1, quantile, prob=(1-conf)/2)
-  limu <- apply(resid_env, 1, quantile, prob=(1-(1-conf)/2))
-  mm   <- apply(resid_env, 1, median)
-
+  if(missingArg(envcol) || !is.character(envcol)) envcol <- "black"
   close(bar)
   cat("\n")
-  faixaRid <- range(resRid , liml , limu)
 
-  if(is.null(dots$xlab)) xlab <- "Theoretical quantiles"
-  if(is.null(dots$ylab)) ylab <- "Sample quantiles"
-  if(is.null(dots$main)) main <- ""
-  if(is.null(dots$ylim)) ylim <- faixaRid
-  if(missingArg(envcol) || !is.character(envcol)) envcol <- "black"
-  if(is.null(dots$xlim)){
-    qqnormInt <- function(y,IDENTIFY = TRUE){
+    qqnormInt <- function(y, resid_env, IDENTIFY = TRUE){
+
+      liml <- apply(resid_env, 1, quantile, prob = (1 - conf)/2)
+      limu <- apply(resid_env, 1, quantile, prob = (1 - (1 - conf)/2))
+      mm   <- apply(resid_env, 1, median)
+
+      if(is.null(dots$xlab)) xlab <- "Theoretical quantiles"
+      if(is.null(dots$ylab)) ylab <- "Sample quantiles"
+      if(is.null(dots$main)) main <- ""
+      if(is.null(dots$ylim)) ylim <- range(resRid , liml , limu)
+
       qqnorm(y, pch = "+", las = 1, ylim = ylim, xlab = xlab, ylab = ylab, main = main, cex = 0.8,
-             lwd = 3, las = 1) -> X
+             lwd = 3, las = 1, ...) -> X
       par(new = TRUE)
       qqnorm(liml, axes = FALSE, xlab = "", ylab = "", type = "l", ylim = ylim, lty = 1, main = "",
              col = envcol)
@@ -387,26 +410,10 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
       if(IDENTIFY) return(identify(X, cex = 0.8))
 
     }
-    qqnormInt(resRid)
 
-  }else{
-    qqnormInt <- function(y,IDENTIFY = TRUE){
-      qqnorm(y, pch = "+", las = 1, ylim = ylim, xlim = xlim, xlab = xlab, ylab = ylab, main = main, cex = 0.8,
-             lwd = 3, las = 1) -> X
-      par(new = TRUE)
-      qqnorm(liml, axes = FALSE, xlab = "", ylab = "", type = "l", ylim = ylim, xlim = xlim, lty = 1, main = "",
-             col = envcol)
-      par(new = TRUE)
-      qqnorm(limu, axes = FALSE, xlab = "", ylab = "", type = "l", ylim = ylim, xlim = xlim, lty = 1, main = "",
-             col = envcol)
-      par(new = TRUE)
-      qqnorm(mm, axes = FALSE, xlab = "", ylab = "", type = "l", ylim = ylim, xlim = xlim, lty = 2, main = main, col = envcol)
-      cat(paste("\nClick on points you would like to identify and press Esc."), "\n")
-      if(IDENTIFY) return(identify(X, cex = 0.8))
-      invisible(X)
-    }
-    qqnormInt(resRid)
-  }
+    qqnormInt(resRid$continuous, resid_env)
+
+
 
 }
 
