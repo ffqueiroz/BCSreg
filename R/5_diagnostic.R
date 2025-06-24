@@ -291,8 +291,8 @@ influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), .
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #'
-#' @importFrom methods missingArg
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom stats median model.frame model.response qqnorm quantile residuals
 #' @seealso \code{\link{BCSreg}}, \code{\link{residuals.BCSreg}}
 #'
 #' @examples
@@ -337,7 +337,7 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
   sigma.link <- object$link$sigma
   alpha.link <- object$link$alpha
 
-  resRid <- residuals(object, approach = approach)
+  resRid <- residuals(object)
 
   resid_env <- matrix(0, n, rep)
 
@@ -378,7 +378,7 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
     }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
 
-  if(missingArg(envcol) || !is.character(envcol)) envcol <- "black"
+  if(missing(envcol)) envcol <- "black"
   close(bar)
   cat("\n")
 
