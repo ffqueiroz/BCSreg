@@ -291,8 +291,8 @@ influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), .
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #'
-#' @importFrom methods missingArg
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom stats median model.frame model.response qqnorm quantile residuals as.formula
 #' @seealso \code{\link{BCSreg}}, \code{\link{residuals.BCSreg}}
 #'
 #' @examples
@@ -337,7 +337,7 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
   sigma.link <- object$link$sigma
   alpha.link <- object$link$alpha
 
-  resRid <- residuals(object, approach = approach)
+  resRid <- residuals(object)
 
   resid_env <- matrix(0, n, rep)
 
@@ -350,7 +350,7 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
 
         y_env <- rZABCS(n, alphahat, muhat, sigmahat, lambdahat, zetahat, family = family)
         data_env <- cbind(mf, y_env = y_env)
-        formula_env <- paste("y_env ~",  paste(deparse(formula[[3]]), collapse = ""))
+        formula_env <- as.formula(paste("y_env ~",  paste(deparse(formula[[3]]), collapse = "")))
 
         val <- suppressWarnings(BCSreg(formula_env, data = data_env,
                                        family = family,
@@ -362,7 +362,7 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
 
         y_env <- rBCS(n, muhat, sigmahat, lambdahat, zetahat, family = family)
         data_env <- cbind(mf, y_env = y_env)
-        formula_env <- paste("y_env ~",  paste(deparse(formula[[3]]), collapse = ""))
+        formula_env <- as.formula(paste("y_env ~",  paste(deparse(formula[[3]]), collapse = "")))
 
         val <- suppressWarnings(BCSreg(formula_env, data = data_env,
                                        family = family,
@@ -375,10 +375,10 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
       resid_env[,i] <- sort(residuals(val))
       setTxtProgressBar(bar,i)
       i = i + 1
-    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+    }, error=function(e){cat("ERROR: ",conditionMessage(e), "\n")})
   }
 
-  if(missingArg(envcol) || !is.character(envcol)) envcol <- "black"
+  if(missing(envcol)) envcol <- "black"
   close(bar)
   cat("\n")
 
@@ -411,10 +411,10 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
 
     }
 
-    qqnormInt(resRid$continuous, resid_env)
-
-
+    qqnormInt(resRid, resid_env)
 
 }
+
+
 
 
