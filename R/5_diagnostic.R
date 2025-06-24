@@ -293,7 +293,6 @@ influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), .
 #'
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom stats median model.frame model.response qqnorm quantile residuals as.formula
-#' @importFrom stats median model.frame model.response qqnorm quantile residuals
 #' @seealso \code{\link{BCSreg}}, \code{\link{residuals.BCSreg}}
 #'
 #' @examples
