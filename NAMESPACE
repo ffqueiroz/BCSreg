@@ -36,7 +36,10 @@ importFrom(graphics,points)
 importFrom(graphics,rug)
 importFrom(graphics,text)
 importFrom(graphics,title)
+<<<<<<< HEAD
 importFrom(stats,as.formula)
+=======
+>>>>>>> bc2c4d9b207cfc5ac2a12dae7583db3b193ea5ab
 importFrom(stats,dlogis)
 importFrom(stats,dnorm)
 importFrom(stats,dt)
