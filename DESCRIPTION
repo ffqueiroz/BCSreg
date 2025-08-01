@@ -9,7 +9,7 @@ Authors@R: c(
           comment = c(ORCID = "0000-0001-8368-0707")),
   person("Rodrigo", "Medeiros",
           email = "rodrigo.matheus@ufrn.br",
-          role = c("aut", "cre"),
+          role = c("aut", "cre", "cph"),
           comment = c(ORCID = "0000-0001-8101-3038"))
           )
 Description: A collection of tools for regression analysis of non-negative data,
