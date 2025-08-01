@@ -100,8 +100,8 @@ qqline(rq, col = "dodgerblue", lwd = 2)
 Dunn, P. K. and Smyth, G. K. (1996). Randomized quantile residuals.
     \emph{Journal of Computational and Graphical Statistics}, \bold{5}, 236---244.
 
-    Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-    Box-Cox symmetric regression models and their extensions
+    Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+    data: Box-Cox symmetric regression and its zero-adjusted extension.
 }
 \author{
 Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>

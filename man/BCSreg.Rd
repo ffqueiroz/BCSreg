@@ -247,8 +247,8 @@ Cribari-Neto F, Zeileis A (2010). Beta Regression in R. \emph{Journal of Statist
     applications to nutritional data. \emph{AStA Advances in Statistical Analysis},
     \bold{101}, 321---344.
 
-    Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-    Box-Cox symmetric regression models and their extensions
+   Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+   data: Box-Cox symmetric regression and its zero-adjusted extension.
 
     Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
     statistical properties and parameter estimation. \emph{Brazilian Journal of

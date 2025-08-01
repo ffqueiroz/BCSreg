@@ -97,6 +97,10 @@ plot(fit, which = 6)
 ### v(z) function
 plot(fit, which = 7)
 }
+\references{
+Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+    data: Box-Cox symmetric regression and its zero-adjusted extension.
+}
 \author{
 Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 

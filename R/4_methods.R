@@ -32,6 +32,15 @@
 #'     (AIC), Bayesian Information Criterion, or another criterion, depending on \code{k}.
 #' }
 #'
+#' @references
+#'
+#'     Ferrari, S. L. P., and Fumes, G. (2017). Box-Cox symmetric distributions and
+#'     applications to nutritional data. \emph{AStA Advances in Statistical Analysis},
+#'     \bold{101}, 321---344.
+#'
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     data: Box-Cox symmetric regression and its zero-adjusted extension.
+#'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #'
@@ -241,8 +250,8 @@ AIC.ugrpl <- function(object, ..., k = 2) {
 #'     Dunn, P. K. and Smyth, G. K. (1996). Randomized quantile residuals.
 #'     \emph{Journal of Computational and Graphical Statistics}, \bold{5}, 236---244.
 #'
-#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-#'     Box-Cox symmetric regression models and their extensions
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @examples
 #' ## Data set: fishery (for description, run ?fishery)
@@ -424,8 +433,8 @@ residuals.BCSreg <- function(object, approach = c("combined", "separated"), ...)
 #'     Ferrari, S., and Cribari-Neto, F. (2004). Beta regression for modelling
 #'     rates and proportions. \emph{Journal of Applied Statistics}, \bold{31}, 799---815.
 #'
-#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-#'     Box-Cox symmetric regression models and their extensions
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #'     Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
 #'     statistical properties and parameter estimation. \emph{Brazilian Journal of
@@ -697,6 +706,11 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
+#'
+#' @references
+#'
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @return \code{plot} method for \code{"\link{BCSreg}"} objects returns seven types
 #'     of diagnostic plots.

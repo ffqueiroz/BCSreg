@@ -134,8 +134,8 @@ Dunn, P. K. and Smyth, G. K. (1996). Randomized quantile residuals.
     Ferrari, S., and Cribari-Neto, F. (2004). Beta regression for modelling
     rates and proportions. \emph{Journal of Applied Statistics}, \bold{31}, 799---815.
 
-    Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-    Box-Cox symmetric regression models and their extensions
+    Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+    data: Box-Cox symmetric regression and its zero-adjusted extension.
 
     Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
     statistical properties and parameter estimation. \emph{Brazilian Journal of

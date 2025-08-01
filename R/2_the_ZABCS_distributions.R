@@ -1,6 +1,6 @@
 #' The Zero-Adjusted Box-Cox Symmetric Distributions
 #'
-#' Density, distribution function, quantile function, and random generation
+#' Density function, distribution function, quantile function, and random generation
 #'     for the class of the zero-adjusted Box-Cox symmetric (ZABCS) distributions.
 #'
 #' @name ZABCS
@@ -96,8 +96,8 @@
 #'  Ferrari, S. L. P., and Fumes, G. (2017). Box-Cox symmetric distributions and
 #'      applications to nutritional data. \emph{AStA Advances in Statistical Analysis}, 101, 321-344.
 #'
-#'  Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-#'      Box-Cox symmetric regression models and their extensions.
+#'  Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'      data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>

@@ -93,6 +93,14 @@ AIC(fit, k = log(fit$nobs))
 model.matrix(fit)
 model.matrix(fit, model = "sigma")
 }
+\references{
+Ferrari, S. L. P., and Fumes, G. (2017). Box-Cox symmetric distributions and
+    applications to nutritional data. \emph{AStA Advances in Statistical Analysis},
+    \bold{101}, 321---344.
+
+    Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+    data: Box-Cox symmetric regression and its zero-adjusted extension.
+}
 \author{
 Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 

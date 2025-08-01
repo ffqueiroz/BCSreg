@@ -105,8 +105,8 @@ fit_bct <- select_bct[["zeta = 19"]]
 summary(fit_bct)
 }
 \references{
-Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling Positive Continuous Data:
-    Box-Cox Symmetric Regression Models and Their Extensions.
+Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+    data: Box-Cox symmetric regression and its zero-adjusted extension.
 }
 \author{
 Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>

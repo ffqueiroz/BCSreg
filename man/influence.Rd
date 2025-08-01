@@ -47,8 +47,8 @@ str(cw)
 Lesaffre, E., and Verbeke, G. (1998). Local influence in linear mixed models.
  \emph{Biometrics}, 570--582.
 
- Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-    Box-Cox symmetric regression models and their extensions
+ Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+    data: Box-Cox symmetric regression and its zero-adjusted extension.
 }
 \seealso{
 \code{\link{BCSreg}} for parameter estimation in the class of the Box-Cox

@@ -42,8 +42,10 @@
 #'     the corresponding log-likelihood value and Upsilon statistic.
 #'     The \code{plot} method returns a graph of the Upsilon statistics, highlighting its minimum.
 #'
-#' @references Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling Positive Continuous Data:
-#'     Box-Cox Symmetric Regression Models and Their Extensions.
+#' @references
+#'
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @examples
 #' ## Data set: fishery (for description, run ?fishery)

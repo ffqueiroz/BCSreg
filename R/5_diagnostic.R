@@ -22,8 +22,8 @@
 #'  Lesaffre, E., and Verbeke, G. (1998). Local influence in linear mixed models.
 #'  \emph{Biometrics}, 570--582.
 #'
-#'  Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-#'     Box-Cox symmetric regression models and their extensions
+#'  Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
@@ -89,120 +89,6 @@ influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), .
     lambda_star <- c(log(y / mu) - z * v * dzdlambda + sign(lambda) * xi / (sigma * lambda^2))
   }
 
-  ## Generalized leverage
-  # L1 <- diag(y^(lambda - 1) * ((2 * z * sigma * lambda + 1) * v + (z * sigma * lambda + 1) * z * dv) / (sigma^2 * mu^(lambda + 1)))
-  # L2 <- diag(z * y^(lambda - 1) * (2 * v + z * dv) / (sigma^2 * mu^lambda))
-  # L3 <- 1 / y - (y / mu)^lambda * (v + z * dv * dzdlambda + z * v * log(y / mu)) / (sigma * y)
-  # Ldot <- cbind(T1%*%X, matrix(0, nrow = n, ncol = q + 1))
-  # Lddot <- rbind(t(X)%*%T1%*%L1, t(S)%*%T2%*%L2, L3)
-  # GL <- Ldot%*%solve(J)%*%Lddot
-
-  # zp <- rep(NA, n)
-  # l0 <- which(rep(lambda, n) <= 0)
-  # l1 <- which(rep(lambda, n) > 0)
-  # switch(family,
-  #        NO = {
-  #          zp[l0] <- qnorm(0.5 * pnorm(1 / (sigma[l0] * abs(lambda))))
-  #          zp[l1] <- qnorm(1 - 0.5 * pnorm(1 / (sigma[l1] * abs(lambda))))
-  #          dzp_dsigma <- 0.5 * dnorm(sqrt(1 / (sigma[l1] * abs(lambda)))) /
-  #            (sigma[l1]^2 * lambda * dnorm(sqrt(zp)))
-  #          dzp_dlambda <- 0.5 * dnorm(sqrt(1 / (sigma[l1] * abs(lambda)))) /
-  #            (sigma[l1] * lambda^2 * dnorm(sqrt(zp)))
-  #        },
-  #        ST = {
-  #          zp[l0] <- qt(0.5 * pt(1 / (sigma[l0] * abs(lambda)), zeta), zeta)
-  #          zp[l1] <- qt(1 - 0.5 * pt(1 / (sigma * abs(lambda)), zeta), zeta)
-  #          dzp_dsigma <- 0.5 * dt(sqrt(1 / (sigma[l1] * abs(lambda))), zeta) /
-  #            (sigma[l1]^2 * lambda * dt(sqrt(zp), zeta))
-  #          dzp_dlambda <- 0.5 * dt(sqrt(1 / (sigma[l1] * abs(lambda))), zeta) /
-  #            (sigma[l1] * lambda^2 * dt(sqrt(zp), zeta))
-  #        },
-  #        LOI = {
-  #          zp[l0] <- qlogisI(0.5 * plogisI(1 / (sigma[l0] * abs(lambda))))
-  #          zp[l1] <- qlogisI(1 - 0.5 * plogisI(1 / (sigma[l1] * abs(lambda))))
-  #          dzp_dsigma <- 0.5 * dlogisI(sqrt(1 / (sigma[l1] * abs(lambda)))) /
-  #            (sigma[l1]^2 * lambda * dlogisI(sqrt(zp)))
-  #          dzp_dlambda <- 0.5 * dlogisI(sqrt(1 / (sigma[l1] * abs(lambda)))) /
-  #            (sigma[l1] * lambda^2 * dlogisI(sqrt(zp)))
-  #        },
-  #        LOII = {
-  #          zp[l0] <- qlogis(0.5 * plogis(1 / (sigma[l0] * abs(lambda))))
-  #          zp[l1] <- qlogis(1 - 0.5 * plogis(1 / (sigma[l1] * abs(lambda))))
-  #          dzp_dsigma <- 0.5 * dlogis(sqrt(1 / (sigma[l1] * abs(lambda)))) /
-  #            (sigma[l1]^2 * lambda * dlogis(sqrt(zp)))
-  #          dzp_dlambda <- 0.5 * dlogis(sqrt(1 / (sigma[l1] * abs(lambda)))) /
-  #            (sigma[l1] * lambda^2 * dlogis(sqrt(zp)))
-  #        },
-  #        SN = {
-  #          zp[l0] <- asinh((zeta / 2) * qnorm(0.5 * pnorm((2 / zeta) * sinh(1 / (sigma[l0] * abs(lambda))))))
-  #          zp[l1] <- asinh((zeta / 2) * qnorm(1 - 0.5 * pnorm((2 / zeta) * sinh(1 / (sigma[l1] * abs(lambda))))))
-  #        },
-  #        PE = {
-  #          zp[l0] <- gamlss.dist::qPE(0.5 * gamlss.dist::pPE(1 / (sigma[l0] * abs(lambda)),
-  #                                                            mu = 0, sigma = 1, nu = zeta
-  #          ), mu = 0, sigma = 1, nu = zeta)
-  #          zp[l1] <- gamlss.dist::qPE(1 - 0.5 * gamlss.dist::pPE(1 / (sigma[l1] * abs(lambda)),
-  #                                                                mu = 0, sigma = 1, nu = zeta
-  #          ), mu = 0, sigma = 1, nu = zeta)
-  #          dzp_dsigma <- 0.5 * gamlss.dist::dPE(sqrt(1 / (sigma[l1] * abs(lambda))), nu = zeta) /
-  #            (sigma[l1]^2 * lambda * gamlss.dist::dPE(sqrt(zp), nu = zeta))
-  #          dzp_dlambda <- 0.5 * gamlss.dist::dPE(sqrt(1 / (sigma[l1] * abs(lambda))), nu = zeta) /
-  #            (sigma[l1] * lambda^2 * gamlss.dist::dPE(sqrt(zp), nu = zeta))
-  #        },
-  #        HP = {
-  #          zp[l0] <- GeneralizedHyperbolic::qhyperb(
-  #            0.5 * GeneralizedHyperbolic::phyperb(1 / (sigma[l0] * abs(lambda)),
-  #                                                 mu = 0, delta = 1, alpha = zeta, beta = 0
-  #            ),
-  #            mu = 0, delta = 1, alpha = zeta, beta = 0
-  #          )
-  #          zp[l1] <- GeneralizedHyperbolic::qhyperb(
-  #            1 - 0.5 * GeneralizedHyperbolic::phyperb(1 / (sigma[l1] * abs(lambda)),
-  #                                                     mu = 0, delta = 1, alpha = zeta, beta = 0
-  #            ),
-  #            mu = 0, delta = 1, alpha = zeta, beta = 0
-  #          )
-  #          dzp_dsigma <- 0.5 * GeneralizedHyperbolic::dhyperb(sqrt(1 / (sigma[l1] * abs(lambda))), alpha = zeta) /
-  #            (sigma[l1]^2 * lambda * GeneralizedHyperbolic::dhyperb(sqrt(zp), alpha = zeta))
-  #          dzp_dlambda <- 0.5 * GeneralizedHyperbolic::dhyperb(sqrt(1 / (sigma[l1] * abs(lambda))), alpha = zeta) /
-  #            (sigma[l1] * lambda^2 * GeneralizedHyperbolic::dhyperb(sqrt(zp), alpha = zeta))
-  #        },
-  #        SL = {
-  #          zp[l0] <- qslash(0.5 * pslash(1 / (sigma[l0] * abs(lambda)), zeta = zeta), zeta = zeta)
-  #          zp[l1] <- qslash(1 - 0.5 * pslash(1 / (sigma[l1] * abs(lambda)), zeta = zeta), zeta = zeta)
-  #          dzp_dsigma <- 0.5 * dslash(sqrt(1 / (sigma[l1] * abs(lambda))), zeta = zeta) /
-  #            (sigma[l1]^2 * lambda * dslash(sqrt(zp), zeta = zeta))
-  #          dzp_dlambda <- 0.5 * dslash(sqrt(1 / (sigma[l1] * abs(lambda))), zeta = zeta) /
-  #            (sigma[l1] * lambda^2 * dslash(sqrt(zp), zeta = zeta))
-  #        },
-  #        stop(gettextf("%s family not recognised", sQuote(family)), domain = NA)
-  # )
-  #
-  # # Ldot
-  # id <- which(rep(lambda, n) != 0)
-  #
-  # dy_dbeta <- T1%*%X
-  # dy_dbeta[id, ] <- T1[id, ]%*%diag((1 + sigma[id] * lambda * zp[id])^(1 / lambda))%*%X[id, ]
-  #
-  # dy_dtau <- matrix(0, nrow = n, ncol = q)
-  # dy_dtau[id, ] <- T2[id, ]%*%diag(mu[id] * (1 + sigma[id] * lambda * zp[id])^(1 / (lambda - 1)) *
-  #                                    (zp[id] + sigma[id] * dzp_dsigma))%*%S[id, ]
-  #
-  #
-  # dy_dlambda <- matrix(0, nrow = n, ncol = 1)
-  # dy_dlambda[id, ] <- mu[id] * (1 + sigma[id] * lambda * zp[id])^(1 / lambda) *
-  #   (- log(1 + sigma[id] * lambda * zp[id]) / lambda^2 + sigma[id] * (zp[id] + lambda * dzp_dlambda) /
-  #      (lambda * (1 + sigma[id] * lambda * zp[id])))
-  #
-  # Ldot <- cbind(dy_dbeta, dy_dtau, dy_dlambda)
-  #
-  # # Lddot
-  # L1 <- diag(y^(lambda - 1) * ((2 * z * sigma * lambda + 1) * v + (z * sigma * lambda + 1) * z * dv) / (sigma^2 * mu^(lambda + 1)))
-  # L2 <- diag(z * y^(lambda - 1) * (2 * v + z * dv) / (sigma^2 * mu^lambda))
-  # L3 <- 1 / y - (y / mu)^lambda * (v + z * dv * dzdlambda + z * v * log(y / mu)) / (sigma * y)
-  # Lddot <- rbind(t(X)%*%T1%*%L1, t(S)%*%T2%*%L2, L3)
-  #
-  # GL <- Ldot%*%solve(J)%*%Lddot
 
   ## Local influence
   if (is.null(alpha)) {
@@ -285,8 +171,8 @@ influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), .
 #'      to Graphical Methods of Diagnostic Regression Analysis}.
 #'      Oxford Science Publications, Oxford.
 #'
-#'  Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-#'     Box-Cox symmetric regression models and their extensions
+#'   Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'      data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>

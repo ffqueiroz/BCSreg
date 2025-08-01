@@ -362,40 +362,6 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
     }
   }
 
-  # Não precisa definir duas log-verossimilhanças, basta adaptar uma delas
-  # para receber o lambda fixado
-
-  # logLfixed <- function(theta, lambda) {
-  #   beta <- theta[seq.int(length.out = p)]
-  #   tau <- theta[seq.int(length.out = q) + p]
-  #
-  #   eta.1 <- as.vector(X %*% beta)
-  #   eta.2 <- as.vector(S %*% tau)
-  #
-  #   mu <- linkinv(eta.1)
-  #   sigma <- sigma_linkinv(eta.2)
-  #
-  #   if (lambda == 0) {
-  #     z <- (1 / sigma) * (log(y / mu))
-  #   } else {
-  #     z <- (1 / (sigma * lambda)) * ((y / mu)^lambda - 1)
-  #   }
-  #
-  #   if (any(!is.finite(z))) {
-  #     NaN
-  #   } else {
-  #     ll <- suppressWarnings(dBCS(y,
-  #       mu = mu, sigma = sigma, lambda = lambda,
-  #       zeta = zeta, family = family, log = TRUE
-  #     ))
-  #     if (any(!is.finite(ll))) {
-  #       NaN
-  #     } else {
-  #       sum(ll)
-  #     }
-  #   }
-  # }
-
   ## Score function
   U <- function(theta, lambda_id) {
     beta <- theta[seq.int(length.out = p)]
@@ -446,38 +412,6 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
     U
   }
 
-  # Ufixed <- function(theta, lambda) {
-  #   beta <- theta[seq.int(length.out = p)]
-  #   tau <- theta[seq.int(length.out = q) + p]
-  #
-  #   eta.1 <- as.vector(X %*% beta)
-  #   eta.2 <- as.vector(S %*% tau)
-  #
-  #   mu <- linkinv(eta.1)
-  #   sigma <- sigma_linkinv(eta.2)
-  #
-  #   vdv <- v.function(y, mu, sigma, lambda, zeta, family)
-  #   v <- vdv$v
-  #   z <- vdv$z
-  #   xi.f <- xi.function(mu, sigma, lambda, zeta, family)
-  #   xi <- xi.f$xi
-  #
-  #   d1dot <- as.vector(1 / mu.eta(eta.1))
-  #   d2dot <- as.vector(1 / sigma_mu.eta(eta.2))
-  #
-  #   T1 <- diag(1 / d1dot)
-  #   T2 <- diag(1 / d2dot)
-  #
-  #   mu_star <- as.vector(-(lambda / mu) + (1 / (mu * sigma)) * (z * sigma * lambda + 1) * z * v)
-  #   if (lambda == 0) {
-  #     sigma_star <- as.vector((-1 / sigma) + (v * z^2 / sigma))
-  #   } else {
-  #     sigma_star <- as.vector((-1 / sigma) + (v * z^2 / sigma) + (xi / (abs(lambda) * sigma^2)))
-  #   }
-  #
-  #   Ufixed <- c(t(X) %*% T1 %*% mu_star, t(S) %*% T2 %*% sigma_star)
-  #   Ufixed
-  # }
 
   ## Observed information matrix
   Jfunction <- function(beta, tau, lambda) {
@@ -588,61 +522,11 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 
   }
 
-  # if (lambda_id) {
-  #   rownames(vcov) <- colnames(vcov) <- c(colnames(X), if (sigma_const) {
-  #     "(sigma)"
-  #   } else {
-  #     paste("(sigma)",
-  #           colnames(S),
-  #           sep = "_"
-  #     )
-  #   }, "(lambda)")
-  # } else {
-  #   rownames(vcov) <- colnames(vcov) <- c(colnames(X), if (sigma_const) {
-  #     "(sigma)"
-  #   } else {
-  #     paste("(sigma)",
-  #           colnames(S),
-  #           sep = "_"
-  #     )
-  #   })
-  # }
 
   theta.opt$vcov <- vcov
   theta.opt$start <- start
 
 
-  # if (lambda_id) {
-  #   theta.opt <- optim(
-  #     par = c(start, 0), fn = logL, gr = U, method = method,
-  #     control = control, hessian = TRUE
-  #   )
-  #   beta <- theta.opt$par[seq.int(length.out = p)]
-  #   tau <- theta.opt$par[seq.int(length.out = q) + p]
-  #   lambda <- theta.opt$par[seq.int(length.out = 1) + p + q]
-  #   if (theta.opt$convergence == 0) {
-  #     converged <- TRUE
-  #   } else {
-  #     converged <- FALSE
-  #     warning("Optimization failed to converge.", call. = FALSE)
-  #   }
-  #   vcov <- solve(Jfunction(beta, tau, lambda))
-  # } else {
-  #   lambda <- lambda_fix
-  #   theta.opt <- optim(start[seq.int(length.out = p + q)], logLfixed,
-  #     gr = Ufixed,
-  #     method = method, lambda = lambda, control = control, hessian = TRUE
-  #   )
-  #   beta <- theta.opt$par[seq.int(length.out = p)]
-  #   tau <- theta.opt$par[seq.int(length.out = q) + p]
-  #   if (theta.opt$convergence == 0) {
-  #     converged <- TRUE
-  #   } else {
-  #     converged <- FALSE
-  #     warning("optimization failed to converge.", call. = FALSE)
-  #   }
-  #   vcov <- solve(Jfunction(beta, tau, lambda)[seq.int(length.out = p + q), seq.int(length.out = p + q)])
-  # }
 
   theta.opt
 
@@ -824,8 +708,8 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'     applications to nutritional data. \emph{AStA Advances in Statistical Analysis},
 #'     \bold{101}, 321---344.
 #'
-#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-#'     Box-Cox symmetric regression models and their extensions
+# '    Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #'     Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
 #'     statistical properties and parameter estimation. \emph{Brazilian Journal of

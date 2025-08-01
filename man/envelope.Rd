@@ -53,8 +53,8 @@ Atkinson, A. C. (1985). \emph{Plots, Transformations and Regression: An Introduc
      to Graphical Methods of Diagnostic Regression Analysis}.
      Oxford Science Publications, Oxford.
 
- Medeiros, R. M. R., and Queiroz, F. F. (2025). Modeling positive continuous data:
-    Box-Cox symmetric regression models and their extensions
+  Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+     data: Box-Cox symmetric regression and its zero-adjusted extension.
 }
 \seealso{
 \code{\link{BCSreg}}, \code{\link{residuals.BCSreg}}

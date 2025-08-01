@@ -70,7 +70,7 @@ required observations.}
 \code{qBCS} provides the quantile function, and \code{rBCS} generates random variables.
 }
 \description{
-Density, distribution function, quantile function, and random generation
+Density function, distribution function, quantile function, and random generation
     for the class of the Box-Cox symmetric (BCS) distributions.
 }
 \details{
@@ -174,6 +174,9 @@ Cole, T., and Green, P.J. (1992). Smoothing reference centile curves: the LMS
 
  Ferrari, S. L., and Fumes, G. (2017). Box-Cox symmetric distributions and
      applications to nutritional data. \emph{AStA Advances in Statistical Analysis}, 101, 321-344.
+
+ Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+     data: Box-Cox symmetric regression and its zero-adjusted extension.
 
  Rigby, R. A., and Stasinopoulos, D. M. (2004). Smooth centile curves for skew
      and kurtotic data modelled using the Box-Cox power exponential
