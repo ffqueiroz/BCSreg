@@ -91,40 +91,93 @@ The goodness-of-fit measures include:
   }
 }
 \examples{
+# BCS regression for strictly positive response variables
+
 ## Data set: raycatch (for description, run ?raycatch)
 hist(raycatch$cpue, xlab = "Catch per unit effort")
 plot(cpue ~ tide_phase, raycatch, pch = 16,
-    xlab = "Tide phase", ylab = "Catch per unit effort")
+     xlab = "Tide phase", ylab = "Catch per unit effort")
 plot(cpue ~ location, raycatch, pch = 16,
-    xlab = "Location", ylab = "Catch per unit effort")
+     xlab = "Location", ylab = "Catch per unit effort")
 plot(cpue ~ max_temp, raycatch, pch = 16,
-    xlab = "Maximum temperature", ylab = "Catch per unit effort")
+     xlab = "Maximum temperature", ylab = "Catch per unit effort")
 
 ## Fit examples
 
 ### Fit a single Box-Cox normal regression model:
 fit_bcno1 <- BCSreg(cpue ~ location + tide_phase + max_temp, raycatch)
 summary(fit_bcno1)
-# Other quantities can be obtained from a summary.BCSreg object
+
+# Other quantities can be obtained from a summary.BCSreg object:
 aux <- summary(fit_bcno1)
 class(aux)
 str(aux)
 
 ### Fit a double Box-Cox normal regression model:
 fit_bcno2 <- BCSreg(cpue ~ location + tide_phase |
-                     location + tide_phase + max_temp, raycatch)
+                      location + tide_phase + max_temp, raycatch)
 summary(fit_bcno2)
 
 
-### Fit a double Box-Cox power exponential regression model:
+### Fit a double Box-Cox power exponential regression model (family = "PE"):
 fit_bcpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
-                    location + tide_phase + max_temp, raycatch, family = "PE", zeta = 4)
+                     location + tide_phase + max_temp, raycatch, family = "PE", zeta = 4)
 summary(fit_bcpe)
 
-### Fit a double log-power exponential regression model:
+### Fit a double log-power exponential regression model (lambda = 0):
 fit_lpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
-                   location + tide_phase + max_temp, raycatch, family = "PE",
-                 zeta = 4, lambda = 0)
+                    location + tide_phase + max_temp, raycatch, family = "PE",
+                  zeta = 4, lambda = 0)
+summary(fit_lpe)
+
+# Zero-adjusted BCS (ZABCS) regression for non-negative response variables
+
+## Data set: raycatch (for description, run ?raycatch)
+plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
+abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
+text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")
+
+plot(renew_elec_output ~ adj_sav_edu, renewables2015, pch = 16,
+     xlab = "Education expenditure (percent of GNI)",
+     ylab = "Renewable electricity output (in TWh)")
+plot(renew_elec_output ~ agri_land, renewables2015, pch = 16,
+     xlab = "Matural logarithm of total agricultural land area",
+     ylab = "Renewable electricity output (in TWh)")
+
+## Fit examples
+
+### Fit a single zero-adjusted Box-Cox normal regression model:
+fit_zabcno1 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land, renewables2015)
+summary(fit_zabcno1)
+
+# Other quantities obtained from a zero-adjusted fit:
+aux <- summary(fit_zabcno1)
+str(aux)
+
+### Fit a double zero-adjusted Box-Cox normal regression model:
+fit_zabcno2 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+                        adj_sav_edu + agri_land, renewables2015)
+summary(fit_zabcno2)
+
+### Fit a triple zero-adjusted Box-Cox normal regression model:
+fit_zabcno3 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+                        adj_sav_edu + agri_land |
+                        adj_sav_edu + agri_land, renewables2015)
+summary(fit_zabcno3)
+
+
+### Fit a triple zero-adjusted Box-Cox power exponential regression model (family = "PE"):
+fit_zabcpe <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+                       adj_sav_edu + agri_land |
+                       adj_sav_edu + agri_land, renewables2015, family = "PE", zeta = 4)
+summary(fit_zabcpe)
+
+### Fit a triple zero-adjusted log-power exponential regression model (lambda = 0):
+fit_zalpe <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+                      adj_sav_edu + agri_land |
+                      adj_sav_edu + agri_land, renewables2015, family = "PE",
+                    zeta = 4, lambda = 0)
+summary(fit_zalpe)
 summary(fit_lpe)
 }
 \references{

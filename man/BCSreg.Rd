@@ -207,6 +207,8 @@ The \code{BCSreg} function implements maximum likelihood estimation in the
     }
 }
 \examples{
+# BCS regression for strictly positive response variables
+
 ## Data set: raycatch (for description, run ?raycatch)
 hist(raycatch$cpue, xlab = "Catch per unit effort")
 plot(cpue ~ tide_phase, raycatch, pch = 16,
@@ -228,16 +230,61 @@ fit_bcno2 <- BCSreg(cpue ~ location + tide_phase |
 fit_bcno2
 
 
-### Fit a double Box-Cox power exponential regression model:
+### Fit a double Box-Cox power exponential regression model (family = "PE"):
 fit_bcpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
                      location + tide_phase + max_temp, raycatch, family = "PE", zeta = 4)
 fit_bcpe
 
-### Fit a double log-power exponential regression model:
+### Fit a double log-power exponential regression model (lambda = 0):
 fit_lpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
                     location + tide_phase + max_temp, raycatch, family = "PE",
                   zeta = 4, lambda = 0)
 fit_lpe
+
+# Zero-adjusted BCS (ZABCS) regression for non-negative response variables
+
+## Data set: raycatch (for description, run ?raycatch)
+plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
+abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
+text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")
+
+plot(renew_elec_output ~ adj_sav_edu, renewables2015, pch = 16,
+     xlab = "Education expenditure (percent of GNI)",
+     ylab = "Renewable electricity output (in TWh)")
+plot(renew_elec_output ~ agri_land, renewables2015, pch = 16,
+     xlab = "Matural logarithm of total agricultural land area",
+     ylab = "Renewable electricity output (in TWh)")
+
+## Fit examples
+
+### Fit a single zero-adjusted Box-Cox normal regression model:
+fit_zabcno1 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land, renewables2015)
+fit_zabcno1
+
+### Fit a double zero-adjusted Box-Cox normal regression model:
+fit_zabcno2 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+                        adj_sav_edu + agri_land, renewables2015)
+fit_zabcno2
+
+### Fit a triple zero-adjusted Box-Cox normal regression model:
+fit_zabcno3 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+                        adj_sav_edu + agri_land |
+                        adj_sav_edu + agri_land, renewables2015)
+fit_zabcno3
+
+
+### Fit a triple zero-adjusted Box-Cox power exponential regression model (family = "PE"):
+fit_zabcpe <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+                     adj_sav_edu + agri_land |
+                     adj_sav_edu + agri_land, renewables2015, family = "PE", zeta = 4)
+fit_zabcpe
+
+### Fit a triple zero-adjusted log-power exponential regression model (lambda = 0):
+fit_zalpe <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+                    adj_sav_edu + agri_land |
+                    adj_sav_edu + agri_land, renewables2015, family = "PE",
+                  zeta = 4, lambda = 0)
+fit_zalpe
 }
 \references{
 Cribari-Neto F, Zeileis A (2010). Beta Regression in R. \emph{Journal of Statistical

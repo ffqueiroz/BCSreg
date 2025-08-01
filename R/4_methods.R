@@ -46,38 +46,45 @@
 #'
 #' @examples
 #' ## Data set: raycatch (for description, run ?raycatch)
-#' hist(raycatch$cpue, xlab = "Catch per unit effort")
-#' plot(cpue ~ tide_phase, raycatch, pch = 16,
-#'    xlab = "Tide phase", ylab = "Catch per unit effort")
-#' plot(cpue ~ location, raycatch, pch = 16,
-#'    xlab = "Location", ylab = "Catch per unit effort")
-#' plot(cpue ~ max_temp, raycatch, pch = 16,
-#'    xlab = "Maximum temperature", ylab = "Catch per unit effort")
+#' plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
+#' abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
+#' text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")
 #'
-#' ## Fit the Box-Cox normal regression as a reference model
-#' fit <- BCSreg(cpue ~ location + tide_phase |
-#'                 location + tide_phase + max_temp, raycatch)
+#' plot(renew_elec_output ~ adj_sav_edu, renewables2015, pch = 16,
+#'     xlab = "Education expenditure (percent of GNI)",
+#'     ylab = "Renewable electricity output (in TWh)")
+#' plot(renew_elec_output ~ agri_land, renewables2015, pch = 16,
+#'     xlab = "Matural logarithm of total agricultural land area",
+#'     ylab = "Renewable electricity output (in TWh)")
 #'
-#' ## coef
-#' coef(fit)
-#' coef(fit, model = "sigma")
-#' coef(fit, model = "full")
+#'  ## Fit a zero-adjusted Box-Cox normal regression
+#'  fit <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+#'                  adj_sav_edu + agri_land |
+#'                  adj_sav_edu + agri_land, renewables2015)
 #'
-#' ## vcov
-#' vcov(fit)
-#' vcov(fit, model = "sigma")
-#' vcov(fit, model = "full")
+#'  ## coef
+#'  coef(fit)                  # regression coefficients of the scale submodel
+#'  coef(fit, model = "sigma") # regression coefficients of the relative dispersion submodel
+#'  coef(fit, model = "alpha") # regression coefficients of the zero-adjustment submodel
+#'  coef(fit, model = "full")  # all regression coefficients
 #'
-#' ## Log-likelihood value
-#' logLik(fit)
+#'  ## vcov
+#'  vcov(fit)                  # covariance matrix for the scale submodel coefficients
+#'  vcov(fit, model = "sigma") # covariance matrix for the relative dispersion submodel coefficients
+#'  vcov(fit, model = "alpha") # covariance matrix for the zero-adjustment submodel coefficients
+#'  vcov(fit, model = "full")  # full covariance matrix of the model (including the skewness parameter)
 #'
-#' ## AIC and BIC
-#' AIC(fit)
-#' AIC(fit, k = log(fit$nobs))
+#'  ## Log-likelihood value
+#'  logLik(fit)
 #'
-#' ## Model matrices
-#' model.matrix(fit)
-#' model.matrix(fit, model = "sigma")
+#'  ## AIC and BIC
+#'  AIC(fit)
+#'  AIC(fit, k = log(fit$nobs))
+#'
+#'  ## Model matrices
+#'  model.matrix(fit)                  # design matrix for the scale submodel
+#'  model.matrix(fit, model = "sigma") # design matrix for the relative dispersion submodel
+#'  model.matrix(fit, model = "alpha") # design matrix for the zero-adjustment submodel
 NULL
 
 # Model frame
@@ -115,8 +122,9 @@ coef.BCSreg <- function(object, model = c("mu", "sigma", "alpha", "full"), ...) 
   if (model == "alpha" & is.null(object$alpha)) {
     stop("The model is not zero-adjusted")
   }
+  full <- if (is.null(object$alpha)) list(mu = cf$mu, sigma = cf$sigma) else list(alpha = cf$alpha, mu = cf$mu, sigma = cf$sigma)
   switch(model,
-         "full"  = list(mu = cf$mu, sigma = cf$sigma),
+         "full"  = full,
          "mu"    = cf$mu,
          "sigma" = cf$sigma,
          "alpha" = cf$alpha)
@@ -254,14 +262,16 @@ AIC.ugrpl <- function(object, ..., k = 2) {
 #'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @examples
+#' # BCS regression for strictly positive response variables
+#'
 #' ## Data set: raycatch (for description, run ?raycatch)
 #' hist(raycatch$cpue, xlab = "Catch per unit effort")
 #' plot(cpue ~ tide_phase, raycatch, pch = 16,
-#'     xlab = "Tide phase", ylab = "Catch per unit effort")
+#'      xlab = "Tide phase", ylab = "Catch per unit effort")
 #' plot(cpue ~ location, raycatch, pch = 16,
-#'     xlab = "Location", ylab = "Catch per unit effort")
+#'      xlab = "Location", ylab = "Catch per unit effort")
 #' plot(cpue ~ max_temp, raycatch, pch = 16,
-#'     xlab = "Maximum temperature", ylab = "Catch per unit effort")
+#'      xlab = "Maximum temperature", ylab = "Catch per unit effort")
 #'
 #' ## BCS fit
 #' fit <- BCSreg(cpue ~ location + tide_phase + max_temp |
@@ -274,6 +284,46 @@ AIC.ugrpl <- function(object, ..., k = 2) {
 #' ## Normal probability plot
 #' qqnorm(rq, pch = "+", cex = 0.8)
 #' qqline(rq, col = "dodgerblue", lwd = 2)
+#'
+#' # Zero-adjusted BCS (ZABCS) regression for non-negative response variables
+#'
+#' ## Data set: raycatch (for description, run ?raycatch)
+#' plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
+#' abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
+#' text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")
+#'
+#' plot(renew_elec_output ~ adj_sav_edu, renewables2015, pch = 16,
+#'      xlab = "Education expenditure (percent of GNI)",
+#'      ylab = "Renewable electricity output (in TWh)")
+#' plot(renew_elec_output ~ agri_land, renewables2015, pch = 16,
+#'      xlab = "Matural logarithm of total agricultural land area",
+#'      ylab = "Renewable electricity output (in TWh)")
+#'
+#' ## Zero-adjusted BCS fit
+#' fit0 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+#'                  adj_sav_edu + agri_land | adj_sav_edu + agri_land, renewables2015)
+#'
+#' ## Combined approach (default)
+#' rq <- residuals(fit0)
+#' rq
+#'
+#' ### Normal probability plot
+#' qqnorm(rq, pch = "+", cex = 0.8)
+#' qqline(rq, col = "dodgerblue", lwd = 2)
+#'
+#' ## Separated approach
+#' res <- residuals(fit0, approach = "separated")
+#' str(res)
+#'
+#' ### Normal probability plots
+#'
+#' # Continuous part
+#' qqnorm(res$continuous, pch = "+", cex = 0.8)
+#' qqline(res$continuous, col = "dodgerblue", lwd = 2)
+#'
+#' # Discrete part (Pearson's standardized residuals do not have a normal distribution.)
+#' qqnorm(res$discrete, pch = "+", cex = 0.8)
+#' qqline(res$discrete, col = "dodgerblue", lwd = 2)
 residuals.BCSreg <- function(object, approach = c("combined", "separated"), ...) {
 
   approach <- match.arg(approach, c("combined", "separated"))
@@ -441,40 +491,93 @@ residuals.BCSreg <- function(object, approach = c("combined", "separated"), ...)
 #'     Probability and Statistics}, \bold{30},196---220
 #'
 #' @examples
+#' # BCS regression for strictly positive response variables
+#'
 #' ## Data set: raycatch (for description, run ?raycatch)
 #' hist(raycatch$cpue, xlab = "Catch per unit effort")
 #' plot(cpue ~ tide_phase, raycatch, pch = 16,
-#'     xlab = "Tide phase", ylab = "Catch per unit effort")
+#'      xlab = "Tide phase", ylab = "Catch per unit effort")
 #' plot(cpue ~ location, raycatch, pch = 16,
-#'     xlab = "Location", ylab = "Catch per unit effort")
+#'      xlab = "Location", ylab = "Catch per unit effort")
 #' plot(cpue ~ max_temp, raycatch, pch = 16,
-#'     xlab = "Maximum temperature", ylab = "Catch per unit effort")
+#'      xlab = "Maximum temperature", ylab = "Catch per unit effort")
 #'
 #' ## Fit examples
 #'
 #' ### Fit a single Box-Cox normal regression model:
 #' fit_bcno1 <- BCSreg(cpue ~ location + tide_phase + max_temp, raycatch)
 #' summary(fit_bcno1)
-#' # Other quantities can be obtained from a summary.BCSreg object
+#'
+#' # Other quantities can be obtained from a summary.BCSreg object:
 #' aux <- summary(fit_bcno1)
 #' class(aux)
 #' str(aux)
 #'
 #' ### Fit a double Box-Cox normal regression model:
 #' fit_bcno2 <- BCSreg(cpue ~ location + tide_phase |
-#'                      location + tide_phase + max_temp, raycatch)
+#'                       location + tide_phase + max_temp, raycatch)
 #' summary(fit_bcno2)
 #'
 #'
-#' ### Fit a double Box-Cox power exponential regression model:
+#' ### Fit a double Box-Cox power exponential regression model (family = "PE"):
 #' fit_bcpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
-#'                     location + tide_phase + max_temp, raycatch, family = "PE", zeta = 4)
+#'                      location + tide_phase + max_temp, raycatch, family = "PE", zeta = 4)
 #' summary(fit_bcpe)
 #'
-#' ### Fit a double log-power exponential regression model:
+#' ### Fit a double log-power exponential regression model (lambda = 0):
 #' fit_lpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
-#'                    location + tide_phase + max_temp, raycatch, family = "PE",
-#'                  zeta = 4, lambda = 0)
+#'                     location + tide_phase + max_temp, raycatch, family = "PE",
+#'                   zeta = 4, lambda = 0)
+#' summary(fit_lpe)
+#'
+#' # Zero-adjusted BCS (ZABCS) regression for non-negative response variables
+#'
+#' ## Data set: raycatch (for description, run ?raycatch)
+#' plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
+#' abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
+#' text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")
+#'
+#' plot(renew_elec_output ~ adj_sav_edu, renewables2015, pch = 16,
+#'      xlab = "Education expenditure (percent of GNI)",
+#'      ylab = "Renewable electricity output (in TWh)")
+#' plot(renew_elec_output ~ agri_land, renewables2015, pch = 16,
+#'      xlab = "Matural logarithm of total agricultural land area",
+#'      ylab = "Renewable electricity output (in TWh)")
+#'
+#' ## Fit examples
+#'
+#' ### Fit a single zero-adjusted Box-Cox normal regression model:
+#' fit_zabcno1 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land, renewables2015)
+#' summary(fit_zabcno1)
+#'
+#' # Other quantities obtained from a zero-adjusted fit:
+#' aux <- summary(fit_zabcno1)
+#' str(aux)
+#'
+#' ### Fit a double zero-adjusted Box-Cox normal regression model:
+#' fit_zabcno2 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+#'                         adj_sav_edu + agri_land, renewables2015)
+#' summary(fit_zabcno2)
+#'
+#' ### Fit a triple zero-adjusted Box-Cox normal regression model:
+#' fit_zabcno3 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+#'                         adj_sav_edu + agri_land |
+#'                         adj_sav_edu + agri_land, renewables2015)
+#' summary(fit_zabcno3)
+#'
+#'
+#' ### Fit a triple zero-adjusted Box-Cox power exponential regression model (family = "PE"):
+#' fit_zabcpe <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+#'                        adj_sav_edu + agri_land |
+#'                        adj_sav_edu + agri_land, renewables2015, family = "PE", zeta = 4)
+#' summary(fit_zabcpe)
+#'
+#' ### Fit a triple zero-adjusted log-power exponential regression model (lambda = 0):
+#' fit_zalpe <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+#'                       adj_sav_edu + agri_land |
+#'                       adj_sav_edu + agri_land, renewables2015, family = "PE",
+#'                     zeta = 4, lambda = 0)
+#' summary(fit_zalpe)
 #' summary(fit_lpe)
 summary.BCSreg <- function(object, ...) {
 

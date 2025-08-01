@@ -75,14 +75,16 @@ For zero-adjusted Box-Cox symmetric regressions, two approaches are available:
 See more details in Medeiros and Queiroz (2025).
 }
 \examples{
+# BCS regression for strictly positive response variables
+
 ## Data set: raycatch (for description, run ?raycatch)
 hist(raycatch$cpue, xlab = "Catch per unit effort")
 plot(cpue ~ tide_phase, raycatch, pch = 16,
-    xlab = "Tide phase", ylab = "Catch per unit effort")
+     xlab = "Tide phase", ylab = "Catch per unit effort")
 plot(cpue ~ location, raycatch, pch = 16,
-    xlab = "Location", ylab = "Catch per unit effort")
+     xlab = "Location", ylab = "Catch per unit effort")
 plot(cpue ~ max_temp, raycatch, pch = 16,
-    xlab = "Maximum temperature", ylab = "Catch per unit effort")
+     xlab = "Maximum temperature", ylab = "Catch per unit effort")
 
 ## BCS fit
 fit <- BCSreg(cpue ~ location + tide_phase + max_temp |
@@ -95,6 +97,46 @@ rq
 ## Normal probability plot
 qqnorm(rq, pch = "+", cex = 0.8)
 qqline(rq, col = "dodgerblue", lwd = 2)
+
+# Zero-adjusted BCS (ZABCS) regression for non-negative response variables
+
+## Data set: raycatch (for description, run ?raycatch)
+plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
+abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
+text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")
+
+plot(renew_elec_output ~ adj_sav_edu, renewables2015, pch = 16,
+     xlab = "Education expenditure (percent of GNI)",
+     ylab = "Renewable electricity output (in TWh)")
+plot(renew_elec_output ~ agri_land, renewables2015, pch = 16,
+     xlab = "Matural logarithm of total agricultural land area",
+     ylab = "Renewable electricity output (in TWh)")
+
+## Zero-adjusted BCS fit
+fit0 <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+                 adj_sav_edu + agri_land | adj_sav_edu + agri_land, renewables2015)
+
+## Combined approach (default)
+rq <- residuals(fit0)
+rq
+
+### Normal probability plot
+qqnorm(rq, pch = "+", cex = 0.8)
+qqline(rq, col = "dodgerblue", lwd = 2)
+
+## Separated approach
+res <- residuals(fit0, approach = "separated")
+str(res)
+
+### Normal probability plots
+
+# Continuous part
+qqnorm(res$continuous, pch = "+", cex = 0.8)
+qqline(res$continuous, col = "dodgerblue", lwd = 2)
+
+# Discrete part (Pearson's standardized residuals do not have a normal distribution.)
+qqnorm(res$discrete, pch = "+", cex = 0.8)
+qqline(res$discrete, col = "dodgerblue", lwd = 2)
 }
 \references{
 Dunn, P. K. and Smyth, G. K. (1996). Randomized quantile residuals.

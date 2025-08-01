@@ -32,6 +32,10 @@ The \code{envelope} uses the idea of Atkinson (1985) to create normal
     probability plots with simulated envelope. Under the correct model,
     approximately 100 * \code{conf} of the residuals are expected to be inside
     the envelope.
+
+    Currently, the \code{envelope()} function, when used in a zero-adjusted Box-Cox
+    symmetric regression fit, returns only the quantile plot for the quantile
+    residuals obtained under a combined approach (see \link{residuals.BCSreg}).
 }
 \examples{
 ## Data set: raycatch (for description, run ?raycatch)

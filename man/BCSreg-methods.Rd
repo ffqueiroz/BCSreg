@@ -60,38 +60,45 @@ Methods for \code{"BCSreg"} objects.
 }
 \examples{
 ## Data set: raycatch (for description, run ?raycatch)
-hist(raycatch$cpue, xlab = "Catch per unit effort")
-plot(cpue ~ tide_phase, raycatch, pch = 16,
-   xlab = "Tide phase", ylab = "Catch per unit effort")
-plot(cpue ~ location, raycatch, pch = 16,
-   xlab = "Location", ylab = "Catch per unit effort")
-plot(cpue ~ max_temp, raycatch, pch = 16,
-   xlab = "Maximum temperature", ylab = "Catch per unit effort")
+plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
+abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
+text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")
 
-## Fit the Box-Cox normal regression as a reference model
-fit <- BCSreg(cpue ~ location + tide_phase |
-                location + tide_phase + max_temp, raycatch)
+plot(renew_elec_output ~ adj_sav_edu, renewables2015, pch = 16,
+    xlab = "Education expenditure (percent of GNI)",
+    ylab = "Renewable electricity output (in TWh)")
+plot(renew_elec_output ~ agri_land, renewables2015, pch = 16,
+    xlab = "Matural logarithm of total agricultural land area",
+    ylab = "Renewable electricity output (in TWh)")
 
-## coef
-coef(fit)
-coef(fit, model = "sigma")
-coef(fit, model = "full")
+ ## Fit a zero-adjusted Box-Cox normal regression
+ fit <- BCSreg(renew_elec_output ~ adj_sav_edu + agri_land |
+                 adj_sav_edu + agri_land |
+                 adj_sav_edu + agri_land, renewables2015)
 
-## vcov
-vcov(fit)
-vcov(fit, model = "sigma")
-vcov(fit, model = "full")
+ ## coef
+ coef(fit)                  # regression coefficients of the scale submodel
+ coef(fit, model = "sigma") # regression coefficients of the relative dispersion submodel
+ coef(fit, model = "alpha") # regression coefficients of the zero-adjustment submodel
+ coef(fit, model = "full")  # all regression coefficients
 
-## Log-likelihood value
-logLik(fit)
+ ## vcov
+ vcov(fit)                  # covariance matrix for the scale submodel coefficients
+ vcov(fit, model = "sigma") # covariance matrix for the relative dispersion submodel coefficients
+ vcov(fit, model = "alpha") # covariance matrix for the zero-adjustment submodel coefficients
+ vcov(fit, model = "full")  # full covariance matrix of the model (including the skewness parameter)
 
-## AIC and BIC
-AIC(fit)
-AIC(fit, k = log(fit$nobs))
+ ## Log-likelihood value
+ logLik(fit)
 
-## Model matrices
-model.matrix(fit)
-model.matrix(fit, model = "sigma")
+ ## AIC and BIC
+ AIC(fit)
+ AIC(fit, k = log(fit$nobs))
+
+ ## Model matrices
+ model.matrix(fit)                  # design matrix for the scale submodel
+ model.matrix(fit, model = "sigma") # design matrix for the relative dispersion submodel
+ model.matrix(fit, model = "alpha") # design matrix for the zero-adjustment submodel
 }
 \references{
 Ferrari, S. L. P., and Fumes, G. (2017). Box-Cox symmetric distributions and
