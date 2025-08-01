@@ -1,10 +1,10 @@
 #' Fishing Data from Todos-os-Santos Bay
 #'
-#' This dataset contains information on fishing landings of the white ray
-#' using the traditional "grozeira" method in Todos-os-Santos Bay, Brazil.
-#' The data were collected from January 2012 to January 2013, covering 186 fishing
-#' operations. The objective of the study was to analyze the relationship
-#' between the catch per unit effort (CPUE) and various environmental factors.
+#' This dataset contains information on white ray landings using the traditional
+#' "grozeira" fishing method in Baía de Todos os Santos, Brazil. Data were collected
+#' from January 2012 to January 2013 by Marion (2015). The study aimed
+#' to analyze the relationship between catch per unit effort (cpue) and various
+#' environmental factors.
 #'
 #' @format A data frame with 186 rows and 8 variables:
 #'
@@ -21,15 +21,26 @@
 #'       the soak time (in hours). .}
 #' }
 #'
-#' @usage data(fishery)
+#' @usage data(raycatch)
 #'
 #' @details
-#' The data set can be used to study the impact of environmental factors
-#' on the catch efficiency of white ray fishing. It provides valuable information
-#' for fisheries management and environmental studies.
+#' In Brazil, marine fish are harvested through various fishing activities, with artisanal fishing
+#' playing a particularly prominent role, especially in the state of Bahia, in the northeastern
+#' region of the country. In this region, particularly within the Baía de Todos os Santos, most of
+#' the marine production comes from small-scale operations. Among the species landed and sold,
+#' rays constitute a significant portion of the catch. The data analyzed in this application were
+#' collected by Marion (2015) over a 13-month period (January 2012 to January 2013), based on 231
+#' fishing trips that employed the grozeira (a type of bottom longline) as gear. After eliminating
+#' missing data, the data contains information on 186 fish landings. The objective is to identify
+#' key factors influencing ray catch levels.  The response variable is the catch per unit effort
+#' (\code{cpue}), defined as
+#' \eqn{
+#' \text{cpue} = \dfrac{\text{Productivity (g)}}{\text{Nº of hooks} \times \text{Immersion time (hours)}}.
+#' }
+#'
 #'
 #' @source
-#' Data collected from a field study on traditional ray fishing in Todos-os-Santos Bay, Brazil.
+#' Data collected from a field study on traditional ray fishing in Baía de Todos os Santos, Brazil.
 #'
 #' @references
 #'  Marion, C. (2015). \emph{Função da Baía de Todos os Santos, Bahia, no ciclo de
@@ -43,9 +54,9 @@
 #'  São Paulo, IME-USP, 2014.
 #'
 #' @examples
-#' data(fishery)
-#' summary(fishery)
-#' plot(cpue ~ tide_phase, fishery,
+#' data(raycatch)
+#' summary(raycatch)
+#' plot(cpue ~ tide_phase, raycatch,
 #'      xlab = "Tide phase", ylab = "CPUE (kg)",
 #'      main = "Effect of tide phase on CPUE")
-"fishery"
+"raycatch"

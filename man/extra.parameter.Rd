@@ -73,18 +73,18 @@ Estimation of the extra parameter in a Box-Cox symmetric or zero-adjusted
     the profile log-likelihood.
 }
 \examples{
-## Data set: fishery (for description, run ?fishery)
-hist(fishery$cpue, xlab = "Catch per unit effort")
-plot(cpue ~ tide_phase, fishery, pch = 16,
+## Data set: raycatch (for description, run ?raycatch)
+hist(raycatch$cpue, xlab = "Catch per unit effort")
+plot(cpue ~ tide_phase, raycatch, pch = 16,
    xlab = "Tide phase", ylab = "Catch per unit effort")
-plot(cpue ~ location, fishery, pch = 16,
+plot(cpue ~ location, raycatch, pch = 16,
    xlab = "Location", ylab = "Catch per unit effort")
-plot(cpue ~ max_temp, fishery, pch = 16,
+plot(cpue ~ max_temp, raycatch, pch = 16,
    xlab = "Maximum temperature", ylab = "Catch per unit effort")
 
 ## Fit the Box-Cox normal regression as a reference model
 fit_bcno <- BCSreg(cpue ~ location + tide_phase |
-                location + tide_phase + max_temp, fishery)
+                location + tide_phase + max_temp, raycatch)
 
 ## Use the specifications of the reference model to change the distribution
 ## to, for example, Box-Cox t, and select the value of the extra parameter:

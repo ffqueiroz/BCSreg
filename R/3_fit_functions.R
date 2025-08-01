@@ -37,23 +37,23 @@
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #' @examples
-#' ## Data set: fishery (for description, run ?fishery)
-#' hist(fishery$cpue, xlab = "Catch per unit effort")
-#' plot(cpue ~ tide_phase, fishery,
+#' ## Data set: raycatch (for description, run ?raycatch)
+#' hist(raycatch$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, raycatch,
 #'      xlab = "Tide phase", ylab = "Catch per unit effort")
 #'
 #' ### Fit a Box-Cox normal regression model:
-#' fit_bcno <- BCSreg(cpue ~ tide_phase, fishery)
+#' fit_bcno <- BCSreg(cpue ~ tide_phase, raycatch)
 #' fit_bcno
 #'
 #' ### Fit a log-normal regression model (setting lambda = 0):
-#' fit_lno <- BCSreg(cpue ~ tide_phase, fishery, lambda = 0)
+#' fit_lno <- BCSreg(cpue ~ tide_phase, raycatch, lambda = 0)
 #' fit_lno
 #'
 #' ### Standard errors obtained from the numerical Hessian matrix
 #' ### provided by optim instead of the analytical solution:
-#' fit_bcno2 <- BCSreg(cpue ~ tide_phase, fishery, hessian = TRUE)
-#' fit_lno2 <- BCSreg(cpue ~ tide_phase, fishery, lambda = 0, hessian = TRUE)
+#' fit_bcno2 <- BCSreg(cpue ~ tide_phase, raycatch, hessian = TRUE)
+#' fit_lno2 <- BCSreg(cpue ~ tide_phase, raycatch, lambda = 0, hessian = TRUE)
 #'
 #' # In this case, there are differences only in the eighth decimal place:
 #' vcov(fit_bcno)
@@ -732,35 +732,35 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #' @export
 #'
 #' @examples
-#' ## Data set: fishery (for description, run ?fishery)
-#' hist(fishery$cpue, xlab = "Catch per unit effort")
-#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#' ## Data set: raycatch (for description, run ?raycatch)
+#' hist(raycatch$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, raycatch, pch = 16,
 #'      xlab = "Tide phase", ylab = "Catch per unit effort")
-#' plot(cpue ~ location, fishery, pch = 16,
+#' plot(cpue ~ location, raycatch, pch = 16,
 #'      xlab = "Location", ylab = "Catch per unit effort")
-#' plot(cpue ~ max_temp, fishery, pch = 16,
+#' plot(cpue ~ max_temp, raycatch, pch = 16,
 #'      xlab = "Maximum temperature", ylab = "Catch per unit effort")
 #'
 #' ## Fit examples
 #'
 #' ### Fit a single Box-Cox normal regression model:
-#' fit_bcno1 <- BCSreg(cpue ~ location + tide_phase + max_temp, fishery)
+#' fit_bcno1 <- BCSreg(cpue ~ location + tide_phase + max_temp, raycatch)
 #' fit_bcno1
 #'
 #' ### Fit a double Box-Cox normal regression model:
 #' fit_bcno2 <- BCSreg(cpue ~ location + tide_phase |
-#'                       location + tide_phase + max_temp, fishery)
+#'                       location + tide_phase + max_temp, raycatch)
 #' fit_bcno2
 #'
 #'
 #' ### Fit a double Box-Cox power exponential regression model:
 #' fit_bcpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
-#'                      location + tide_phase + max_temp, fishery, family = "PE", zeta = 4)
+#'                      location + tide_phase + max_temp, raycatch, family = "PE", zeta = 4)
 #' fit_bcpe
 #'
 #' ### Fit a double log-power exponential regression model:
 #' fit_lpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
-#'                     location + tide_phase + max_temp, fishery, family = "PE",
+#'                     location + tide_phase + max_temp, raycatch, family = "PE",
 #'                   zeta = 4, lambda = 0)
 #' fit_lpe
 BCSreg <- function(formula, data, subset, na.action,

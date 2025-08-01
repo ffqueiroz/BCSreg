@@ -207,35 +207,35 @@ The \code{BCSreg} function implements maximum likelihood estimation in the
     }
 }
 \examples{
-## Data set: fishery (for description, run ?fishery)
-hist(fishery$cpue, xlab = "Catch per unit effort")
-plot(cpue ~ tide_phase, fishery, pch = 16,
+## Data set: raycatch (for description, run ?raycatch)
+hist(raycatch$cpue, xlab = "Catch per unit effort")
+plot(cpue ~ tide_phase, raycatch, pch = 16,
      xlab = "Tide phase", ylab = "Catch per unit effort")
-plot(cpue ~ location, fishery, pch = 16,
+plot(cpue ~ location, raycatch, pch = 16,
      xlab = "Location", ylab = "Catch per unit effort")
-plot(cpue ~ max_temp, fishery, pch = 16,
+plot(cpue ~ max_temp, raycatch, pch = 16,
      xlab = "Maximum temperature", ylab = "Catch per unit effort")
 
 ## Fit examples
 
 ### Fit a single Box-Cox normal regression model:
-fit_bcno1 <- BCSreg(cpue ~ location + tide_phase + max_temp, fishery)
+fit_bcno1 <- BCSreg(cpue ~ location + tide_phase + max_temp, raycatch)
 fit_bcno1
 
 ### Fit a double Box-Cox normal regression model:
 fit_bcno2 <- BCSreg(cpue ~ location + tide_phase |
-                      location + tide_phase + max_temp, fishery)
+                      location + tide_phase + max_temp, raycatch)
 fit_bcno2
 
 
 ### Fit a double Box-Cox power exponential regression model:
 fit_bcpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
-                     location + tide_phase + max_temp, fishery, family = "PE", zeta = 4)
+                     location + tide_phase + max_temp, raycatch, family = "PE", zeta = 4)
 fit_bcpe
 
 ### Fit a double log-power exponential regression model:
 fit_lpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
-                    location + tide_phase + max_temp, fishery, family = "PE",
+                    location + tide_phase + max_temp, raycatch, family = "PE",
                   zeta = 4, lambda = 0)
 fit_lpe
 }
@@ -247,8 +247,7 @@ Cribari-Neto F, Zeileis A (2010). Beta Regression in R. \emph{Journal of Statist
     applications to nutritional data. \emph{AStA Advances in Statistical Analysis},
     \bold{101}, 321---344.
 
-   Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
-   data: Box-Cox symmetric regression and its zero-adjusted extension.
+    data: Box-Cox symmetric regression and its zero-adjusted extension.
 
     Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
     statistical properties and parameter estimation. \emph{Brazilian Journal of

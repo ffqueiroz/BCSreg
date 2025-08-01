@@ -54,23 +54,23 @@ The \code{BCSreg.control} controls the fitting process of Box-Cox symmetric mode
     using the \code{\link[stats]{glm}} function.
 }
 \examples{
-## Data set: fishery (for description, run ?fishery)
-hist(fishery$cpue, xlab = "Catch per unit effort")
-plot(cpue ~ tide_phase, fishery,
+## Data set: raycatch (for description, run ?raycatch)
+hist(raycatch$cpue, xlab = "Catch per unit effort")
+plot(cpue ~ tide_phase, raycatch,
      xlab = "Tide phase", ylab = "Catch per unit effort")
 
 ### Fit a Box-Cox normal regression model:
-fit_bcno <- BCSreg(cpue ~ tide_phase, fishery)
+fit_bcno <- BCSreg(cpue ~ tide_phase, raycatch)
 fit_bcno
 
 ### Fit a log-normal regression model (setting lambda = 0):
-fit_lno <- BCSreg(cpue ~ tide_phase, fishery, lambda = 0)
+fit_lno <- BCSreg(cpue ~ tide_phase, raycatch, lambda = 0)
 fit_lno
 
 ### Standard errors obtained from the numerical Hessian matrix
 ### provided by optim instead of the analytical solution:
-fit_bcno2 <- BCSreg(cpue ~ tide_phase, fishery, hessian = TRUE)
-fit_lno2 <- BCSreg(cpue ~ tide_phase, fishery, lambda = 0, hessian = TRUE)
+fit_bcno2 <- BCSreg(cpue ~ tide_phase, raycatch, hessian = TRUE)
+fit_lno2 <- BCSreg(cpue ~ tide_phase, raycatch, lambda = 0, hessian = TRUE)
 
 # In this case, there are differences only in the eighth decimal place:
 vcov(fit_bcno)

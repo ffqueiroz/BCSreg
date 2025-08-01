@@ -61,18 +61,18 @@ The \code{plot} method for \code{\link{BCSreg}} objects provides seven types
      the residuals.
 }
 \examples{
-## Data set: fishery (for description, run ?fishery)
-hist(fishery$cpue, xlab = "Catch per unit effort")
-plot(cpue ~ tide_phase, fishery, pch = 16,
+## Data set: raycatch (for description, run ?raycatch)
+hist(raycatch$cpue, xlab = "Catch per unit effort")
+plot(cpue ~ tide_phase, raycatch, pch = 16,
     xlab = "Tide phase", ylab = "Catch per unit effort")
-plot(cpue ~ location, fishery, pch = 16,
+plot(cpue ~ location, raycatch, pch = 16,
     xlab = "Location", ylab = "Catch per unit effort")
-plot(cpue ~ max_temp, fishery, pch = 16,
+plot(cpue ~ max_temp, raycatch, pch = 16,
     xlab = "Maximum temperature", ylab = "Catch per unit effort")
 
 ## Fit a double Box-Cox normal regression model:
 fit <- BCSreg(cpue ~ location + tide_phase |
-                location + tide_phase + max_temp, fishery)
+                location + tide_phase + max_temp, raycatch)
 
 ## Available plots:
 

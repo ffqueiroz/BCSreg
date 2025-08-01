@@ -45,18 +45,18 @@
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #'
 #' @examples
-#' ## Data set: fishery (for description, run ?fishery)
-#' hist(fishery$cpue, xlab = "Catch per unit effort")
-#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#' ## Data set: raycatch (for description, run ?raycatch)
+#' hist(raycatch$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, raycatch, pch = 16,
 #'    xlab = "Tide phase", ylab = "Catch per unit effort")
-#' plot(cpue ~ location, fishery, pch = 16,
+#' plot(cpue ~ location, raycatch, pch = 16,
 #'    xlab = "Location", ylab = "Catch per unit effort")
-#' plot(cpue ~ max_temp, fishery, pch = 16,
+#' plot(cpue ~ max_temp, raycatch, pch = 16,
 #'    xlab = "Maximum temperature", ylab = "Catch per unit effort")
 #'
 #' ## Fit the Box-Cox normal regression as a reference model
 #' fit <- BCSreg(cpue ~ location + tide_phase |
-#'                 location + tide_phase + max_temp, fishery)
+#'                 location + tide_phase + max_temp, raycatch)
 #'
 #' ## coef
 #' coef(fit)
@@ -254,18 +254,18 @@ AIC.ugrpl <- function(object, ..., k = 2) {
 #'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @examples
-#' ## Data set: fishery (for description, run ?fishery)
-#' hist(fishery$cpue, xlab = "Catch per unit effort")
-#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#' ## Data set: raycatch (for description, run ?raycatch)
+#' hist(raycatch$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, raycatch, pch = 16,
 #'     xlab = "Tide phase", ylab = "Catch per unit effort")
-#' plot(cpue ~ location, fishery, pch = 16,
+#' plot(cpue ~ location, raycatch, pch = 16,
 #'     xlab = "Location", ylab = "Catch per unit effort")
-#' plot(cpue ~ max_temp, fishery, pch = 16,
+#' plot(cpue ~ max_temp, raycatch, pch = 16,
 #'     xlab = "Maximum temperature", ylab = "Catch per unit effort")
 #'
 #' ## BCS fit
 #' fit <- BCSreg(cpue ~ location + tide_phase + max_temp |
-#'                 location + tide_phase + max_temp, fishery)
+#'                 location + tide_phase + max_temp, raycatch)
 #'
 #' ## Quantile residuals
 #' rq <- residuals(fit)
@@ -441,19 +441,19 @@ residuals.BCSreg <- function(object, approach = c("combined", "separated"), ...)
 #'     Probability and Statistics}, \bold{30},196---220
 #'
 #' @examples
-#' ## Data set: fishery (for description, run ?fishery)
-#' hist(fishery$cpue, xlab = "Catch per unit effort")
-#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#' ## Data set: raycatch (for description, run ?raycatch)
+#' hist(raycatch$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, raycatch, pch = 16,
 #'     xlab = "Tide phase", ylab = "Catch per unit effort")
-#' plot(cpue ~ location, fishery, pch = 16,
+#' plot(cpue ~ location, raycatch, pch = 16,
 #'     xlab = "Location", ylab = "Catch per unit effort")
-#' plot(cpue ~ max_temp, fishery, pch = 16,
+#' plot(cpue ~ max_temp, raycatch, pch = 16,
 #'     xlab = "Maximum temperature", ylab = "Catch per unit effort")
 #'
 #' ## Fit examples
 #'
 #' ### Fit a single Box-Cox normal regression model:
-#' fit_bcno1 <- BCSreg(cpue ~ location + tide_phase + max_temp, fishery)
+#' fit_bcno1 <- BCSreg(cpue ~ location + tide_phase + max_temp, raycatch)
 #' summary(fit_bcno1)
 #' # Other quantities can be obtained from a summary.BCSreg object
 #' aux <- summary(fit_bcno1)
@@ -462,18 +462,18 @@ residuals.BCSreg <- function(object, approach = c("combined", "separated"), ...)
 #'
 #' ### Fit a double Box-Cox normal regression model:
 #' fit_bcno2 <- BCSreg(cpue ~ location + tide_phase |
-#'                      location + tide_phase + max_temp, fishery)
+#'                      location + tide_phase + max_temp, raycatch)
 #' summary(fit_bcno2)
 #'
 #'
 #' ### Fit a double Box-Cox power exponential regression model:
 #' fit_bcpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
-#'                     location + tide_phase + max_temp, fishery, family = "PE", zeta = 4)
+#'                     location + tide_phase + max_temp, raycatch, family = "PE", zeta = 4)
 #' summary(fit_bcpe)
 #'
 #' ### Fit a double log-power exponential regression model:
 #' fit_lpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
-#'                    location + tide_phase + max_temp, fishery, family = "PE",
+#'                    location + tide_phase + max_temp, raycatch, family = "PE",
 #'                  zeta = 4, lambda = 0)
 #' summary(fit_lpe)
 summary.BCSreg <- function(object, ...) {
@@ -719,18 +719,18 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
 #' @importFrom graphics abline identify mtext par points text title curve rug legend
 #'
 #' @examples
-#' ## Data set: fishery (for description, run ?fishery)
-#' hist(fishery$cpue, xlab = "Catch per unit effort")
-#' plot(cpue ~ tide_phase, fishery, pch = 16,
+#' ## Data set: raycatch (for description, run ?raycatch)
+#' hist(raycatch$cpue, xlab = "Catch per unit effort")
+#' plot(cpue ~ tide_phase, raycatch, pch = 16,
 #'     xlab = "Tide phase", ylab = "Catch per unit effort")
-#' plot(cpue ~ location, fishery, pch = 16,
+#' plot(cpue ~ location, raycatch, pch = 16,
 #'     xlab = "Location", ylab = "Catch per unit effort")
-#' plot(cpue ~ max_temp, fishery, pch = 16,
+#' plot(cpue ~ max_temp, raycatch, pch = 16,
 #'     xlab = "Maximum temperature", ylab = "Catch per unit effort")
 #'
 #' ## Fit a double Box-Cox normal regression model:
 #' fit <- BCSreg(cpue ~ location + tide_phase |
-#'                 location + tide_phase + max_temp, fishery)
+#'                 location + tide_phase + max_temp, raycatch)
 #'
 #' ## Available plots:
 #'
