@@ -17,41 +17,83 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/ffqueiroz/BCSreg/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ffqueiroz/BCSreg/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/ffqueiroz/BCSreg/graph/badge.svg)](https://app.codecov.io/gh/ffqueiroz/BCSreg)
 <!-- badges: end -->
 
-The goal of BCSreg is to ...
+The `BCSreg` package provides tools for fitting Box-Cox symmetric (BCS) and zero-adjusted BCS regression models. It includes diagnostic tools for the fitted models, such as residual analysis, local influence measures, and goodness-of-fit statistics.
 
 ## Installation
 
-You can install the development version of BCSreg from [GitHub](https://github.com/) with:
+You can install the development version of `BCSreg` from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("pak")
 pak::pak("ffqueiroz/BCSreg")
 ```
 
-## Example
+## Main functions
 
-This is a basic example which shows you how to solve a common problem:
+#### Implementation of the Box-Cox symmetric class of distributions
 
-```{r example}
-#library(BCSreg)
-## basic example code
+The package currently supports eight members of the BCS class of distributions: 
+
+- Box-Cox hyperbolic,
+- Box-Cox type I logistic, 
+- Box-Cox type II logistic, 
+- Box-Cox normal, 
+- Box-Cox power exponential, 
+- Box-Cox sinh-normal, 
+- Box-Cox slash, 
+- Box-Cox $t$. 
+
+The following functions are provided to work with these distributions:
+
+```{r usage functions BCS, eval=FALSE}
+dBCS(x, mu, sigma, lambda, zeta, family = "NO", log = FALSE)
+
+pBCS(q, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, log.p = FALSE)
+
+qBCS(p, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, log.p = FALSE)
+
+rBCS(n, mu, sigma, lambda, zeta, family = "NO")
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
 
-```{r cars}
-summary(cars)
+#### Implementation of the zero-adjusted Box-Cox symmetric class of distributions
+
+The package also implements zero-adjusted versions of the BCS distributions, suitable for modeling non-negative data with an excess of zeros. The supported families are the zero-adjusted versions of the same eight BCS distributions listed above.
+
+Corresponding functions include:
+
+```{r usage functions ZABCS, eval=FALSE}
+dZABCS(x, alpha, mu, sigma, lambda, zeta, family = "NO", log = FALSE)
+
+pZABCS(q, alpha, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, log.p = FALSE)
+
+qZABCS(p, alpha, mu, sigma, lambda, zeta, family = "NO", lower.tail = TRUE, log.p = FALSE)
+
+rZABCS(n, alpha, mu, sigma, lambda, zeta, family = "NO")
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
+#### `BCSreg` 
 
-You can also embed plots, for example:
+The main function of the package is `BCSreg()`, which fits either a BCS or a zero-adjusted BCS regression model to non-negative data. Its usage is:
 
-```{r pressure, echo = FALSE}
-plot(pressure)
+```{r PLregfunction, eval = FALSE}
+BCSreg(formula, data, subset, na.action, family = "NO", zeta, link = "log", sigma.link = "log", 
+       alpha.link, control = BCSreg.control(...), model = FALSE, y = FALSE, x = FALSE, ...)
 ```
 
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+The function returns an object of class `"BCSreg"`, which supports generic methods such as `print()`, `summary()`, `plot()`, `residuals()`, among others.
+
+#### `extra.parameter` 
+
+An important utility in the package is the `extra.parameter()` function, which estimates the extra parameter for certain BCS and zero-adjusted models. Its usage is:
+
+```{r extraparameter, eval = FALSE}
+extra.parameter(object, family, grid = seq(1, 30, 2), trace = TRUE, plot = TRUE,
+                control = BCSreg.control(...), ...)
+```
+
+## Reference
+
+Medeiros, R. M. R., and Queiroz, F. F. (2025). *Flexible modeling of non-negative continuous data: Box-Cox symmetric regression and its zero-adjusted extension*.
