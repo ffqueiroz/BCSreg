@@ -18,7 +18,7 @@
 #'   \item{sunshine_duration}{duration of sunshine (hours).}
 #'   \item{cpue}{represents the catch per unit effort, calculated as the
 #'       productivity (in grams) divided by the product of the number of hooks and
-#'       the soak time (in hours). .}
+#'       the soak time (in hours).}
 #' }
 #'
 #' @usage data(raycatch)

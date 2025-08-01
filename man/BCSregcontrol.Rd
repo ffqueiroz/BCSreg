@@ -24,7 +24,7 @@ will be estimated).}
 \item{maxit, trace, ...}{arguments passed to \code{\link{optim}}.}
 
 \item{hessian}{logical. Should the numerical Hessian matrix from the \code{optim} output be
-used for estimation of the covariance matrix? By default the analytical solution is employed.}
+used for estimation of the covariance matrix. By default the analytical solution is employed.}
 
 \item{start}{an optional vector with starting values for the regression coefficients
 associated with the \code{mu} and \code{sigma} submodels (starting value for the

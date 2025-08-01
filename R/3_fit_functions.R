@@ -11,7 +11,7 @@
 #'      will be estimated).
 #' @param method character specifying the \code{method} argument passed to \code{\link{optim}}.
 #' @param hessian logical. Should the numerical Hessian matrix from the \code{optim} output be
-#'      used for estimation of the covariance matrix? By default the analytical solution is employed.
+#'      used for estimation of the covariance matrix. By default the analytical solution is employed.
 #' @param maxit,trace,... arguments passed to \code{\link{optim}}.
 #' @param start an optional vector with starting values for the regression coefficients
 #'      associated with the \code{mu} and \code{sigma} submodels (starting value for the
@@ -556,8 +556,8 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #' @param data,subset,na.action arguments controlling formula processing via
 #'     \code{\link[stats]{model.frame}}.
 #' @inheritParams BCS
-#' @param zeta strictly positive extra parameter. It must be specified with only one value
-#'     in cases where the BCS distribution has an extra parameter.
+#' @param zeta Strictly positive extra parameter. It must be specified with a single value in cases
+#'     where the BCS distribution has an extra parameter.
 #' @param link,sigma.link character specification of the link functions for
 #'     the scale and relative dispersion regression structures, respectively.
 #'     Currently, \code{"log"} (default), \code{"sqrt"}, \code{"1/mu^2"},
@@ -600,7 +600,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'     Some distributions may also depend on an additional parameter (\code{zeta}),
 #'     such as the Box-Cox \emph{t} and Box-Cox power exponential distributions. The
 #'     BCS distributions reduce to the log-symmetric distributions
-#'     (Vanegas and Paula, 2016) when \code{lambda} is fixed at zero. The Log-symmetric
+#'     (Vanegas and Paula, 2016) when \code{lambda} is fixed at zero. The log-symmetric
 #'     distributions are an important class of probability models for positive data,
 #'     which includes well-known distributions such as the log-normal and log-\emph{t}
 #'     distributions. The \code{BCSreg} function allows fitting a log-symmetric
@@ -624,10 +624,11 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'      \item \bold{Third part (only applicable for zero-inflated positive data):} models the zero-adjustment parameter.
 #'     }
 #'
-#'     If only the first part is provided, the model applies only to the scale parameter.
-#'     When a second part is included, a regression structure is defined for the relative
-#'     dispersion parameter. If the data contains zero inflation, a third part can be
-#'     specified to model the zero-adjustment parameter.
+#'     If only the first part is provided, the model applies only to the scale parameter. When a
+#'     second part is included, a regression structure is defined for the relative dispersion
+#'     parameter. If the data contain zero inflation, a third part can be specified to model the
+#'     zero-adjustment parameter. If the third part is provided but the response variable contains
+#'     no zeros, this part is ignored.
 #'
 #'     For instance, consider a dataset where \code{y} is the zero-inflated
 #'     dependent variable, and \code{x}, \code{s}, and \code{z} are explanatory
@@ -652,8 +653,8 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'          structure of the zero-adjustment parameter.}
 #'     \item{fitted.values}{a vector with the fitted median responses. Not to be
 #'          confused with the fitted values for \code{mu}.}
-#'     \item{mu}{a vector with the fitted scale parameters.}
-#'     \item{sigma}{a vector with the fitted relative dispersion parameters.}
+#'     \item{mu}{a vector with the fitted scale parameters (or conditional scale parameters for a zero-adjusted fit).}
+#'     \item{sigma}{a vector with the fitted relative dispersion parameters (or conditional relative dispersion parameters for a zero-adjusted fit).}
 #'     \item{lambda}{ the maximum likelihood estimate of the skewness parameter (\code{lambda}), or its fixed value
 #'         specified in the \code{BCSreg} function.}
 #'     \item{zeta}{the specified value for the extra parameter of the corresponding
@@ -667,7 +668,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'     \item{logLik}{log-likelihood of the fitted model.}
 #'     \item{vcov}{asymptotic covariance matrix of the estimators. By default, the asymptotic
 #'         covariance matrix is based on a analytical expression of the observed information matrix.
-#'         It can be obtained numerically based on the Hessian matrix via \code{\link[stats]{optim}})
+#'         It can be obtained numerically based on the Hessian matrix via \code{\link[stats]{optim}}
 #'         if the argument \code{hessian = TRUE} is used in the \code{BCSreg} function.}
 #'     \item{nobs}{number of observations.}
 #'     \item{df.null}{residual degrees of freedom in the null model (a model without
@@ -708,7 +709,7 @@ BCSreg.fit <- function(X, y, S = NULL, family, zeta = NULL, link = "log",
 #'     applications to nutritional data. \emph{AStA Advances in Statistical Analysis},
 #'     \bold{101}, 321---344.
 #'
-# '    Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
 #'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #'     Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:

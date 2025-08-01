@@ -47,8 +47,8 @@ Available options are: \code{"NO"} (default), \code{"ST"}, \code{"LOI"}, \code{"
 Student-\emph{t}, type I logistic, type II logistic, power exponential, sinh-normal,
 hyperbolic, and slash distributions, respectively.}
 
-\item{zeta}{strictly positive extra parameter. It must be specified with only one value
-in cases where the BCS distribution has an extra parameter.}
+\item{zeta}{Strictly positive extra parameter. It must be specified with a single value in cases
+where the BCS distribution has an extra parameter.}
 
 \item{link, sigma.link}{character specification of the link functions for
 the scale and relative dispersion regression structures, respectively.
@@ -86,8 +86,8 @@ The \code{BCSreg} function returns an object of class \code{"BCSreg"},
          structure of the zero-adjustment parameter.}
     \item{fitted.values}{a vector with the fitted median responses. Not to be
          confused with the fitted values for \code{mu}.}
-    \item{mu}{a vector with the fitted scale parameters.}
-    \item{sigma}{a vector with the fitted relative dispersion parameters.}
+    \item{mu}{a vector with the fitted scale parameters (or conditional scale parameters for a zero-adjusted fit).}
+    \item{sigma}{a vector with the fitted relative dispersion parameters (or conditional relative dispersion parameters for a zero-adjusted fit).}
     \item{lambda}{ the maximum likelihood estimate of the skewness parameter (\code{lambda}), or its fixed value
         specified in the \code{BCSreg} function.}
     \item{zeta}{the specified value for the extra parameter of the corresponding
@@ -101,7 +101,7 @@ The \code{BCSreg} function returns an object of class \code{"BCSreg"},
     \item{logLik}{log-likelihood of the fitted model.}
     \item{vcov}{asymptotic covariance matrix of the estimators. By default, the asymptotic
         covariance matrix is based on a analytical expression of the observed information matrix.
-        It can be obtained numerically based on the Hessian matrix via \code{\link[stats]{optim}})
+        It can be obtained numerically based on the Hessian matrix via \code{\link[stats]{optim}}
         if the argument \code{hessian = TRUE} is used in the \code{BCSreg} function.}
     \item{nobs}{number of observations.}
     \item{df.null}{residual degrees of freedom in the null model (a model without
@@ -165,7 +165,7 @@ The \code{BCSreg} function implements maximum likelihood estimation in the
     Some distributions may also depend on an additional parameter (\code{zeta}),
     such as the Box-Cox \emph{t} and Box-Cox power exponential distributions. The
     BCS distributions reduce to the log-symmetric distributions
-    (Vanegas and Paula, 2016) when \code{lambda} is fixed at zero. The Log-symmetric
+    (Vanegas and Paula, 2016) when \code{lambda} is fixed at zero. The log-symmetric
     distributions are an important class of probability models for positive data,
     which includes well-known distributions such as the log-normal and log-\emph{t}
     distributions. The \code{BCSreg} function allows fitting a log-symmetric
@@ -189,10 +189,11 @@ The \code{BCSreg} function implements maximum likelihood estimation in the
      \item \bold{Third part (only applicable for zero-inflated positive data):} models the zero-adjustment parameter.
     }
 
-    If only the first part is provided, the model applies only to the scale parameter.
-    When a second part is included, a regression structure is defined for the relative
-    dispersion parameter. If the data contains zero inflation, a third part can be
-    specified to model the zero-adjustment parameter.
+    If only the first part is provided, the model applies only to the scale parameter. When a
+    second part is included, a regression structure is defined for the relative dispersion
+    parameter. If the data contain zero inflation, a third part can be specified to model the
+    zero-adjustment parameter. If the third part is provided but the response variable contains
+    no zeros, this part is ignored.
 
     For instance, consider a dataset where \code{y} is the zero-inflated
     dependent variable, and \code{x}, \code{s}, and \code{z} are explanatory
@@ -294,6 +295,7 @@ Cribari-Neto F, Zeileis A (2010). Beta Regression in R. \emph{Journal of Statist
     applications to nutritional data. \emph{AStA Advances in Statistical Analysis},
     \bold{101}, 321---344.
 
+    Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
     data: Box-Cox symmetric regression and its zero-adjusted extension.
 
     Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
