@@ -88,5 +88,10 @@ observed expenditure is BRL 48,000.
 \examples{
 data(education)
 summary(education)
+
 }
+\keyword{Brazil}
 \keyword{datasets}
+\keyword{education}
+\keyword{expenditure}
+\keyword{zero-inflation}

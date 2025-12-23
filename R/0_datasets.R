@@ -188,5 +188,7 @@
 #' @examples
 #' data(education)
 #' summary(education)
+#'
+#' @keywords datasets education expenditure zero-inflation Brazil
 "education"
 
