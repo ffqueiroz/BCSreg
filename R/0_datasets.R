@@ -99,3 +99,92 @@
 #' summary(renewables2015)
 #' pairs(renewables2015[, -1], pch = 16, cex = 0.8, col = rgb(0,0,0, 0.5))
 "renewables2015"
+
+#' Household Expenditures on Basic Education (POF 2017--2018, São Paulo)
+#'
+#' @description
+#'
+#' A dataset containing household-level information on expenditures on basic
+#' education and associated socioeconomic characteristics, derived from the
+#' 2017--2018 Brazilian Consumer Expenditure Survey (Pesquisa de Orçamentos
+#' Familiares, POF), conducted by the Instituto Brasileiro de Geografia e
+#' Estatística (IBGE).
+#'
+#' This dataset is used to illustrate regression modeling for zero-adjusted
+#' data with a substantial proportion of zero observations. The response
+#' variable corresponds to total household expenditure on basic education,
+#' measured over the 12 months preceding the interview and assigned to the
+#' household reference person. Expenditures include childcare, preschool,
+#' regular primary and secondary education, youth and adult education, and
+#' supplementary (equivalency) programs at the primary and secondary levels.
+#'
+#' Households reporting no expenditure on basic education are assigned a value
+#' of zero. The final sample consists of 4,232 households residing in the state
+#' of São Paulo, Brazil. Approximately 93\% of the observations correspond to
+#' zero expenditure, indicating a highly zero-inflated distribution.
+#'
+#' @format
+#' A data frame with 4,232 observations and 11 variables:
+#'
+#' \describe{
+#'   \item{expense}{Total household expenditure on basic education (in BRL)
+#'   over the 12 months preceding the interview. Values equal to zero indicate
+#'   no reported expenditure.}
+#'
+#'   \item{residence_type}{Type of household residence, categorized as
+#'   \code{"Urban"} or \code{"Rural"}.}
+#'
+#'   \item{age}{Age of the household reference person, in years.}
+#'
+#'   \item{sex}{Sex of the household reference person, coded as
+#'   \code{"Male"} or \code{"Female"}.}
+#'
+#'   \item{race}{Self-reported race or ethnicity of the reference person,
+#'   according to IBGE classification.}
+#'
+#'   \item{health_plan}{Indicator of whether the reference person is covered by
+#'   a private health plan (\code{"Yes"} or \code{"No"}).}
+#'
+#'   \item{literacy}{Literacy status of the reference person
+#'   (\code{"Yes"} or \code{"No"}).}
+#'
+#'   \item{years_schooling}{Number of completed years of formal education of
+#'   the reference person.}
+#'
+#'   \item{education_level}{Highest educational level attained by the reference
+#'   person.}
+#'
+#'   \item{income_pc}{Per capita disposable household income (in BRL),
+#'   calculated as total disposable household income divided by the number of
+#'   residents. Disposable income includes monetary and non-monetary earnings,
+#'   net of direct taxes, social contributions, and other mandatory deductions.}
+#'
+#'   \item{sons}{Number of children living in the household, including children
+#'   of the reference person and/or the spouse.}
+#' }
+#'
+#' @details
+#' In each household, the POF survey designates a reference person, typically
+#' responsible for financial and administrative decisions. All individual-level
+#' covariates refer to this reference person. Expenditure values are aggregated
+#' at the household level but attributed to the reference person for modeling
+#' purposes.
+#'
+#' Summary statistics indicate that the median education expenditure is zero,
+#' while the mean expenditure is BRL 108.8, reflecting the presence of a small
+#' number of households with substantially higher spending levels. The maximum
+#' observed expenditure is BRL 48,000.
+#'
+#' @source
+#' Instituto Brasileiro de Geografia e Estatística (IBGE).
+#' Pesquisa de Orçamentos Familiares (POF) 2017--2018.
+#' Available (in Portuguese) at:
+#' \url{https://www.ibge.gov.br/estatisticas/sociais/populacao/24786-pesquisa-de-orcamentos-familiares-2.html}
+#'
+#'
+#' @usage
+#' data(pof_education_sp)
+#'
+#' @keywords datasets education expenditure zero-inflation Brazil
+"education"
+
