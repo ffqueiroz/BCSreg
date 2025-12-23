@@ -16,7 +16,7 @@ Description: A collection of tools for regression analysis of non-negative data,
     including strictly positive and zero-inflated observations, based on the class of the Box-Cox
     symmetric (BCS) distributions and its zero-adjusted extension. The BCS distributions are a 
     class of flexible probability models capable of describing different levels of skewness and 
-    tail-heaviness. The package offers a compreensive regression modeling framework, including 
+    tail-heaviness. The package offers a comprehensive regression modeling framework, including 
     estimation and tools for evaluating goodness-of-fit.
 License: GPL (>= 3)
 Encoding: UTF-8
