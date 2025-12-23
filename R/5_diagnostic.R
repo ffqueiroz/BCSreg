@@ -115,7 +115,8 @@ influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), .
                    t(X)%*%T1%*%diag(mu_dagger),
                    t(S)%*%T2%*%diag(sigma_dagger),
                    lambda_dagger)
-    case.weights <- abs(eigen(-t(Delta)%*%solve(J)%*%Delta)$vec[,1])
+    B <- -t(Delta)%*%solve(J)%*%Delta
+    case.weights <- abs(eigen(B)$vec[,1])
   }
 
 

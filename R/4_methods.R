@@ -45,7 +45,7 @@
 #' @author Rodrigo M. R. de Medeiros <\email{rodrigo.matheus@ufrn.br}>
 #'
 #' @examples
-#' ## Data set: raycatch (for description, run ?raycatch)
+#' ## Data set: renewables2015 (for description, run ?renewables2015)
 #' plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
 #' abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
 #' text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")
@@ -287,7 +287,7 @@ AIC.ugrpl <- function(object, ..., k = 2) {
 #'
 #' # Zero-adjusted BCS (ZABCS) regression for non-negative response variables
 #'
-#' ## Data set: raycatch (for description, run ?raycatch)
+#' ## Data set: renewables2015 (for description, run ?renewables2015)
 #' plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
 #' abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
 #' text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")
@@ -532,7 +532,7 @@ residuals.BCSreg <- function(object, approach = c("combined", "separated"), ...)
 #'
 #' # Zero-adjusted BCS (ZABCS) regression for non-negative response variables
 #'
-#' ## Data set: raycatch (for description, run ?raycatch)
+#' ## Data set: renewables2015 (for description, run ?renewables2015)
 #' plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
 #' abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
 #' text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")
@@ -788,13 +788,13 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
 #'             versus the fitted medians.}
 #'         \item{Residuals vs observation indices.}{an index plot of the residuals
 #'             versus the observation indices.}
+#'         \item{Density plot}{a graph that compares the empirical density of the residuals
+#'             with the density of the standard normal distribution.}
 #'         \item{Normal probability plot}{a normal probability plot of the residuals with a
 #'             confidence region constructed according to Fox (2016) using the
 #'             \code{\link[car]{qqPlot}} function.}
 #'         \item{Case-weight perturbation}{An index plot of local influence based on the
 #'             case-weight perturbation scheme.}
-#'         \item{Density plot}{a graph that compares the empirical density of the residuals
-#'             with the density of the standard normal distribution.}
 #'         \item{Fitted vs observed values}{a dispersion diagram of the fitted values
 #'             versus the observed values.}
 #'         \item{Residuals vs v(z) function}{a dispersion diagram of the \eqn{v(z)} function
@@ -843,13 +843,13 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
 #' ### Residuals vs observation indices
 #' plot(fit, which = 2)
 #'
-#' ### Normal probability plot
+#' ### Density plot
 #' plot(fit, which = 3)
 #'
-#' ### Local influence
+#' ### Normal probability plot
 #' plot(fit, which = 4)
 #'
-#' ### Density plot
+#' ### Local influence
 #' plot(fit, which = 5)
 #'
 #' ### Fitted medians vs response
@@ -905,8 +905,21 @@ plot.BCSreg <- function(x, which = 1:4,
     abline(h = c(-2.5, 0, 2.5), lty = c(2, 1, 2), lwd = lwd, col = "dodgerblue")
   }
 
-  ## Normal probability plot
+  ## Density
   if(show[3]) {
+
+    main <- if (is.null(dots$main)) " " else dots$main
+    xlab <- if (is.null(dots$xlab)) "Quantile residuals" else dots$xlab
+
+    plot(stats::density(res), main = main, xlab = xlab, lwd = 2, ...)
+    curve(stats::dnorm(x), col = "dodgerblue", add = TRUE, lwd = 2)
+    legend("topright", c("Sample density", "N(0, 1)"),
+           lty = 1, lwd = 2, col = c(1, "dodgerblue"), cex = 0.9, bty = "n")
+    rug(res)
+  }
+
+  ## Normal probability plot
+  if(show[4]) {
 
     ## Normal probability plot
     Pi <- (1:n - 0.5) / n
@@ -941,26 +954,14 @@ plot.BCSreg <- function(x, which = 1:4,
   }
 
   ## Local influence
-  cw <- influence(x, plot = FALSE)$case.weights
-  if(show[4]) {
+  if(show[5]) {
+
+    cw <- influence(x, plot = FALSE)$case.weights
 
     xlab <- if (is.null(dots$xlab)) "Observation indices" else dots$xlab
     ylab <- if (is.null(dots$ylab)) "Local influence" else dots$ylab
 
     plot(1:n, cw, xlab = xlab, ylab = ylab, type = "h", las = las, ...)
-  }
-
-  ## Density
-  if(show[5]) {
-
-    main <- if (is.null(dots$main)) " " else dots$main
-    xlab <- if (is.null(dots$xlab)) "Quantile residuals" else dots$xlab
-
-    plot(stats::density(res), main = main, xlab = xlab, lwd = 2, ...)
-    curve(stats::dnorm(x), col = "dodgerblue", add = TRUE, lwd = 2)
-    legend("topright", c("Sample density", "N(0, 1)"),
-           lty = 1, lwd = 2, col = c(1, "dodgerblue"), cex = 0.9, bty = "n")
-    rug(res)
   }
 
   ## Fitted vs observed values

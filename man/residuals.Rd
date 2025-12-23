@@ -100,7 +100,7 @@ qqline(rq, col = "dodgerblue", lwd = 2)
 
 # Zero-adjusted BCS (ZABCS) regression for non-negative response variables
 
-## Data set: raycatch (for description, run ?raycatch)
+## Data set: renewables2015 (for description, run ?renewables2015)
 plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
 abline(h = mean(renewables2015$renew_elec_output == 0), col = "grey", lty = 3)
 text(1250, 0.155, paste0("prop. of zeros: ~0.12"), col = "blue")

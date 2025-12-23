@@ -41,13 +41,13 @@ The \code{plot} method for \code{\link{BCSreg}} objects provides seven types
             versus the fitted medians.}
         \item{Residuals vs observation indices.}{an index plot of the residuals
             versus the observation indices.}
+        \item{Density plot}{a graph that compares the empirical density of the residuals
+            with the density of the standard normal distribution.}
         \item{Normal probability plot}{a normal probability plot of the residuals with a
             confidence region constructed according to Fox (2016) using the
             \code{\link[car]{qqPlot}} function.}
         \item{Case-weight perturbation}{An index plot of local influence based on the
             case-weight perturbation scheme.}
-        \item{Density plot}{a graph that compares the empirical density of the residuals
-            with the density of the standard normal distribution.}
         \item{Fitted vs observed values}{a dispersion diagram of the fitted values
             versus the observed values.}
         \item{Residuals vs v(z) function}{a dispersion diagram of the \eqn{v(z)} function
@@ -82,13 +82,13 @@ plot(fit, which = 1)
 ### Residuals vs observation indices
 plot(fit, which = 2)
 
-### Normal probability plot
+### Density plot
 plot(fit, which = 3)
 
-### Local influence
+### Normal probability plot
 plot(fit, which = 4)
 
-### Density plot
+### Local influence
 plot(fit, which = 5)
 
 ### Fitted medians vs response
