@@ -228,8 +228,12 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
   sigma.link <- object$link$sigma
   alpha.link <- object$link$alpha
 
-  resRid <- residuals(object)
+  rhs1 <- paste(paste0("`", attr(stats::terms(formula, rhs = 1L), "term.labels"), "`"), collapse = " + ")
+  rhs2 <- paste(paste0("`", attr(stats::terms(formula, rhs = 2L), "term.labels"), "`"), collapse = " + ")
+  if (alpha_id)
+    rhs3 <- paste(paste0("`", attr(stats::terms(formula, rhs = 3L), "term.labels"), "`"), collapse = " + ")
 
+  resRid <- residuals(object)
   resid_env <- matrix(0, n, rep)
 
   i <- 1
@@ -241,7 +245,7 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
 
         y_env <- rZABCS(n, alphahat, muhat, sigmahat, lambdahat, zetahat, family = family)
         data_env <- cbind(mf, y_env = y_env)
-        formula_env <- as.formula(paste("y_env ~",  paste(deparse(formula[[3]]), collapse = "")))
+        formula_env <- as.formula(paste("y_env ~",  rhs1, "|", rhs2, "|", rhs3))
 
         val <- suppressWarnings(BCSreg(formula_env, data = data_env,
                                        family = family,
@@ -253,7 +257,7 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
 
         y_env <- rBCS(n, muhat, sigmahat, lambdahat, zetahat, family = family)
         data_env <- cbind(mf, y_env = y_env)
-        formula_env <- as.formula(paste("y_env ~",  paste(deparse(formula[[3]]), collapse = "")))
+        formula_env <- as.formula(paste("y_env ~",  rhs1, "|", rhs2))
 
         val <- suppressWarnings(BCSreg(formula_env, data = data_env,
                                        family = family,
