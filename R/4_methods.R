@@ -891,7 +891,7 @@ plot.BCSreg <- function(x, which = 1:4,
 
     plot(stats::fitted(x), res, xlab = xlab, ylab = ylab,
          pch = pch, las = las, cex = cex, ...)
-    abline(h = c(-2.5, 0, 2.5), lty = c(2, 1, 2), lwd = lwd, col = "dodgerblue")
+    abline(h = c(-2.5, 0, 2.5), lty = c(2, 1, 2), lwd = lwd)
   }
 
   ## Residuals versus observation indices
@@ -902,7 +902,7 @@ plot.BCSreg <- function(x, which = 1:4,
 
     plot(1:n, res, xlab = xlab, ylab = ylab,
          pch = pch, las = las, cex = cex, ...)
-    abline(h = c(-2.5, 0, 2.5), lty = c(2, 1, 2), lwd = lwd, col = "dodgerblue")
+    abline(h = c(-2.5, 0, 2.5), lty = c(2, 1, 2), lwd = lwd)
   }
 
   ## Density
@@ -948,9 +948,8 @@ plot.BCSreg <- function(x, which = 1:4,
             border = NA,
             col = grDevices::rgb(30, 144, 255, alpha = 0.2 * 255, maxColorValue = 255))
     graphics::points(zi, sort(res), pch = pch, las = las, cex = cex, ...)
-    graphics::segments(min(zi), int + slope * min(zi),
-                       max(zi), int + slope * max(zi),
-                       col = "dodgerblue", lwd = 2)
+    graphics::segments(min(zi), int + slope * min(zi), col = "dodgerblue",
+                       max(zi), int + slope * max(zi), lwd = 2)
   }
 
   ## Local influence
@@ -968,7 +967,7 @@ plot.BCSreg <- function(x, which = 1:4,
   if(show[6]) {
     plot(y, stats::fitted(x), xlab = "Observed values", ylab = "Fitted values",
          pch = pch, las = las, cex = cex, ...)
-    abline(0, 1, lty = lwd, lwd = lwd, col = "dodgerblue")
+    abline(0, 1, lty = lwd, lwd = lwd)
   }
 
   ## v(z) function
