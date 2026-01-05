@@ -98,7 +98,7 @@ plot(fit, which = 6)
 plot(fit, which = 7)
 }
 \references{
-Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of nonnegative continuous
     data: Box-Cox symmetric regression and its zero-adjusted extension.
 }
 \author{

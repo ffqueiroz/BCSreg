@@ -38,7 +38,7 @@
 #'     applications to nutritional data. \emph{AStA Advances in Statistical Analysis},
 #'     \bold{101}, 321---344.
 #'
-#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of nonnegative continuous
 #'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
@@ -258,7 +258,7 @@ AIC.ugrpl <- function(object, ..., k = 2) {
 #'     Dunn, P. K. and Smyth, G. K. (1996). Randomized quantile residuals.
 #'     \emph{Journal of Computational and Graphical Statistics}, \bold{5}, 236---244.
 #'
-#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of nonnegative continuous
 #'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @examples
@@ -285,7 +285,7 @@ AIC.ugrpl <- function(object, ..., k = 2) {
 #' qqnorm(rq, pch = "+", cex = 0.8)
 #' qqline(rq, col = "dodgerblue", lwd = 2)
 #'
-#' # Zero-adjusted BCS (ZABCS) regression for non-negative response variables
+#' # Zero-adjusted BCS (ZABCS) regression for nonnegative response variables
 #'
 #' ## Data set: renewables2015 (for description, run ?renewables2015)
 #' plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
@@ -483,7 +483,7 @@ residuals.BCSreg <- function(object, approach = c("combined", "separated"), ...)
 #'     Ferrari, S., and Cribari-Neto, F. (2004). Beta regression for modelling
 #'     rates and proportions. \emph{Journal of Applied Statistics}, \bold{31}, 799---815.
 #'
-#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of nonnegative continuous
 #'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #'     Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
@@ -530,7 +530,7 @@ residuals.BCSreg <- function(object, approach = c("combined", "separated"), ...)
 #'                   zeta = 4, lambda = 0)
 #' summary(fit_lpe)
 #'
-#' # Zero-adjusted BCS (ZABCS) regression for non-negative response variables
+#' # Zero-adjusted BCS (ZABCS) regression for nonnegative response variables
 #'
 #' ## Data set: renewables2015 (for description, run ?renewables2015)
 #' plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
@@ -812,7 +812,7 @@ print.summary.BCSreg <- function(x, digits = getOption("digits"), ...) {
 #'
 #' @references
 #'
-#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'     Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of nonnegative continuous
 #'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @return \code{plot} method for \code{"\link{BCSreg}"} objects returns seven types

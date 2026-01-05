@@ -98,7 +98,7 @@ rq
 qqnorm(rq, pch = "+", cex = 0.8)
 qqline(rq, col = "dodgerblue", lwd = 2)
 
-# Zero-adjusted BCS (ZABCS) regression for non-negative response variables
+# Zero-adjusted BCS (ZABCS) regression for nonnegative response variables
 
 ## Data set: renewables2015 (for description, run ?renewables2015)
 plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
@@ -142,7 +142,7 @@ qqline(res$discrete, col = "dodgerblue", lwd = 2)
 Dunn, P. K. and Smyth, G. K. (1996). Randomized quantile residuals.
     \emph{Journal of Computational and Graphical Statistics}, \bold{5}, 236---244.
 
-    Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+    Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of nonnegative continuous
     data: Box-Cox symmetric regression and its zero-adjusted extension.
 }
 \author{

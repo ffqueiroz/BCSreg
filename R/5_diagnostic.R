@@ -22,7 +22,7 @@
 #'  Lesaffre, E., and Verbeke, G. (1998). Local influence in linear mixed models.
 #'  \emph{Biometrics}, 570--582.
 #'
-#'  Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'  Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of nonnegative continuous
 #'     data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>
@@ -176,7 +176,7 @@ influence <- function(object, plot = TRUE, ask = grDevices::dev.interactive(), .
 #'      to Graphical Methods of Diagnostic Regression Analysis}.
 #'      Oxford Science Publications, Oxford.
 #'
-#'   Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+#'   Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of nonnegative continuous
 #'      data: Box-Cox symmetric regression and its zero-adjusted extension.
 #'
 #' @author Francisco F. de Queiroz <\email{felipeq@ime.usp.br}>

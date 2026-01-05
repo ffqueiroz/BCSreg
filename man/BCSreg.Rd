@@ -242,7 +242,7 @@ fit_lpe <- BCSreg(cpue ~ location + tide_phase + max_temp |
                   zeta = 4, lambda = 0)
 fit_lpe
 
-# Zero-adjusted BCS (ZABCS) regression for non-negative response variables
+# Zero-adjusted BCS (ZABCS) regression for nonnegative response variables
 
 ## Data set: renewables2015 (for description, run ?renewables2015)
 plot(ecdf(renewables2015$renew_elec_output), cex = 0.3, main = "Empirical CDF")
@@ -295,7 +295,7 @@ Cribari-Neto F, Zeileis A (2010). Beta Regression in R. \emph{Journal of Statist
     applications to nutritional data. \emph{AStA Advances in Statistical Analysis},
     \bold{101}, 321---344.
 
-    Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of non-negative continuous
+    Medeiros, R. M. R., and Queiroz, F. F. (2025). Flexible modeling of nonnegative continuous
     data: Box-Cox symmetric regression and its zero-adjusted extension.
 
     Vanegas, L. H., and Paula, G. A. (2016). Log-symmetric distributions:
