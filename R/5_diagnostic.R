@@ -230,8 +230,19 @@ envelope <- function(object, rep = 60, conf = 0.95, envcol, ...){
 
   rhs1 <- paste(paste0("`", attr(stats::terms(formula, rhs = 1L), "term.labels"), "`"), collapse = " + ")
   rhs2 <- paste(paste0("`", attr(stats::terms(formula, rhs = 2L), "term.labels"), "`"), collapse = " + ")
-  if (alpha_id)
+
+  if (rhs1 == "``")
+    rhs1 <- 1
+  if (rhs2 == "``")
+    rhs2 <- 1
+
+  if (alpha_id) {
+
     rhs3 <- paste(paste0("`", attr(stats::terms(formula, rhs = 3L), "term.labels"), "`"), collapse = " + ")
+
+    if (rhs2 == "``")
+      rhs3 <- 1
+  }
 
   resRid <- residuals(object)
   resid_env <- matrix(0, n, rep)
